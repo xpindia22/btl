@@ -64,5 +64,9 @@ Route::resources([
 // Additional User Routes
 Route::get('/user/data', [UserController::class, 'data'])->name('user.data');
 
+ 
+Route::post('/register', [RegisterController::class, 'store'])->name('register');
+
+
 // Include Laravel Breeze Authentication Routes
 require __DIR__.'/auth.php';

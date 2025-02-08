@@ -18,7 +18,7 @@ class PlayerController extends Controller
     public function index()
     {
         $this->authorize('viewAnyPlayers', Player::class);
-        return view('players.index');
+        return view('players.players_index');
     }
 
     public function edit(Player $player)
