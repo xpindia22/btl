@@ -16,7 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'mobile_no',
-        'role',
+        'role', // ✅ Keep role as a string
     ];
 
     protected $hidden = [
@@ -24,8 +24,18 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public function getAuthIdentifierName()
+    public function isAdmin()
     {
-        return 'email'; // Login via email
+        return $this->role === 'admin';
+    }
+
+    public function isUser()
+    {
+        return $this->role === 'user';
+    }
+
+    public function isPlayer()
+    {
+        return $this->role === 'player';
     }
 }

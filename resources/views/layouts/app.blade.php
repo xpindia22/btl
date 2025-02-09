@@ -27,7 +27,25 @@
             @yield('content')
         </main>
     </div>
-    
+
+    <!-- Logout Form (Hidden) -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
+
+    <!-- Logout Link (Triggers POST Request) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const logoutLink = document.getElementById("logout-link");
+            if (logoutLink) {
+                logoutLink.addEventListener("click", function(event) {
+                    event.preventDefault();
+                    document.getElementById("logout-form").submit();
+                });
+            }
+        });
+    </script>
+
     <!-- Include session.js -->
     <script src="{{ asset('js/session.js') }}"></script>
 </body>

@@ -2,7 +2,7 @@
     use Illuminate\Support\Facades\Auth;
 
     $logged_in_user = Auth::check() ? Auth::user()->username : 'Guest';
-    $user_role = Auth::check() ? Auth::user()->role : 'guest';
+    $user_Role = Auth::check() ? strtolower(Auth::user()->role ?? 'guest') : 'guest'; // Ensuring case consistency
 @endphp
 
 <!DOCTYPE html>
@@ -98,7 +98,7 @@
             <a href="{{ route('register') }}">Register Tournament Manager</a>
             <a href="{{ route('register_player') }}">Register Player</a>
 
-            @if ($user_role === 'admin')
+            @if ($user_Role === 'admin')
                 <!-- Dropdown: Admin Zone -->
                 <div class="dropdown">
                     <a href="#">Admin Zone</a>
@@ -117,11 +117,11 @@
             <div class="dropdown">
                 <a href="#">Singles Matches</a>
                 <div class="dropdown-content">
-                    @if (in_array($user_role, ['admin', 'moderator', 'user'])) 
+                    @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
                         <a href="{{ route('matches.create_singles') }}">Add Singles</a>
                     @endif
                     <a href="{{ route('results.singles') }}">Singles Results</a>
-                    @if (in_array($user_role, ['admin', 'moderator', 'user'])) 
+                    @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
                         <a href="{{ route('matches.edit_singles') }}">Edit Singles Matches</a>
                     @endif
                 </div>
@@ -131,22 +131,38 @@
             <div class="dropdown">
                 <a href="#">Boys Doubles</a>
                 <div class="dropdown-content">
-                    @if (in_array($user_role, ['admin', 'moderator', 'user'])) 
+                    @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
                         <a href="{{ route('matches.create_boys_doubles') }}">Insert Boys Doubles</a>
                     @endif
                     <a href="{{ route('results.boys_doubles') }}">Result Boys Doubles</a>
-                    @if (in_array($user_role, ['admin', 'moderator', 'user'])) 
+                    @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
                         <a href="{{ route('matches.edit_boys_doubles') }}">Edit Boys Doubles</a>
                     @endif
-                    @if ($user_role === 'admin') 
+                    @if ($user_Role === 'admin') 
                         <a href="{{ route('matches.edit_all_doubles') }}">Edit All Doubles</a>
                     @endif
                 </div>
             </div>
 
-            <!-- Logout -->
-            <a href="{{ route('logout') }}">Logout</a>
+            <!-- Logout Form (Hidden) -->
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
+
+            <!-- Logout Button -->
+            <a href="#" id="logout-link">Logout</a>
         </div>
     </div>
+
+    <!-- Script to Handle Logout via POST -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("logout-link").addEventListener("click", function(event) {
+                event.preventDefault();
+                document.getElementById("logout-form").submit();
+            });
+        });
+    </script>
+
 </body>
 </html>

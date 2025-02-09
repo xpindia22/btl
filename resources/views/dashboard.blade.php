@@ -1,4 +1,7 @@
 @extends('layouts.app')
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
 
 @section('content')
 <div class="container">
@@ -51,11 +54,7 @@
                 <p>Manage players you added to the system.</p>
                 <a href="{{ route('players.index') }}" class="btn btn-primary">View Players</a>
             </div>
-            <div class="card">
-                <h2>View Your Data</h2>
-                <p>View and manage tournaments, categories, and matches you created.</p>
-                <a href="{{ route('user.data') }}" class="btn btn-primary">View Your Data</a>
-            </div>
+ 
         @endif
 
         @if($is_player)

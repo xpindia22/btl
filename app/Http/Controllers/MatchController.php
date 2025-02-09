@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Matches; // Updated model name to Matches
 
 class MatchController extends Controller
 {
@@ -21,12 +22,6 @@ class MatchController extends Controller
         return view('matches.create_boys_doubles');
     }
 
-
-    public function createBoysDoubles()
-    {
-        return view('matches.create_boys_doubles');
-    }
-
     public function editBoysDoubles()
     {
         return view('matches.edit_boys_doubles');
@@ -36,18 +31,10 @@ class MatchController extends Controller
     {
         return view('matches.edit_all_doubles');
     }
-
-
-     {
-        public function index()
-        {
-            $matches = Match::all(); // Fetch all matches
-            return view('matches.index', compact('matches')); // Pass data to Blade
-        }
+    
+    public function index()
+    {
+        $matches = Matches::all(); // Updated model reference
+        return view('matches.index', compact('matches')); // Pass data to Blade
     }
-
-
-
-
-
 }

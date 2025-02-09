@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        if (Auth::user()->role !== 'admin') {
+        if (Auth::user()->Role !== 'admin') {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 
@@ -31,7 +31,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
             'mobile_no' => 'nullable|digits:10',
-            'role' => 'in:visitor,user'
+            'Role' => 'in:visitor,user'
         ]);
 
         User::create([
@@ -39,7 +39,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'mobile_no' => $request->mobile_no,
-            'role' => $request->role ?? 'visitor',
+            'Role' => $request->Role ?? 'visitor',
         ]);
 
         return redirect()->route('users.index')->with('success', 'User registered successfully!');
@@ -47,7 +47,7 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        if (Auth::user()->role !== 'admin') {
+        if (Auth::user()->Role !== 'admin') {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 
@@ -59,7 +59,7 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (Auth::user()->role !== 'admin') {
+        if (Auth::user()->Role !== 'admin') {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 
@@ -69,14 +69,14 @@ class UserController extends Controller
             'username' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'mobile_no' => 'nullable|digits:10',
-            'role' => 'in:admin,user,visitor'
+            'Role' => 'in:admin,user,visitor'
         ]);
 
         $user->update([
             'username' => $request->username,
             'email' => $request->email,
             'mobile_no' => $request->mobile_no,
-            'role' => $request->role,
+            'Role' => $request->Role,
         ]);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
@@ -84,7 +84,7 @@ class UserController extends Controller
 
     public function destroy($id) // ✅ Fix: Removed $request parameter
     {
-        if (Auth::user()->role !== 'admin') {
+        if (Auth::user()->Role !== 'admin') {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 

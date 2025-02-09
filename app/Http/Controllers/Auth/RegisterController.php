@@ -22,14 +22,14 @@ class RegisterController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
             'mobile_no' => 'nullable|digits:10',
-            'role' => 'required|in:admin,user,visitor',
+            'Role' => 'required|in:admin,user,visitor',
         ]);
 
-        // Ensure only admins can assign the 'admin' role
-        if (Auth::check() && Auth::user()->role === 'admin') {
-            $role = $request->role; // Admin can assign any role
+        // Ensure only admins can assign the 'admin' Role
+        if (Auth::check() && Auth::user()->Role === 'admin') {
+            $Role = $request->Role; // Admin can assign any Role
         } else {
-            $role = in_array($request->role, ['user', 'visitor']) ? $request->role : 'visitor'; // Regular users can only register as user or visitor
+            $Role = in_array($request->Role, ['user', 'visitor']) ? $request->Role : 'visitor'; // Regular users can only register as user or visitor
         }
 
         $user = User::create([
@@ -37,7 +37,7 @@ class RegisterController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'mobile_no' => $request->mobile_no,
-            'role' => $role,
+            'Role' => $Role,
         ]);
 
         Auth::login($user);

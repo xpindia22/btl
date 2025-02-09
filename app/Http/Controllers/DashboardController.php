@@ -10,12 +10,13 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+
         return view('dashboard', [
-            'username' => $user->username ?? 'Guest',
-            'is_admin' => $user->role === 'admin',
-            'is_user' => $user->role === 'user',
-            'is_player' => $user->role === 'player',
-            'is_visitor' => $user->role === 'visitor',
+            'username' => $user->username,
+            'is_admin' => $user->isAdmin(), // ✅ Use helper functions
+            'is_user' => $user->isUser(),
+            'is_player' => $user->isPlayer(),
         ]);
     }
 }
+ 

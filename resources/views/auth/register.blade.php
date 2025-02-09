@@ -30,8 +30,8 @@
         </div>
         <div class="mb-3">
             <label>Role:</label>
-            <select name="role" class="form-control" required>
-                @if(Auth::check() && Auth::user()->role === 'admin')
+            <select name="Role" class="form-control" required>
+                @if(Auth::check() && Auth::user()->Role === 'admin')
                     <option value="admin">Admin</option>
                 @endif
                 <option value="user">User</option>

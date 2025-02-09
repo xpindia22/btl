@@ -22,8 +22,8 @@
             <input type="text" class="form-control" name="mobile_no">
         </div>
         <div class="mb-3">
-            <label for="role" class="form-label">Role</label>
-            <select name="role" class="form-control">
+            <label for="Role" class="form-label">Role</label>
+            <select name="Role" class="form-control">
                 <option value="visitor">Visitor</option>
                 <option value="user">User</option>
             </select>

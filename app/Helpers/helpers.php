@@ -30,12 +30,12 @@ if (! function_exists('verify_password')) {
 
 if (! function_exists('is_admin')) {
     /**
-     * Determine if the current authenticated user has an admin role.
+     * Determine if the current authenticated user has an admin Role.
      *
      * @return bool
      */
     function is_admin() {
-        return auth()->check() && auth()->user()->role === 'admin';
+        return auth()->check() && auth()->user()->Role === 'admin';
     }
 }
 

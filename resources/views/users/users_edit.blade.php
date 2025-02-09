@@ -18,11 +18,11 @@
         </div>
 
         <div class="mb-3">
-            <label for="role" class="form-label">Role</label>
-            <select name="role" class="form-control">
-                <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
-                <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
-                <option value="visitor" {{ $user->role === 'visitor' ? 'selected' : '' }}>Visitor</option>
+            <label for="Role" class="form-label">Role</label>
+            <select name="Role" class="form-control">
+                <option value="admin" {{ $user->Role === 'admin' ? 'selected' : '' }}>Admin</option>
+                <option value="user" {{ $user->Role === 'user' ? 'selected' : '' }}>User</option>
+                <option value="visitor" {{ $user->Role === 'visitor' ? 'selected' : '' }}>Visitor</option>
             </select>
         </div>
 

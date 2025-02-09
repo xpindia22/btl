@@ -25,10 +25,10 @@
                         <td><input type="email" name="email" value="{{ $user->email }}" required></td>
                         <td><input type="text" name="mobile_no" value="{{ $user->mobile_no }}"></td>
                         <td>
-                            <select name="role">
-                                <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
-                                <option value="visitor" {{ $user->role === 'visitor' ? 'selected' : '' }}>Visitor</option>
+                            <select name="Role">
+                                <option value="admin" {{ $user->Role === 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="user" {{ $user->Role === 'user' ? 'selected' : '' }}>User</option>
+                                <option value="visitor" {{ $user->Role === 'visitor' ? 'selected' : '' }}>Visitor</option>
                             </select>
                         </td>
                         <td>
