@@ -9,6 +9,8 @@ use App\Http\Controllers\MatchController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\ResultsController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PlayerController; // ✅ Added missing controller
 
 // Redirect root to dashboard if authenticated
 Route::get('/', function () {
@@ -25,9 +27,7 @@ Route::post('/register', [RegisterController::class, 'register']);
 
 // 🔹 Protected Routes (Only for Authenticated Users)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // 🔹 User Management Routes
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -40,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('register_player');
 
     // 🔹 Admin Routes (Restricted to Admins)
-    Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/edit_users', [AdminController::class, 'editUsers'])->name('edit_users');
         Route::get('/edit_players', [AdminController::class, 'editPlayers'])->name('edit_players');
         Route::get('/add_moderator', [AdminController::class, 'addModerator'])->name('add_moderator');
@@ -51,19 +51,16 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // 🔹 Match Routes (For Admin & Moderators)
-    Route::middleware(['admin', 'moderator'])->group(function () {
+    Route::middleware(['role:admin', 'role:moderator'])->group(function () {
         Route::get('/matches/create', [MatchController::class, 'create'])->name('matches.create');
         Route::post('/matches', [MatchController::class, 'store'])->name('matches.store');
 
-        // 🔹 Fix: Define missing Match routes
         Route::get('/matches/create_singles', [MatchController::class, 'createSingles'])->name('matches.create_singles');
         Route::get('/matches/edit_singles', [MatchController::class, 'editSingles'])->name('matches.edit_singles');
 
-        // ✅ Fix: Define missing Boys' Doubles Match routes
         Route::get('/matches/create_boys_doubles', [MatchController::class, 'createBoysDoubles'])->name('matches.create_boys_doubles');
         Route::get('/matches/edit_boys_doubles', [MatchController::class, 'editBoysDoubles'])->name('matches.edit_boys_doubles');
 
-        // ✅ Fix: Define missing Edit All Doubles Match route
         Route::get('/matches/edit_all_doubles', [MatchController::class, 'editAllDoubles'])->name('matches.edit_all_doubles');
     });
 
@@ -71,15 +68,60 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/results/singles', [ResultsController::class, 'singles'])->name('results.singles');
     Route::get('/results/boys_doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
 
-    // 🔹 Category Routes
-    Route::middleware(['admin'])->group(function () {
+    // 🔹 Category Routes (Admin Only)
+    Route::middleware(['role:admin'])->group(function () {
         Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
     });
 
-    // 🔹 Tournament Routes
-    Route::middleware(['admin', 'moderator'])->group(function () {
+    // 🔹 Tournament Routes (Admin & Moderator)
+    Route::middleware(['role:admin', 'role:moderator'])->group(function () {
+        Route::get('/tournaments', [TournamentController::class, 'index'])->name('tournaments.index'); // ✅ Fixed Missing Route
         Route::get('/tournaments/create', [TournamentController::class, 'create'])->name('tournaments.create');
         Route::post('/tournaments', [TournamentController::class, 'store'])->name('tournaments.store');
     });
+
+    // 🔹 Role-Based Access Routes
+    Route::get('/admin', [AdminController::class, 'index'])->middleware('role:admin')->name('admin.dashboard');
+    Route::get('/user-dashboard', [UserController::class, 'index'])->middleware('role:user')->name('user.dashboard');
+    Route::get('/player-profile', [PlayerController::class, 'index'])->middleware('role:player')->name('player.profile');
+
+// 🔹 Category Routes (Admin Only)
+    Route::middleware(['role:admin'])->group(function () {
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index'); // ✅ Added this
+    Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+});
+
+// 🔹 Match Routes (For Admin & Moderators)
+Route::middleware(['role:admin', 'role:moderator'])->group(function () {
+    Route::get('/matches', [MatchController::class, 'index'])->name('matches.index'); // ✅ Added this
+    Route::get('/matches/create', [MatchController::class, 'create'])->name('matches.create');
+    Route::post('/matches', [MatchController::class, 'store'])->name('matches.store');
+
+    Route::get('/matches/create_singles', [MatchController::class, 'createSingles'])->name('matches.create_singles');
+    Route::get('/matches/edit_singles', [MatchController::class, 'editSingles'])->name('matches.edit_singles');
+
+    Route::get('/matches/create_boys_doubles', [MatchController::class, 'createBoysDoubles'])->name('matches.create_boys_doubles');
+    Route::get('/matches/edit_boys_doubles', [MatchController::class, 'editBoysDoubles'])->name('matches.edit_boys_doubles');
+
+    Route::get('/matches/edit_all_doubles', [MatchController::class, 'editAllDoubles'])->name('matches.edit_all_doubles');
+});
+
+
+// 🔹 Player Routes (For Admin & Moderators)
+Route::middleware(['role:admin', 'role:moderator'])->group(function () {
+    Route::get('/players', [PlayerController::class, 'index'])->name('players.index'); // ✅ Added this
+    Route::get('/players/create', [PlayerController::class, 'create'])->name('players.create');
+    Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
+});
+
+
+// 🔹 Results Routes (Accessible to All Users)
+Route::get('/results', [ResultsController::class, 'index'])->name('results.index'); // ✅ Added this
+
+Route::get('/results/singles', [ResultsController::class, 'singles'])->name('results.singles');
+Route::get('/results/boys_doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
+
+
 });

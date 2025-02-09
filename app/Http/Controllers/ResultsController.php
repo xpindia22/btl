@@ -22,4 +22,13 @@ class ResultsController extends Controller
     {
         return view('results.boys_doubles');
     }
+
+
+
+    public function index()
+        {
+            $results = Match::whereNotNull('score')->get(); // Fetch all completed matches with scores
+            return view('results.index', compact('results')); // Pass data to Blade
+        }
+    
 }

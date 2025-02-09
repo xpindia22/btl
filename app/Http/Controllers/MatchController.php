@@ -38,7 +38,13 @@ class MatchController extends Controller
     }
 
 
-
+     {
+        public function index()
+        {
+            $matches = Match::all(); // Fetch all matches
+            return view('matches.index', compact('matches')); // Pass data to Blade
+        }
+    }
 
 
 

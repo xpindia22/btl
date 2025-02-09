@@ -20,4 +20,12 @@ class AdminController extends Controller
     {
         return view('admin.add_moderator');
     }
+
+    public function index()
+    {
+        return view('admin.dashboard', [
+            'username' => Auth::user()->username,
+        ]);
+    }
+
 }

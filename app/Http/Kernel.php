@@ -8,6 +8,11 @@ protected $routeMiddleware = [
 
 protected $middleware = [
     \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
-    // \App\Http\Middleware\EncryptCookies::class,  // ❌ Comment out for debugging
-    // \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class, // ❌
+    
+];
+
+
+
+protected $routeMiddleware = [
+    'role' => \App\Http\Middleware\RoleMiddleware::class,
 ];
