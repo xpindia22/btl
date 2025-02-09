@@ -1,11 +1,11 @@
-<?php
+<?php 
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -15,13 +15,13 @@ class UserController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 
-        $users = User::all();
-        return view('users_index', compact('users'));
+        $users = User::orderBy('created_at', 'desc')->get();
+        return view('users.users_index', compact('users'));
     }
 
     public function create()
     {
-        return view('users_create');
+        return view('users.users_create');
     }
 
     public function store(Request $request)
@@ -45,16 +45,25 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User registered successfully!');
     }
 
-    public function update(Request $request)
+    public function edit($id)
     {
         if (Auth::user()->role !== 'admin') {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 
-        $user = User::find($request->user_id);
-        if (!$user) {
-            return redirect()->route('users.index')->with('error', 'User not found.');
+        $user = User::findOrFail($id);
+
+        // Ensure the view file exists in the correct path
+        return view('users.users_edit', compact('user'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        if (Auth::user()->role !== 'admin') {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
+
+        $user = User::findOrFail($id);
 
         $request->validate([
             'username' => 'required|string|max:255',
@@ -73,15 +82,15 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
-    public function destroy(Request $request)
+    public function destroy($id) // ✅ Fix: Removed $request parameter
     {
         if (Auth::user()->role !== 'admin') {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 
-        $user = User::find($request->user_id);
-        if (!$user || $user->id === Auth::id()) {
-            return redirect()->route('users.index')->with('error', 'Cannot delete user.');
+        $user = User::findOrFail($id);
+        if ($user->id === Auth::id()) {
+            return redirect()->route('users.index')->with('error', 'Cannot delete yourself.');
         }
 
         $user->delete();

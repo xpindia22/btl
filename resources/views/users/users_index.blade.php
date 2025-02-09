@@ -2,8 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Users</h1>
-    <a href="{{ route('users.create') }}" class="btn btn-primary">Register New User</a>
+    <h2>Registered Users</h2>
     <table class="table">
         <thead>
             <tr>
@@ -18,8 +17,9 @@
         <tbody>
             @foreach ($users as $user)
                 <tr>
-                    <form method="POST" action="{{ route('users.update') }}">
+                    <form method="POST" action="{{ route('users.update', ['id' => $user->id]) }}">
                         @csrf
+                        @method('PUT')
                         <td>{{ $user->id }}</td>
                         <td><input type="text" name="username" value="{{ $user->username }}" required></td>
                         <td><input type="email" name="email" value="{{ $user->email }}" required></td>
@@ -32,15 +32,15 @@
                             </select>
                         </td>
                         <td>
-                            <input type="hidden" name="user_id" value="{{ $user->id }}">
-                            <button type="submit" class="btn btn-success">Save</button>
-                        </form>
-                        <form method="POST" action="{{ route('users.destroy') }}" onsubmit="return confirm('Are you sure?');">
-                            @csrf
-                            <input type="hidden" name="user_id" value="{{ $user->id }}">
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
+                            <button type="submit" class="btn btn-success btn-sm">Update</button>
+                            <a href="{{ route('users.edit', ['id' => $user->id]) }}" class="btn btn-primary btn-sm">Edit</a>
+                            <form action="{{ route('users.destroy', ['id' => $user->id]) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
                         </td>
+                    </form>
                 </tr>
             @endforeach
         </tbody>
