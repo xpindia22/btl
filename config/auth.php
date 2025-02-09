@@ -63,9 +63,11 @@ return [
     'users' => [
         'driver' => 'eloquent',
         'model' => App\Models\User::class,
-        'username' => 'username', // ✅ Ensure it uses 'username'
+        'table' => 'users',
+        'username' => 'username',
     ],
 ],
+
 
     /*
     |--------------------------------------------------------------------------

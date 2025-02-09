@@ -6,91 +6,141 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+    // ✅ Show Users List Based on Role
     public function index()
     {
-        if (Auth::user()->Role !== 'admin') {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized');
+        $authUser = Auth::user();
+
+        if ($authUser->isAdmin()) {
+            $users = User::orderBy('created_at', 'desc')->get();
+        } else {
+            $users = User::where('created_by', $authUser->id)->orderBy('created_at', 'desc')->get();
         }
 
-        $users = User::orderBy('created_at', 'desc')->get();
-        return view('users.users_index', compact('users'));
+        return view('users.index', compact('users'));
     }
 
+    // ✅ Show User Creation Form (Role Restricted)
     public function create()
     {
-        return view('users.users_create');
+        $authUser = Auth::user();
+        $roles = $authUser->isAdmin() 
+            ? ['admin', 'user', 'player', 'visitor']
+            : ['user', 'player', 'visitor'];
+
+        return view('users.create', compact('roles'));
     }
 
+    // ✅ Store New User in Database
     public function store(Request $request)
     {
         $request->validate([
-            'username' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
+            'password' => 'required|min:6|confirmed',
             'mobile_no' => 'nullable|digits:10',
-            'Role' => 'in:visitor,user'
+            'role' => 'required|in:admin,user,player,visitor',
         ]);
 
-        User::create([
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'You must be logged in to create a user.');
+        }
+
+        $loggedInUserId = Auth::id();
+        
+        Log::info('Creating User', [
+            'creator_id' => $loggedInUserId,
+            'new_user' => $request->username
+        ]);
+
+        $user = User::create([
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'mobile_no' => $request->mobile_no,
-            'Role' => $request->Role ?? 'visitor',
+            'role' => $request->role,
+            'created_by' => $loggedInUserId, // ✅ Assign creator
         ]);
+
+        Log::info('User Created Successfully:', $user->toArray());
 
         return redirect()->route('users.index')->with('success', 'User registered successfully!');
     }
 
+    // ✅ Show Edit User Form (Restricted)
     public function edit($id)
     {
-        if (Auth::user()->Role !== 'admin') {
+        $user = User::findOrFail($id);
+        $authUser = Auth::user();
+
+        // ✅ Only Admin or Creator Can Edit
+        if (!$authUser->isAdmin() && $authUser->id !== $user->created_by) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 
-        $user = User::findOrFail($id);
+        $roles = $authUser->isAdmin() 
+            ? ['admin', 'user', 'player', 'visitor']
+            : ['user', 'player', 'visitor'];
 
-        // Ensure the view file exists in the correct path
-        return view('users.users_edit', compact('user'));
+        return view('users.edit', compact('user', 'roles'));
     }
 
+    // ✅ Update User (Restricted)
     public function update(Request $request, $id)
     {
-        if (Auth::user()->Role !== 'admin') {
+        $user = User::findOrFail($id);
+        $authUser = Auth::user();
+
+        // ✅ Only Admin or Creator Can Update
+        if (!$authUser->isAdmin() && $authUser->id !== $user->created_by) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 
-        $user = User::findOrFail($id);
-
         $request->validate([
-            'username' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'email' => 'required|email|unique:users,email,' . $user->id,
             'mobile_no' => 'nullable|digits:10',
-            'Role' => 'in:admin,user,visitor'
+            'role' => 'required|in:admin,user,player,visitor',
         ]);
+
+        // ✅ Prevent Non-Admins from Changing Roles
+        if (!$authUser->isAdmin() && $request->role !== $user->role) {
+            return redirect()->route('users.index')->with('error', 'You cannot change user roles.');
+        }
+
+        // ✅ Prevent Users from Changing Their Own Role
+        if ($authUser->id === $user->id && $request->role !== $user->role) {
+            return redirect()->route('users.index')->with('error', 'You cannot update your own role.');
+        }
 
         $user->update([
             'username' => $request->username,
             'email' => $request->email,
             'mobile_no' => $request->mobile_no,
-            'Role' => $request->Role,
+            'role' => $request->role,
         ]);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
-    public function destroy($id) // ✅ Fix: Removed $request parameter
+    // ✅ Delete User (Restricted)
+    public function destroy($id)
     {
-        if (Auth::user()->Role !== 'admin') {
+        $user = User::findOrFail($id);
+        $authUser = Auth::user();
+
+        // ✅ Only Admin or Creator Can Delete
+        if (!$authUser->isAdmin() && $authUser->id !== $user->created_by) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
 
-        $user = User::findOrFail($id);
-        if ($user->id === Auth::id()) {
-            return redirect()->route('users.index')->with('error', 'Cannot delete yourself.');
+        // ✅ Prevent Self-Deletion
+        if ($user->id === $authUser->id) {
+            return redirect()->route('users.index')->with('error', 'You cannot delete yourself.');
         }
 
         $user->delete();

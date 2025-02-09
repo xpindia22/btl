@@ -30,13 +30,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // 🔹 User Management Routes (For Admin Only)
-    Route::prefix('admin')->group(function () {
-        Route::get('/users', [UserController::class, 'index'])->name('users.index');
-        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-        Route::post('/users', [UserController::class, 'store'])->name('users.store');
-        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('users.index');  // ✅ Ensured correct route
+        Route::get('/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('/', [UserController::class, 'store'])->name('users.store');
+        Route::get('/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/{id}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 
     // 🔹 Register Player Route
@@ -44,14 +44,15 @@ Route::middleware(['auth'])->group(function () {
         return view('auth.register_player');
     })->name('register_player');
 
-    // 🔹 Admin Routes (Role check inside controller)
+    // 🔹 Admin Routes (Only Admins Can Access)
     Route::prefix('admin')->group(function () {
+        Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
         Route::get('/edit_users', [AdminController::class, 'editUsers'])->name('admin.edit_users');
         Route::get('/edit_players', [AdminController::class, 'editPlayers'])->name('admin.edit_players');
         Route::get('/add_moderator', [AdminController::class, 'addModerator'])->name('admin.add_moderator');
     });
 
-    // 🔹 Match Routes (Role check inside controller)
+    // 🔹 Match Routes
     Route::prefix('matches')->group(function () {
         Route::get('/', [MatchController::class, 'index'])->name('matches.index');
         Route::get('/create', [MatchController::class, 'create'])->name('matches.create');
@@ -66,33 +67,28 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/edit_all_doubles', [MatchController::class, 'editAllDoubles'])->name('matches.edit_all_doubles');
     });
 
-    // 🔹 Category Routes (Role check inside controller)
+    // 🔹 Category Routes
     Route::prefix('categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/create', [CategoryController::class, 'create'])->name('categories.create');
         Route::post('/', [CategoryController::class, 'store'])->name('categories.store');
     });
 
-    // 🔹 Tournament Routes (Role check inside controller)
+    // 🔹 Tournament Routes
     Route::prefix('tournaments')->group(function () {
         Route::get('/', [TournamentController::class, 'index'])->name('tournaments.index');
         Route::get('/create', [TournamentController::class, 'create'])->name('tournaments.create');
         Route::post('/', [TournamentController::class, 'store'])->name('tournaments.store');
     });
 
-    // 🔹 Role-Based Access Routes (Role check inside controller)
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/user-dashboard', [UserController::class, 'index'])->name('user.dashboard');
-    Route::get('/player-profile', [PlayerController::class, 'index'])->name('player.profile');
-
-    // 🔹 Player Routes (Role check inside controller)
+    // 🔹 Player Routes
     Route::prefix('players')->group(function () {
         Route::get('/', [PlayerController::class, 'index'])->name('players.index');
         Route::get('/create', [PlayerController::class, 'create'])->name('players.create');
         Route::post('/', [PlayerController::class, 'store'])->name('players.store');
     });
 
-    // 🔹 Results Routes (Accessible to All Users)
+    // 🔹 Results Routes
     Route::prefix('results')->group(function () {
         Route::get('/', [ResultsController::class, 'index'])->name('results.index');
         Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');

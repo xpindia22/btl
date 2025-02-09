@@ -17,12 +17,19 @@ class User extends Authenticatable
         'password',
         'mobile_no',
         'role', // ✅ Keep role as a string
+        'created_by'
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    // ✅ Relationship: Get the creator of this user
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     public function isAdmin()
     {
