@@ -29,14 +29,14 @@
                     <td><input type="text" name="mobile_no" value="{{ $user->mobile_no }}"></td>
                     <td>
                         <select name="role">
-                            <option value="visitor" {{ $user->role === 'visitor' ? 'selected' : '' }}>Visitor</option>
-                            <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
                             <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
+                            <option value="visitor" {{ $user->role === 'visitor' ? 'selected' : '' }}>Visitor</option>
                         </select>
                     </td>
                     <td>
                         <button type="submit" class="btn btn-success btn-sm">Update</button>
-                        </form> <!-- ✅ Properly closed form -->
+                        </form> <!-- ✅ Form ends here to ensure proper structure -->
 
                         <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm">Edit</a>
 
@@ -50,9 +50,5 @@
             @endforeach
         </tbody>
     </table>
-
-    <!-- ✅ Button to Create a New User -->
-    <a href="{{ route('users.create') }}" class="btn btn-success mt-3">Create New User</a>
-
 </div>
 @endsection

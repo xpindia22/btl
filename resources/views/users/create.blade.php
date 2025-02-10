@@ -2,53 +2,52 @@
 
 @section('content')
 <div class="container">
-    <h2>Registered Users</h2>
+    <h2>Create New User</h2>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Mobile No</th>
-                <th>Role</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($users as $user)
-                <tr>
-                    <td>{{ $user->id }}</td>
-                    <td>
-                        <form method="POST" action="{{ route('users.update', $user->id) }}">
-                            @csrf
-                            @method('PUT')
-                            <input type="text" name="username" value="{{ $user->username }}" required>
-                    </td>
-                    <td><input type="email" name="email" value="{{ $user->email }}" required></td>
-                    <td><input type="text" name="mobile_no" value="{{ $user->mobile_no }}"></td>
-                    <td>
-                        <select name="role">
-                            <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
-                            <option value="visitor" {{ $user->role === 'visitor' ? 'selected' : '' }}>Visitor</option>
-                        </select>
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-success btn-sm">Update</button>
-                        </form> <!-- ✅ Form ends here to ensure proper structure -->
+    <form action="{{ route('users.store') }}" method="POST">
+        @csrf
 
-                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm">Edit</a>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" name="username" class="form-control" required>
+        </div>
 
-                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password_confirmation">Confirm Password:</label>
+            <input type="password" name="password_confirmation" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="mobile_no">Mobile No:</label>
+            <input type="text" name="mobile_no" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="role">Role:</label>
+            <select name="role" class="form-control" required>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+                <option value="visitor">Visitor</option>
+            </select>
+        </div>
+
+        <!-- ✅ Ensure created_by is stored properly -->
+        <input type="hidden" name="created_by" value="{{ auth()->id() }}">
+
+        <button type="submit" class="btn btn-primary mt-3">Create User</button>
+    </form>
+
+    <a href="{{ route('users.index') }}" class="btn btn-secondary mt-3">Back to Users</a>
+
 </div>
 @endsection

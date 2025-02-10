@@ -57,6 +57,8 @@ class UserController extends Controller
             'new_user' => $request->username
         ]);
 
+        Log::info('User Store Request:', $request->all());
+
         $user = User::create([
             'username' => $request->username,
             'email' => $request->email,
