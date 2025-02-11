@@ -12,6 +12,7 @@ use App\Http\Controllers\ResultsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlayerController;
 
+
 // Redirect root to dashboard if authenticated
 Route::get('/', function () {
     return auth()->check() ? redirect()->route('dashboard') : redirect()->route('login');
@@ -94,4 +95,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');
         Route::get('/boys_doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
     });
+
+
+
+// Player management
+    Route::middleware(['auth'])->group(function () {
+    Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
+    Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
+
+    // Routes for editing and deleting players (admins only)
+    Route::get('/players/{player}/edit', [PlayerController::class, 'edit'])->name('players.edit');
+    Route::put('/players/{player}', [PlayerController::class, 'update'])->name('players.update');
+    Route::delete('/players/{player}', [PlayerController::class, 'destroy'])->name('players.destroy');
+});
+
 });

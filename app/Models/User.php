@@ -68,4 +68,12 @@ class User extends Authenticatable
     {
         return strtolower($this->role) === 'player';
     }
+
+
+    public function players()
+    {
+        return $this->belongsToMany(Player::class, 'player_access');
+    }
+    
+
 }
