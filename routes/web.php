@@ -12,8 +12,7 @@ use App\Http\Controllers\ResultsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlayerController;
 
-
-// Redirect root to dashboard if authenticated
+// Redirect root to dashboard if authenticated, else to login.
 Route::get('/', function () {
     return auth()->check() ? redirect()->route('dashboard') : redirect()->route('login');
 });
@@ -32,7 +31,7 @@ Route::middleware(['auth'])->group(function () {
 
     // 🔹 User Management Routes (For Admin Only)
     Route::prefix('users')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('users.index');  // ✅ Ensured correct route
+        Route::get('/', [UserController::class, 'index'])->name('users.index');
         Route::get('/create', [UserController::class, 'create'])->name('users.create');
         Route::post('/', [UserController::class, 'store'])->name('users.store');
         Route::get('/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
@@ -58,13 +57,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [MatchController::class, 'index'])->name('matches.index');
         Route::get('/create', [MatchController::class, 'create'])->name('matches.create');
         Route::post('/', [MatchController::class, 'store'])->name('matches.store');
-
         Route::get('/create_singles', [MatchController::class, 'createSingles'])->name('matches.create_singles');
         Route::get('/edit_singles', [MatchController::class, 'editSingles'])->name('matches.edit_singles');
-
         Route::get('/create_boys_doubles', [MatchController::class, 'createBoysDoubles'])->name('matches.create_boys_doubles');
         Route::get('/edit_boys_doubles', [MatchController::class, 'editBoysDoubles'])->name('matches.edit_boys_doubles');
-
         Route::get('/edit_all_doubles', [MatchController::class, 'editAllDoubles'])->name('matches.edit_all_doubles');
     });
 
@@ -75,11 +71,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [CategoryController::class, 'store'])->name('categories.store');
     });
 
-    // 🔹 Tournament Routes
+    // 🔹 Tournament Routes (Tournament Management)
     Route::prefix('tournaments')->group(function () {
-        Route::get('/', [TournamentController::class, 'index'])->name('tournaments.index');
         Route::get('/create', [TournamentController::class, 'create'])->name('tournaments.create');
-        Route::post('/', [TournamentController::class, 'store'])->name('tournaments.store');
+        Route::get('/manage', [TournamentController::class, 'index'])->name('tournaments.manage');
+        Route::get('/{id}/edit', [TournamentController::class, 'edit'])->name('tournaments.edit');
+        Route::put('/{id}', [TournamentController::class, 'update'])->name('tournaments.update');
+        Route::delete('/{id}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
+        Route::post('/add', [TournamentController::class, 'storeTournament'])->name('tournaments.add');
+        Route::post('/assign-category', [TournamentController::class, 'assignCategory'])->name('tournaments.assignCategory');
+        Route::post('/assign-moderator', [TournamentController::class, 'assignModerator'])->name('tournaments.assignModerator');
+        Route::post('/remove-moderator', [TournamentController::class, 'removeModerator'])->name('tournaments.removeModerator');
     });
 
     // 🔹 Player Routes
@@ -87,6 +89,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [PlayerController::class, 'index'])->name('players.index');
         Route::get('/create', [PlayerController::class, 'create'])->name('players.create');
         Route::post('/', [PlayerController::class, 'store'])->name('players.store');
+        Route::get('/register', [PlayerController::class, 'showRegistrationForm'])->name('player.register');
+        Route::post('/register', [PlayerController::class, 'register']);
     });
 
     // 🔹 Results Routes
@@ -95,18 +99,4 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');
         Route::get('/boys_doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
     });
-
-
-
-// Player management
-    Route::middleware(['auth'])->group(function () {
-    Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
-    Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
-
-    // Routes for editing and deleting players (admins only)
-    Route::get('/players/{player}/edit', [PlayerController::class, 'edit'])->name('players.edit');
-    Route::put('/players/{player}', [PlayerController::class, 'update'])->name('players.update');
-    Route::delete('/players/{player}', [PlayerController::class, 'destroy'])->name('players.destroy');
-});
-
 });

@@ -1,73 +1,67 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\Player;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Player;
+use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class PlayerController extends Controller
 {
-    // Apply the auth middleware (and any role-check middleware if available)
-    public function __construct()
+    // Display the registration form and list of players
+    public function showRegistrationForm()
     {
-        $this->middleware('auth');
+        // Calculate the next available UID
+        $nextUid = (int) (Player::max('uid') ?? 0) + 1;
+        $players = Player::orderBy('uid', 'desc')->get();
+        return view('players.register', compact('nextUid', 'players'));
     }
 
-    // Display the form and list of players linked to the current user.
-    public function index()
+    // Process the registration form submission
+    public function register(Request $request)
     {
-        $user = Auth::user();
-        // Assuming a many-to-many relationship between users and players.
-        $players = $user->players()->with('users')->get();
-
-        return view('players.index', compact('players'));
-    }
-
-    // Handle the POST request to add/link a player.
-    public function store(Request $request)
-    {
-        // Validate input; you can add more rules as needed.
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'dob'  => 'required|date',
-            'age'  => 'required|integer',
-            'sex'  => 'required|in:M,F',
-            'uid'  => 'nullable|string|max:255',
+        // Validate input using Laravel's validation rules
+        $request->validate([
+            'uid'      => 'nullable|integer|min:1',
+            'name'     => ['required', 'regex:/^[a-zA-Z ]+$/'],
+            'dob'      => 'required|date',
+            'sex'      => 'required|in:M,F',
+            'password' => 'required|min:6',
         ]);
 
-        $user = Auth::user();
+        // If UID is not provided, calculate the next available UID
+        $uid = $request->input('uid') ?: ((int) (Player::max('uid') ?? 0) + 1);
 
-        // Example role check (adjust according to your project’s implementation)
-        if (!$user->is_admin && !$user->is_user) {
-            abort(403, 'Access denied.');
+        // Check if the UID already exists
+        if (Player::where('uid', $uid)->exists()) {
+            return back()->with('message', 'Error: UID already exists. Please choose another.')->withInput();
         }
 
-        // Use provided UID or generate one.
-        $uid = $data['uid'] ?? uniqid('UID_');
-        $data['uid'] = $uid;
+        // Calculate the age using Carbon
+        $age = Carbon::parse($request->dob)->age;
 
-        // Check if player already exists by UID.
-        $player = Player::where('uid', $uid)->first();
+        // Create the new player record
+        Player::create([
+            'uid'      => $uid,
+            'name'     => $request->name,
+            'dob'      => $request->dob,
+            'age'      => $age,
+            'sex'      => $request->sex,
+            'password' => Hash::make($request->password),
+        ]);
 
-        if ($player) {
-            // If the player exists, link it if not already linked.
-            if (!$player->users->contains($user->id)) {
-                $player->users()->attach($user->id);
-                $message = "Player linked to your account.";
-            } else {
-                $message = "Player already linked to your account.";
-            }
-        } else {
-            // Create a new player.
-            $data['created_by'] = $user->id;
-            $player = Player::create($data);
-            // Link the new player to the current user.
-            $player->users()->attach($user->id);
-            $message = "Player added and linked successfully.";
-        }
-
-        return redirect()->route('players.index')->with('message', $message);
+        return redirect()->route('player.register')->with('success', 'Player registered successfully!');
     }
 
-    // Optionally add methods for editing and deleting players (accessible by admins).
+    // In app/Http/Controllers/PlayerController.php
+public function index()
+{
+    // If you want to show the registration form as the default view:
+    $nextUid = (int) (Player::max('uid') ?? 0) + 1;
+    $players = Player::orderBy('uid', 'desc')->get();
+    return view('players.register', compact('nextUid', 'players'));
+}
+
+
 }
