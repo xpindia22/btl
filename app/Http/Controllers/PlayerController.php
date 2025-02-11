@@ -9,19 +9,45 @@ use Carbon\Carbon;
 
 class PlayerController extends Controller
 {
-    // Display the registration form and list of players
-    public function showRegistrationForm()
+    /**
+     * Public listing of players.
+     * Accessible to everyone (logged in or not).
+     *
+     * @return \Illuminate\View\View
+     */
+    public function index()
     {
-        // Calculate the next available UID
-        $nextUid = (int) (Player::max('uid') ?? 0) + 1;
+        // Retrieve all players for public listing
         $players = Player::orderBy('uid', 'desc')->get();
-        return view('players.register', compact('nextUid', 'players'));
+
+        // Calculate next available UID (for use if registration form is shown)
+        $nextUid = (int)(Player::max('uid') ?? 0) + 1;
+
+        // Flag to show the registration form only if the visitor is logged in
+        $showRegistration = auth()->check();
+
+        return view('players.register', compact('players', 'nextUid', 'showRegistration'));
     }
 
-    // Process the registration form submission
+    /**
+     * Show the player registration form.
+     * (This may be the same as index if you wish.)
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showRegistrationForm()
+    {
+        return $this->index();
+    }
+
+    /**
+     * Process the player registration form submission.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function register(Request $request)
     {
-        // Validate input using Laravel's validation rules
         $request->validate([
             'uid'      => 'nullable|integer|min:1',
             'name'     => ['required', 'regex:/^[a-zA-Z ]+$/'],
@@ -30,38 +56,157 @@ class PlayerController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        // If UID is not provided, calculate the next available UID
-        $uid = $request->input('uid') ?: ((int) (Player::max('uid') ?? 0) + 1);
+        $uid = $request->input('uid') ?: ((int)(Player::max('uid') ?? 0) + 1);
 
-        // Check if the UID already exists
         if (Player::where('uid', $uid)->exists()) {
-            return back()->with('message', 'Error: UID already exists. Please choose another.')->withInput();
+            return back()
+                ->with('message', 'Error: UID already exists. Please choose another.')
+                ->withInput();
         }
 
-        // Calculate the age using Carbon
         $age = Carbon::parse($request->dob)->age;
 
-        // Create the new player record
+        // Create the player and record the creator (if your table supports it)
         Player::create([
-            'uid'      => $uid,
-            'name'     => $request->name,
-            'dob'      => $request->dob,
-            'age'      => $age,
-            'sex'      => $request->sex,
-            'password' => Hash::make($request->password),
+            'uid'       => $uid,
+            'name'      => $request->name,
+            'dob'       => $request->dob,
+            'age'       => $age,
+            'sex'       => $request->sex,
+            'password'  => Hash::make($request->password),
+            'created_by'=> auth()->id(), // Assumes the players table has this field
         ]);
 
         return redirect()->route('player.register')->with('success', 'Player registered successfully!');
     }
 
-    // In app/Http/Controllers/PlayerController.php
-public function index()
-{
-    // If you want to show the registration form as the default view:
-    $nextUid = (int) (Player::max('uid') ?? 0) + 1;
-    $players = Player::orderBy('uid', 'desc')->get();
-    return view('players.register', compact('nextUid', 'players'));
-}
+    /**
+     * Show a dedicated form for creating a new player.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function create()
+    {
+        $nextUid = (int)(Player::max('uid') ?? 0) + 1;
+        return view('players.create', compact('nextUid'));
+    }
 
+    /**
+     * Store a newly created player in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'uid'      => 'nullable|integer|min:1',
+            'name'     => ['required', 'regex:/^[a-zA-Z ]+$/'],
+            'dob'      => 'required|date',
+            'sex'      => 'required|in:M,F',
+            'password' => 'required|min:6',
+        ]);
 
+        $uid = $request->input('uid') ?: ((int)(Player::max('uid') ?? 0) + 1);
+
+        if (Player::where('uid', $uid)->exists()) {
+            return back()
+                ->with('message', 'Error: UID already exists. Please choose another.')
+                ->withInput();
+        }
+
+        $age = Carbon::parse($request->dob)->age;
+
+        Player::create([
+            'uid'       => $uid,
+            'name'      => $request->name,
+            'dob'       => $request->dob,
+            'age'       => $age,
+            'sex'       => $request->sex,
+            'password'  => Hash::make($request->password),
+            'created_by'=> auth()->id(),
+        ]);
+
+        return redirect()->route('players.index')->with('success', 'Player created successfully!');
+    }
+
+    /**
+     * Display the management view for players.
+     * Admins see all players; other users see only players they created.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function manage()
+    {
+        $user = auth()->user();
+        if ($user->role === 'admin') {
+            // Admins can manage all players
+            $players = Player::orderBy('uid', 'desc')->get();
+        } else {
+            // For non-admins, show only players created by the current user
+            $players = Player::where('created_by', $user->id)
+                ->orderBy('uid', 'desc')
+                ->get();
+        }
+
+        return view('players.manage', compact('players'));
+    }
+
+    /**
+     * Show the form for editing the specified player.
+     *
+     * @param  int  $id
+     * @return \Illuminate\View\View
+     */
+    public function edit($id)
+    {
+        $player = Player::findOrFail($id);
+        return view('players.edit', compact('player'));
+    }
+
+    /**
+     * Update the specified player in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(Request $request, $id)
+    {
+        $player = Player::findOrFail($id);
+
+        $request->validate([
+            'name'     => ['required', 'regex:/^[a-zA-Z ]+$/'],
+            'dob'      => 'required|date',
+            'sex'      => 'required|in:M,F',
+            'password' => 'nullable|min:6',
+        ]);
+
+        $player->name = $request->name;
+        $player->dob  = $request->dob;
+        $player->age  = Carbon::parse($request->dob)->age;
+        $player->sex  = $request->sex;
+
+        if ($request->filled('password')) {
+            $player->password = Hash::make($request->password);
+        }
+
+        $player->save();
+
+        return redirect()->route('players.manage')->with('success', 'Player updated successfully!');
+    }
+
+    /**
+     * Remove the specified player from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroy($id)
+    {
+        $player = Player::findOrFail($id);
+        $player->delete();
+
+        return redirect()->route('players.manage')->with('success', 'Player deleted successfully!');
+    }
 }

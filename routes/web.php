@@ -25,6 +25,10 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
+// 🔹 Public Players Listing
+// Anyone can visit /players to view the list.
+Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
+
 // 🔹 Protected Routes (Only for Authenticated Users)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -38,11 +42,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
-
-    // 🔹 Register Player Route
-    Route::get('/register_player', function () {
-        return view('auth.register_player');
-    })->name('register_player');
 
     // 🔹 Admin Routes (Only Admins Can Access)
     Route::prefix('admin')->group(function () {
@@ -84,13 +83,23 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/remove-moderator', [TournamentController::class, 'removeModerator'])->name('tournaments.removeModerator');
     });
 
-    // 🔹 Player Routes
+    // 🔹 Player Routes (Protected Operations for Creating & Managing)
     Route::prefix('players')->group(function () {
-        Route::get('/', [PlayerController::class, 'index'])->name('players.index');
+        // Management view: show players that the user is allowed to edit/update/delete.
+        Route::get('/manage', [PlayerController::class, 'manage'])->name('players.manage');
+        
+        // Create new player routes.
         Route::get('/create', [PlayerController::class, 'create'])->name('players.create');
         Route::post('/', [PlayerController::class, 'store'])->name('players.store');
+        
+        // (Optional) Additional registration routes (if needed).
         Route::get('/register', [PlayerController::class, 'showRegistrationForm'])->name('player.register');
         Route::post('/register', [PlayerController::class, 'register']);
+        
+        // Routes for editing/updating/deleting a player.
+        Route::get('/{id}/edit', [PlayerController::class, 'edit'])->name('players.edit');
+        Route::put('/{id}', [PlayerController::class, 'update'])->name('players.update');
+        Route::delete('/{id}', [PlayerController::class, 'destroy'])->name('players.destroy');
     });
 
     // 🔹 Results Routes
