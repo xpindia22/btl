@@ -11,19 +11,20 @@
 
     <div class="card-container">
         @if($is_admin)
-            <div class="card">
-                <h2>Manage All Matches</h2>
-                <p>View, edit, or delete matches created by all users.</p>
-                <a href="{{ route('matches.index') }}" class="btn btn-primary">View Matches</a>
-                <div class="sub-links" style="margin-top: 10px;">
-                    <a href="{{ route('singles.create') }}" class="btn btn-secondary">Create Singles</a>
-                    <a href="{{ route('singles.edit') }}" class="btn btn-secondary">Edit Singles</a>
-                    <a href="{{ route('doubles.create') }}" class="btn btn-secondary">Create Doubles</a>
-                    <a href="{{ route('doubles.edit') }}" class="btn btn-secondary">Edit Doubles</a>
-                    <a href="{{ route('mixed_doubles.create') }}" class="btn btn-secondary">Create Mixed Doubles</a>
-                    <a href="{{ route('mixed_doubles.edit') }}" class="btn btn-secondary">Edit Mixed Doubles</a>
-                </div>
-            </div>
+        <div class="card">
+    <h2>Manage All Matches</h2>
+    <p>View, edit, or delete matches created by all users.</p>
+    <a href="{{ route('matches.index') }}" class="btn btn-primary">View Matches</a>
+    <div class="sub-links" style="margin-top: 10px;">
+        <a href="{{ route('matches.singles.create') }}" class="btn btn-secondary">Create Singles</a>
+        <a href="{{ route('matches.singles.index') }}" class="btn btn-secondary">Manage Singles</a>
+        <a href="{{ route('matches.doubles_boys.create') }}" class="btn btn-secondary">Create Doubles</a>
+        <a href="{{ route('matches.doubles_boys.index') }}" class="btn btn-secondary">Manage Doubles</a>
+        <a href="{{ route('matches.doubles_mixed.create') }}" class="btn btn-secondary">Create Mixed Doubles</a>
+        <a href="{{ route('matches.doubles_mixed.index') }}" class="btn btn-secondary">Manage Mixed Doubles</a>
+    </div>
+</div>
+
         @endif
 
         @if($is_user)

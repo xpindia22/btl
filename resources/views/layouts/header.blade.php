@@ -114,19 +114,21 @@
             @endif
 
             <!-- Dropdown: Singles Matches -->
-            <div class="dropdown">
-                <a href="#">Singles Matches</a>
-                <div class="dropdown-content">
-                    @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('matches.singles.create') }}">Add Singles</a>
-                    @endif
-                    <a href="{{ route('results.singles') }}">Singles Results</a>
-                    @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <!-- Linking to the index where singles matches can be managed -->
-                        <a href="{{ route('matches.singles.index') }}">Edit Singles Matches</a>
-                    @endif
-                </div>
-            </div>
+            <!-- Dropdown: Singles Matches -->
+<div class="dropdown">
+    <a href="#">Singles Matches</a>
+    <div class="dropdown-content">
+        @if (in_array($user_Role, ['admin', 'moderator', 'user']))
+            <a href="{{ route('matches.singles.create') }}">Add Singles</a>
+        @endif
+        <a href="{{ route('results.singles') }}">Singles Results</a>
+        @if (in_array($user_Role, ['admin', 'moderator', 'user']))
+            <!-- Linking to the index where singles matches can be managed -->
+            <a href="{{ route('matches.singles.index') }}">Manage Singles</a>
+        @endif
+    </div>
+</div>
+
 
             <!-- Dropdown: Boys Doubles -->
             <div class="dropdown">

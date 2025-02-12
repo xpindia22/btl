@@ -61,6 +61,9 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('matches/singles')->group(function () {
         Route::get('/', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
         Route::get('/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
+        Route::post('/', [MatchController::class, 'storeSingles'])->name('matches.singles.store');
+        Route::post('/lockTournament', [MatchController::class, 'lockTournament'])->name('matches.singles.lockTournament');
+        Route::post('/unlockTournament', [MatchController::class, 'unlockTournament'])->name('matches.singles.unlockTournament');
         Route::get('/edit/{id}', [MatchController::class, 'editSingles'])->name('matches.singles.edit');
         Route::put('/{id}', [MatchController::class, 'updateSingles'])->name('matches.singles.update');
         Route::delete('/{id}', [MatchController::class, 'destroySingles'])->name('matches.singles.destroy');
@@ -68,7 +71,6 @@ Route::middleware(['auth'])->group(function () {
 
     // 🔹 Doubles Boys Match Routes (views in resources/views/matches/doubles_boys)
     Route::prefix('matches/doubles_boys')->group(function () {
-        // NEW: Index route for Doubles Boys
         Route::get('/', [MatchController::class, 'indexDoublesBoys'])->name('matches.doubles_boys.index');
         Route::get('/create', [MatchController::class, 'createDoublesBoys'])->name('matches.doubles_boys.create');
         Route::get('/edit/{id}', [MatchController::class, 'editDoublesBoys'])->name('matches.doubles_boys.edit');
