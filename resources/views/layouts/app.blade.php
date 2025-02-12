@@ -3,20 +3,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Laravel BTL Project') }}</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
-    <!-- Scripts -->
+    <!-- Styles & Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-
 </head>
 <body>
     <!-- Include the Header -->
@@ -28,12 +25,12 @@
         </main>
     </div>
 
-    <!-- Logout Form (Hidden) -->
+    <!-- Hidden Logout Form -->
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
         @csrf
     </form>
 
-    <!-- Logout Link (Triggers POST Request) -->
+    <!-- Logout Link Script -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const logoutLink = document.getElementById("logout-link");
@@ -46,7 +43,7 @@
         });
     </script>
 
-    <!-- Include session.js -->
+    <!-- Session Script -->
     <script src="{{ asset('js/session.js') }}"></script>
 </body>
 </html>

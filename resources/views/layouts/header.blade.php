@@ -118,11 +118,12 @@
                 <a href="#">Singles Matches</a>
                 <div class="dropdown-content">
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('singles.create') }}">Add Singles</a>
+                        <a href="{{ route('matches.singles.create') }}">Add Singles</a>
                     @endif
                     <a href="{{ route('results.singles') }}">Singles Results</a>
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('singles.edit') }}">Edit Singles Matches</a>
+                        <!-- Linking to the index where singles matches can be managed -->
+                        <a href="{{ route('matches.singles.index') }}">Edit Singles Matches</a>
                     @endif
                 </div>
             </div>
@@ -132,11 +133,12 @@
                 <a href="#">Boys Doubles</a>
                 <div class="dropdown-content">
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('doubles.create') }}">Insert Boys Doubles</a>
+                        <a href="{{ route('matches.doubles_boys.create') }}">Insert Boys Doubles</a>
                     @endif
                     <a href="{{ route('results.boys_doubles') }}">Result Boys Doubles</a>
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('doubles.edit') }}">Edit Boys Doubles</a>
+                        <!-- Assuming you have an index route for boys doubles; adjust if needed -->
+                        <a href="{{ route('matches.doubles_boys.index') }}">Edit Boys Doubles</a>
                     @endif
                 </div>
             </div>
@@ -160,6 +162,5 @@
             });
         });
     </script>
-
 </body>
 </html>

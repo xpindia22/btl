@@ -50,29 +50,48 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/add_moderator', [AdminController::class, 'addModerator'])->name('admin.add_moderator');
     });
 
-    // 🔹 Match Routes
+    // 🔹 General Match Routes
     Route::prefix('matches')->group(function () {
         Route::get('/', [MatchController::class, 'index'])->name('matches.index');
         Route::post('/', [MatchController::class, 'store'])->name('matches.store');
-        Route::get('/create', [MatchController::class, 'create'])->name('matches.create'); // ✅ Added this route
+        Route::get('/create', [MatchController::class, 'create'])->name('matches.create');
     });
 
-    // 🔹 Singles Match Routes
-    Route::prefix('singles')->group(function () {
-        Route::get('/create', [MatchController::class, 'createSingles'])->name('singles.create');
-        Route::get('/edit', [MatchController::class, 'editSingles'])->name('singles.edit');
+    // 🔹 Singles Match Routes (views in resources/views/matches/singles)
+    Route::prefix('matches/singles')->group(function () {
+        Route::get('/', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
+        Route::get('/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
+        Route::get('/edit/{id}', [MatchController::class, 'editSingles'])->name('matches.singles.edit');
+        Route::put('/{id}', [MatchController::class, 'updateSingles'])->name('matches.singles.update');
+        Route::delete('/{id}', [MatchController::class, 'destroySingles'])->name('matches.singles.destroy');
     });
 
-    // 🔹 Doubles Match Routes
-    Route::prefix('doubles')->group(function () {
-        Route::get('/create', [MatchController::class, 'createDoubles'])->name('doubles.create');
-        Route::get('/edit', [MatchController::class, 'editDoubles'])->name('doubles.edit');
+    // 🔹 Doubles Boys Match Routes (views in resources/views/matches/doubles_boys)
+    Route::prefix('matches/doubles_boys')->group(function () {
+        // NEW: Index route for Doubles Boys
+        Route::get('/', [MatchController::class, 'indexDoublesBoys'])->name('matches.doubles_boys.index');
+        Route::get('/create', [MatchController::class, 'createDoublesBoys'])->name('matches.doubles_boys.create');
+        Route::get('/edit/{id}', [MatchController::class, 'editDoublesBoys'])->name('matches.doubles_boys.edit');
+        Route::put('/{id}', [MatchController::class, 'updateDoublesBoys'])->name('matches.doubles_boys.update');
+        Route::delete('/{id}', [MatchController::class, 'destroyDoublesBoys'])->name('matches.doubles_boys.destroy');
     });
 
-    // 🔹 Mixed Doubles Match Routes
-    Route::prefix('mixed_doubles')->group(function () {
-        Route::get('/create', [MatchController::class, 'createMixedDoubles'])->name('mixed_doubles.create');
-        Route::get('/edit', [MatchController::class, 'editMixedDoubles'])->name('mixed_doubles.edit');
+    // 🔹 Doubles Girls Match Routes (views in resources/views/matches/doubles_girls)
+    Route::prefix('matches/doubles_girls')->group(function () {
+        Route::get('/', [MatchController::class, 'indexDoublesGirls'])->name('matches.doubles_girls.index');
+        Route::get('/create', [MatchController::class, 'createDoublesGirls'])->name('matches.doubles_girls.create');
+        Route::get('/edit/{id}', [MatchController::class, 'editDoublesGirls'])->name('matches.doubles_girls.edit');
+        Route::put('/{id}', [MatchController::class, 'updateDoublesGirls'])->name('matches.doubles_girls.update');
+        Route::delete('/{id}', [MatchController::class, 'destroyDoublesGirls'])->name('matches.doubles_girls.destroy');
+    });
+
+    // 🔹 Doubles Mixed Match Routes (views in resources/views/matches/doubles_mixed)
+    Route::prefix('matches/doubles_mixed')->group(function () {
+        Route::get('/', [MatchController::class, 'indexDoublesMixed'])->name('matches.doubles_mixed.index');
+        Route::get('/create', [MatchController::class, 'createDoublesMixed'])->name('matches.doubles_mixed.create');
+        Route::get('/edit/{id}', [MatchController::class, 'editDoublesMixed'])->name('matches.doubles_mixed.edit');
+        Route::put('/{id}', [MatchController::class, 'updateDoublesMixed'])->name('matches.doubles_mixed.update');
+        Route::delete('/{id}', [MatchController::class, 'destroyDoublesMixed'])->name('matches.doubles_mixed.destroy');
     });
 
     // 🔹 Category Routes
@@ -94,16 +113,16 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
     });
 
-    // 🔹 Results Routes (✅ Fixed Missing `results.boys_doubles`)
+    // 🔹 Results Routes
     Route::prefix('results')->group(function () {
         Route::get('/', [ResultsController::class, 'index'])->name('results.index');
         Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');
         Route::get('/doubles', [ResultsController::class, 'doubles'])->name('results.doubles');
         Route::get('/mixed-doubles', [ResultsController::class, 'mixedDoubles'])->name('results.mixed_doubles');
-        Route::get('/boys-doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles'); // ✅ Added missing route
+        Route::get('/boys-doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
     });
 
-    // 🔹 Player Routes (✅ Fixed Missing `player.register`)
+    // 🔹 Player Routes
     Route::prefix('players')->group(function () {
         Route::get('/create', [PlayerController::class, 'create'])->name('players.create');
         Route::post('/', [PlayerController::class, 'store'])->name('players.store');

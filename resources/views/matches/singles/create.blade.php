@@ -4,33 +4,35 @@
 <div class="container">
     <h1>Insert Singles Match</h1>
 
-    @if(session('message'))
-        <p class="message">{{ session('message') }}</p>
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <!-- Tournament Lock/Unlock Form -->
-    <form method="POST" action="{{ route('matches.store') }}">
+    {{-- Tournament Lock/Unlock Form --}}
+    <form method="POST" action="{{ route('matches.singles.lockTournament') }}">
         @csrf
         <label for="tournament_id">Select Tournament:</label>
-        <select name="tournament_id" id="tournament_id" required @if($lockedTournament) disabled @endif>
+        <select name="tournament_id" id="tournament_id" required {{ $lockedTournament ? 'disabled' : '' }}>
             <option value="">Select Tournament</option>
             @foreach($tournaments as $tournament)
-                <option value="{{ $tournament->id }}" @if($lockedTournament == $tournament->id) selected @endif>
+                <option value="{{ $tournament->id }}"
+                    {{ (isset($lockedTournament) && $lockedTournament->id == $tournament->id) ? 'selected' : '' }}>
                     {{ $tournament->name }}
                 </option>
             @endforeach
         </select>
         @if($lockedTournament)
-            <button type="submit" name="unlock_tournament" style="background-color: red;">Unlock Tournament</button>
+            <button type="submit" formaction="{{ route('matches.singles.unlockTournament') }}" style="background-color: red;">Unlock Tournament</button>
         @else
             <button type="submit" name="lock_tournament">Lock Tournament</button>
         @endif
     </form>
 
-    <!-- Singles Match Insertion Form (visible only if tournament is locked) -->
     @if($lockedTournament)
-    <form method="POST" action="{{ route('matches.store') }}">
+    <form method="POST" action="{{ route('matches.singles.store') }}">
         @csrf
+        <input type="hidden" name="tournament_id" value="{{ $lockedTournament->id }}">
+
         <label for="category_id">Category:</label>
         <select name="category_id" id="category_id" onchange="updatePlayerDropdown()" required>
             <option value="">Select Category</option>
@@ -51,7 +53,7 @@
         <select name="stage" id="stage" required>
             <option value="Pre Quarter Finals">Pre Quarter Finals</option>
             <option value="Quarter Finals">Quarter Finals</option>
-            <option value="Semifinals">Semi Finals</option>
+            <option value="Semifinals">Semifinals</option>
             <option value="Finals">Finals</option>
         </select>
 
@@ -59,7 +61,7 @@
         <input type="date" name="date" id="date" required>
 
         <label for="match_time">Match Time (24-hour format HH:MM):</label>
-        <input type="time" name="match_time" id="match_time" value="{{ old('match_time') }}" required>
+        <input type="time" name="match_time" id="match_time" required>
 
         <label>Set 1:</label>
         <input type="number" name="set1_player1_points" placeholder="Player 1 Score" required>
@@ -79,7 +81,6 @@
 </div>
 
 <script>
-    // Pass the players list from the controller to JavaScript.
     const players = @json($players);
 
     function updatePlayerDropdown() {
@@ -92,9 +93,7 @@
         const categoryAge = selectedCategory.getAttribute('data-age');
 
         let maxAge = 100;
-        if (categoryAge && categoryAge.includes("Under")) {
-            maxAge = parseInt(categoryAge.replace(/\D/g, ''), 10);
-        } else if (categoryAge && (categoryAge.includes("Plus") || categoryAge.includes("+"))) {
+        if (categoryAge && (categoryAge.includes("Under") || categoryAge.includes("Plus") || categoryAge.includes("+"))) {
             maxAge = parseInt(categoryAge.replace(/\D/g, ''), 10);
         }
 
@@ -103,7 +102,7 @@
 
         players.forEach(player => {
             if (player.sex === categorySex && player.age < maxAge) {
-                const option = `<option value="${player.id}">${player.name} (${player.age}, ${player.sex})</option>`;
+                let option = `<option value="${player.id}">${player.name} (${player.age}, ${player.sex})</option>`;
                 player1Dropdown.innerHTML += option;
                 player2Dropdown.innerHTML += option;
             }
