@@ -96,7 +96,7 @@
         <div class="links">
             <a href="{{ route('dashboard') }}">Dashboard</a>
             <a href="{{ route('register') }}">Register Tournament Manager</a>
-            <a href="{{ route('register_player') }}">Register Player</a>
+            <a href="{{ route('player.register') }}">Register Player</a>
 
             @if ($user_Role === 'admin')
                 <!-- Dropdown: Admin Zone -->
@@ -118,11 +118,11 @@
                 <a href="#">Singles Matches</a>
                 <div class="dropdown-content">
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('matches.create_singles') }}">Add Singles</a>
+                        <a href="{{ route('singles.create') }}">Add Singles</a>
                     @endif
                     <a href="{{ route('results.singles') }}">Singles Results</a>
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('matches.edit_singles') }}">Edit Singles Matches</a>
+                        <a href="{{ route('singles.edit') }}">Edit Singles Matches</a>
                     @endif
                 </div>
             </div>
@@ -132,14 +132,11 @@
                 <a href="#">Boys Doubles</a>
                 <div class="dropdown-content">
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('matches.create_boys_doubles') }}">Insert Boys Doubles</a>
+                        <a href="{{ route('doubles.create') }}">Insert Boys Doubles</a>
                     @endif
                     <a href="{{ route('results.boys_doubles') }}">Result Boys Doubles</a>
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('matches.edit_boys_doubles') }}">Edit Boys Doubles</a>
-                    @endif
-                    @if ($user_Role === 'admin') 
-                        <a href="{{ route('matches.edit_all_doubles') }}">Edit All Doubles</a>
+                        <a href="{{ route('doubles.edit') }}">Edit Boys Doubles</a>
                     @endif
                 </div>
             </div>

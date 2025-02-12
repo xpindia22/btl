@@ -27,7 +27,7 @@
         @endif
     </form>
 
-    <!-- Match Insertion Form (only visible if tournament is locked) -->
+    <!-- Singles Match Insertion Form (visible only if tournament is locked) -->
     @if($lockedTournament)
     <form method="POST" action="{{ route('matches.store') }}">
         @csrf
@@ -79,6 +79,7 @@
 </div>
 
 <script>
+    // Pass the players list from the controller to JavaScript.
     const players = @json($players);
 
     function updatePlayerDropdown() {
