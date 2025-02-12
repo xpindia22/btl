@@ -196,75 +196,101 @@ class MatchController extends Controller
      * Only include matches whose category name contains "BS" or "GS",
      * and allow filtering by a drop down for boys singles or girls singles.
      */
-    public function indexSingles(Request $request)
-    {
-        $user          = Auth::user();
-        $isAdmin       = $user->is_admin;
-        $singles_filter = $request->input('singles_filter', 'all'); // 'all' by default
+    /**
+ * Display a list of singles matches with filters.
+ * Only include matches whose category name contains "BS" or "GS",
+ * and allow filtering by a drop down for boys singles or girls singles.
+ */
+/**
+ * Display a list of singles matches with filters.
+ * Only include matches whose category name contains "BS" or "GS",
+ * and allow filtering by a drop down for boys singles or girls singles.
+ */
+/**
+ * Display a list of singles matches with filters.
+ * Only include matches whose category name contains "BS" or "GS",
+ * and allow filtering by a drop down for boys singles or girls singles.
+ */
+public function indexSingles(Request $request)
+{
+    $user          = Auth::user();
+    $isAdmin       = $user->is_admin;
+    $singles_filter = $request->input('singles_filter', 'all'); // 'all' by default
 
-        $tournament_id = $request->input('tournament_id');
-        $category_id   = $request->input('category_id');
-        $player_id     = $request->input('player_id');
-        $match_date    = $request->input('match_date');
-        $datetime      = $request->input('datetime');
+    // Get other filters from the query string
+    $tournament_id = $request->input('tournament_id');
+    $category_id   = $request->input('category_id');
+    $player_id     = $request->input('player_id');
+    $match_date    = $request->input('match_date');
+    $datetime      = $request->input('datetime');
 
-        $matches = Matches::query()
-            ->with(['tournament', 'category', 'player1', 'player2'])
-            ->whereNull('deleted_at')
-            ->whereHas('category', function ($q) use ($singles_filter) {
-                if ($singles_filter === 'boys') {
-                    $q->where('name', 'like', '%BS%');
-                } elseif ($singles_filter === 'girls') {
-                    $q->where('name', 'like', '%GS%');
-                } else {
-                    $q->where(function ($query) {
-                        $query->where('name', 'like', '%BS%')
-                              ->orWhere('name', 'like', '%GS%');
-                    });
-                }
-            });
+    // Determine how many records per page (default 10)
+    $perPage = $request->input('per_page', 10);
 
-        if (!$isAdmin) {
-            $matches->where(function ($q) use ($user) {
-                $q->where('created_by', $user->id)
-                  ->orWhereHas('tournament.moderators', function ($q2) use ($user) {
-                      $q2->where('user_id', $user->id);
-                  });
-            });
-        }
+    // Build query with optional filters using the Matches model.
+    // Filter to only include matches whose category name contains "BS" or "GS",
+    // and narrow further if a specific singles_filter is selected.
+    $matchesQuery = Matches::query()
+        ->with(['tournament', 'category', 'player1', 'player2'])
+        ->whereNull('deleted_at')
+        ->whereHas('category', function ($q) use ($singles_filter) {
+            if ($singles_filter === 'boys') {
+                $q->where('name', 'like', '%BS%');
+            } elseif ($singles_filter === 'girls') {
+                $q->where('name', 'like', '%GS%');
+            } else { // all
+                $q->where(function ($query) {
+                    $query->where('name', 'like', '%BS%')
+                          ->orWhere('name', 'like', '%GS%');
+                });
+            }
+        });
 
-        if ($tournament_id) {
-            $matches->where('tournament_id', $tournament_id);
-        }
-        if ($category_id) {
-            $matches->where('category_id', $category_id);
-        }
-        if ($player_id) {
-            $matches->where(function ($q) use ($player_id) {
-                $q->where('player1_id', $player_id)
-                  ->orWhere('player2_id', $player_id);
-            });
-        }
-        if ($match_date) {
-            $matches->where('match_date', $match_date);
-        }
-        if ($datetime) {
-            $matches->where('match_time', $datetime);
-        }
-
-        $matches = $matches->orderBy('id')->get();
-
-        $tournaments = Tournament::all();
-        $categories  = Category::all();
-        $players     = Player::all();
-        $dates       = Matches::select('match_date')->distinct()->orderBy('match_date')->get();
-        $datetimes   = Matches::select('match_time')->distinct()->orderBy('match_time')->get();
-
-        return view('matches.singles.index', compact(
-            'matches', 'tournaments', 'categories', 'players', 'dates', 'datetimes',
-            'tournament_id', 'category_id', 'player_id', 'match_date', 'datetime', 'singles_filter'
-        ));
+    if (!$isAdmin) {
+        $matchesQuery->where(function ($q) use ($user) {
+            $q->where('created_by', $user->id)
+              ->orWhereHas('tournament.moderators', function ($q2) use ($user) {
+                  $q2->where('user_id', $user->id);
+              });
+        });
     }
+
+    if ($tournament_id) {
+        $matchesQuery->where('tournament_id', $tournament_id);
+    }
+    if ($category_id) {
+        $matchesQuery->where('category_id', $category_id);
+    }
+    if ($player_id) {
+        $matchesQuery->where(function ($q) use ($player_id) {
+            $q->where('player1_id', $player_id)
+              ->orWhere('player2_id', $player_id);
+        });
+    }
+    if ($match_date) {
+        $matchesQuery->where('match_date', $match_date);
+    }
+    if ($datetime) {
+        $matchesQuery->where('match_time', $datetime);
+    }
+
+    // Use paginate() so that $matches is a paginator, not a collection.
+    $matches = $matchesQuery->orderBy('id')->paginate($perPage);
+
+    // Get dropdown options for filters
+    $tournaments = Tournament::all();
+    $categories  = Category::all();
+    $players     = Player::all();
+    $dates       = Matches::select('match_date')->distinct()->orderBy('match_date')->get();
+    $datetimes   = Matches::select('match_time')->distinct()->orderBy('match_time')->get();
+
+    return view('matches.singles.index', compact(
+        'matches', 'tournaments', 'categories', 'players', 'dates', 'datetimes',
+        'tournament_id', 'category_id', 'player_id', 'match_date', 'datetime', 'singles_filter'
+    ));
+}
+
+
 
     /**
      * Show the edit form for a singles match.
