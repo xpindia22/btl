@@ -136,7 +136,7 @@ class MatchController extends Controller
     public function index(Request $request)
     {
         $user    = Auth::user();
-        $isAdmin = $user->is_admin; // Assumes an is_admin flag on your User model
+        $isAdmin = $user->is_admin;
 
         // Get filters from the query string
         $tournament_id = $request->input('tournament_id');
@@ -145,13 +145,11 @@ class MatchController extends Controller
         $match_date    = $request->input('match_date');
         $datetime      = $request->input('datetime');
 
-        // Build query with optional filters using the Matches model
         $matches = Matches::query()
             ->with(['tournament', 'category', 'player1', 'player2'])
             ->whereNull('deleted_at');
 
         if (!$isAdmin) {
-            // Only show matches created by the user or where the user is a tournament moderator
             $matches->where(function ($q) use ($user) {
                 $q->where('created_by', $user->id)
                   ->orWhereHas('tournament.moderators', function ($q2) use ($user) {
@@ -181,7 +179,6 @@ class MatchController extends Controller
 
         $matches = $matches->orderBy('id')->get();
 
-        // Get dropdown options for filters
         $tournaments = Tournament::all();
         $categories  = Category::all();
         $players     = Player::all();
@@ -196,94 +193,92 @@ class MatchController extends Controller
 
     /**
      * Display a list of singles matches with filters.
-     * Only include matches whose category name contains "BS" or "GS".
+     * Only include matches whose category name contains "BS" or "GS",
+     * and allow filtering by a drop down for boys singles or girls singles.
      */
-    /**
- * Display a list of singles matches with filters.
- * Only include matches whose category name contains "BS" or "GS".
- */
-public function indexSingles(Request $request)
-{
-    $user    = Auth::user();
-    $isAdmin = $user->is_admin;
+    public function indexSingles(Request $request)
+    {
+        $user          = Auth::user();
+        $isAdmin       = $user->is_admin;
+        $singles_filter = $request->input('singles_filter', 'all'); // 'all' by default
 
-    // Get filters from the query string
-    $tournament_id = $request->input('tournament_id');
-    $category_id   = $request->input('category_id');
-    $player_id     = $request->input('player_id');
-    $match_date    = $request->input('match_date');
-    $datetime      = $request->input('datetime');
+        $tournament_id = $request->input('tournament_id');
+        $category_id   = $request->input('category_id');
+        $player_id     = $request->input('player_id');
+        $match_date    = $request->input('match_date');
+        $datetime      = $request->input('datetime');
 
-    // Build query with optional filters using the Matches model,
-    // and filter to only include categories with "BS" or "GS".
-    $matches = Matches::query()
-        ->with(['tournament', 'category', 'player1', 'player2'])
-        ->whereNull('deleted_at')
-        ->whereHas('category', function ($q) {
-            $q->where('name', 'like', '%BS%')
-              ->orWhere('name', 'like', '%GS%');
-        });
+        $matches = Matches::query()
+            ->with(['tournament', 'category', 'player1', 'player2'])
+            ->whereNull('deleted_at')
+            ->whereHas('category', function ($q) use ($singles_filter) {
+                if ($singles_filter === 'boys') {
+                    $q->where('name', 'like', '%BS%');
+                } elseif ($singles_filter === 'girls') {
+                    $q->where('name', 'like', '%GS%');
+                } else {
+                    $q->where(function ($query) {
+                        $query->where('name', 'like', '%BS%')
+                              ->orWhere('name', 'like', '%GS%');
+                    });
+                }
+            });
 
-    if (!$isAdmin) {
-        $matches->where(function ($q) use ($user) {
-            $q->where('created_by', $user->id)
-              ->orWhereHas('tournament.moderators', function ($q2) use ($user) {
-                  $q2->where('user_id', $user->id);
-              });
-        });
+        if (!$isAdmin) {
+            $matches->where(function ($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereHas('tournament.moderators', function ($q2) use ($user) {
+                      $q2->where('user_id', $user->id);
+                  });
+            });
+        }
+
+        if ($tournament_id) {
+            $matches->where('tournament_id', $tournament_id);
+        }
+        if ($category_id) {
+            $matches->where('category_id', $category_id);
+        }
+        if ($player_id) {
+            $matches->where(function ($q) use ($player_id) {
+                $q->where('player1_id', $player_id)
+                  ->orWhere('player2_id', $player_id);
+            });
+        }
+        if ($match_date) {
+            $matches->where('match_date', $match_date);
+        }
+        if ($datetime) {
+            $matches->where('match_time', $datetime);
+        }
+
+        $matches = $matches->orderBy('id')->get();
+
+        $tournaments = Tournament::all();
+        $categories  = Category::all();
+        $players     = Player::all();
+        $dates       = Matches::select('match_date')->distinct()->orderBy('match_date')->get();
+        $datetimes   = Matches::select('match_time')->distinct()->orderBy('match_time')->get();
+
+        return view('matches.singles.index', compact(
+            'matches', 'tournaments', 'categories', 'players', 'dates', 'datetimes',
+            'tournament_id', 'category_id', 'player_id', 'match_date', 'datetime', 'singles_filter'
+        ));
     }
-
-    if ($tournament_id) {
-        $matches->where('tournament_id', $tournament_id);
-    }
-    if ($category_id) {
-        $matches->where('category_id', $category_id);
-    }
-    if ($player_id) {
-        $matches->where(function ($q) use ($player_id) {
-            $q->where('player1_id', $player_id)
-              ->orWhere('player2_id', $player_id);
-        });
-    }
-    if ($match_date) {
-        $matches->where('match_date', $match_date);
-    }
-    if ($datetime) {
-        $matches->where('match_time', $datetime);
-    }
-
-    $matches = $matches->orderBy('id')->get();
-
-    // Get dropdown options for filters
-    $tournaments = Tournament::all();
-    $categories  = Category::all();
-    $players     = Player::all();
-    $dates       = Matches::select('match_date')->distinct()->orderBy('match_date')->get();
-    $datetimes   = Matches::select('match_time')->distinct()->orderBy('match_time')->get();
-
-    return view('matches.singles.index', compact(
-        'matches', 'tournaments', 'categories', 'players', 'dates', 'datetimes',
-        'tournament_id', 'category_id', 'player_id', 'match_date', 'datetime'
-    ));
-}
-
 
     /**
      * Show the edit form for a singles match.
      */
     public function editSingles($id)
     {
-        $match = Matches::findOrFail($id);
+        $match = Matches::with('tournament')->findOrFail($id);
         $user  = Auth::user();
         $isAdmin = $user->is_admin;
 
-        // Check permission: only the creator or a tournament moderator (or admin) can edit.
-        if (
-            !$isAdmin &&
-            $match->created_by != $user->id &&
-            !$match->tournament->moderators()->where('user_id', $user->id)->exists()
-        ) {
-            abort(403, 'You do not have permission to edit this match.');
+        if (!$isAdmin && $match->created_by != $user->id) {
+            if (!$match->tournament || !$match->tournament->moderators()->where('user_id', $user->id)->exists()) {
+                abort(403, 'You do not have permission to edit this match.');
+            }
         }
 
         $stages = ['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals', 'Preliminary'];
@@ -293,55 +288,79 @@ public function indexSingles(Request $request)
     /**
      * Update a singles match.
      */
-    public function updateSingles(Request $request, $id)
-    {
-        $match = Matches::findOrFail($id);
-        $user  = Auth::user();
-        $isAdmin = $user->is_admin;
-        if (
-            !$isAdmin &&
-            $match->created_by != $user->id &&
-            !$match->tournament->moderators()->where('user_id', $user->id)->exists()
-        ) {
+    /**
+ * Update a singles match.
+ */
+/**
+ * Update a singles match.
+ */
+/**
+ * Update a singles match.
+ */
+public function updateSingles(Request $request, $id)
+{
+    // Pre-convert empty strings for point fields to null.
+    $pointFields = [
+        'set1_player1_points',
+        'set1_player2_points',
+        'set2_player1_points',
+        'set2_player2_points',
+        'set3_player1_points',
+        'set3_player2_points'
+    ];
+    foreach ($pointFields as $field) {
+        if ($request->has($field) && trim($request->input($field)) === '') {
+            $request->merge([$field => null]);
+        }
+    }
+
+    $match = Matches::findOrFail($id);
+    $user  = Auth::user();
+    $isAdmin = $user->is_admin;
+    if (!$isAdmin && $match->created_by != $user->id) {
+        if (!$match->tournament || !$match->tournament->moderators()->where('user_id', $user->id)->exists()) {
             abort(403, 'You do not have permission to update this match.');
         }
-
-        $request->validate([
-            'stage'                 => 'required|string',
-            'match_date'            => 'required|date',
-            'match_time'            => 'required',
-            'set1_player1_points'   => 'required|integer',
-            'set1_player2_points'   => 'required|integer',
-            'set2_player1_points'   => 'required|integer',
-            'set2_player2_points'   => 'required|integer',
-            'set3_player1_points'   => 'required|integer',
-            'set3_player2_points'   => 'required|integer',
-        ]);
-
-        $stage = $request->input('stage');
-        $validStages = ['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals', 'Preliminary'];
-        if (!in_array($stage, $validStages)) {
-            return redirect()->back()->withErrors('Invalid stage value.');
-        }
-
-        $match_time = $request->input('match_time');
-        if (strlen($match_time) === 5) {
-            $match_time .= ':00';
-        }
-
-        $match->stage = $stage;
-        $match->match_date = $request->input('match_date');
-        $match->match_time = $match_time;
-        $match->set1_player1_points = $request->input('set1_player1_points');
-        $match->set1_player2_points = $request->input('set1_player2_points');
-        $match->set2_player1_points = $request->input('set2_player1_points');
-        $match->set2_player2_points = $request->input('set2_player2_points');
-        $match->set3_player1_points = $request->input('set3_player1_points');
-        $match->set3_player2_points = $request->input('set3_player2_points');
-        $match->save();
-
-        return redirect()->route('matches.index')->with('success', 'Match updated successfully.');
     }
+
+    $request->validate([
+        'stage'                 => 'required|string',
+        'match_date'            => 'required|date',
+        'match_time'            => 'required',
+        'set1_player1_points'   => 'nullable|integer',
+        'set1_player2_points'   => 'nullable|integer',
+        'set2_player1_points'   => 'nullable|integer',
+        'set2_player2_points'   => 'nullable|integer',
+        'set3_player1_points'   => 'nullable|integer',
+        'set3_player2_points'   => 'nullable|integer',
+    ]);
+
+    $stage = $request->input('stage');
+    $validStages = ['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals', 'Preliminary'];
+    if (!in_array($stage, $validStages)) {
+        return redirect()->back()->withErrors('Invalid stage value.');
+    }
+
+    $match_time = $request->input('match_time');
+    if (strlen($match_time) === 5) {
+        $match_time .= ':00';
+    }
+
+    // Update the match record; default null values to 0 if needed.
+    $match->stage = $stage;
+    $match->match_date = $request->input('match_date');
+    $match->match_time = $match_time;
+    $match->set1_player1_points = $request->input('set1_player1_points') ?? 0;
+    $match->set1_player2_points = $request->input('set1_player2_points') ?? 0;
+    $match->set2_player1_points = $request->input('set2_player1_points') ?? 0;
+    $match->set2_player2_points = $request->input('set2_player2_points') ?? 0;
+    $match->set3_player1_points = $request->input('set3_player1_points') ?? 0;
+    $match->set3_player2_points = $request->input('set3_player2_points') ?? 0;
+    $match->save();
+
+    return redirect()->route('matches.singles.index')->with('success', 'Match updated successfully.');
+}
+
 
     /**
      * Delete a singles match.
@@ -351,15 +370,13 @@ public function indexSingles(Request $request)
         $match = Matches::findOrFail($id);
         $user  = Auth::user();
         $isAdmin = $user->is_admin;
-        if (
-            !$isAdmin &&
-            $match->created_by != $user->id &&
-            !$match->tournament->moderators()->where('user_id', $user->id)->exists()
-        ) {
-            abort(403, 'You do not have permission to delete this match.');
+        if (!$isAdmin && $match->created_by != $user->id) {
+            if (!$match->tournament || !$match->tournament->moderators()->where('user_id', $user->id)->exists()) {
+                abort(403, 'You do not have permission to delete this match.');
+            }
         }
         $match->delete();
-        return redirect()->route('matches.index')->with('success', 'Match deleted successfully.');
+        return redirect()->route('matches.singles.index')->with('success', 'Match deleted successfully.');
     }
 
     // ---------------------------
@@ -430,7 +447,6 @@ public function indexSingles(Request $request)
      */
     public function createDoublesBoys(Request $request)
     {
-        // You can pass any necessary data to the view as needed.
         return view('matches.doubles_boys.create');
     }
 

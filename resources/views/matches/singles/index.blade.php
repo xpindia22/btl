@@ -29,6 +29,12 @@
                 </option>
             @endforeach
         </select>
+        <label for="singles_filter">Singles Type:</label>
+<select name="singles_filter" id="singles_filter">
+    <option value="all" {{ request('singles_filter', 'all') === 'all' ? 'selected' : '' }}>All Singles</option>
+    <option value="boys" {{ request('singles_filter') === 'boys' ? 'selected' : '' }}>Boys Singles</option>
+    <option value="girls" {{ request('singles_filter') === 'girls' ? 'selected' : '' }}>Girls Singles</option>
+</select>
 
         <label for="match_date">Match Date:</label>
         <select name="match_date" id="match_date">
