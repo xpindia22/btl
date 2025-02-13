@@ -3,126 +3,139 @@
 @section('content')
 <div class="container">
     <h1>Insert Boys Doubles Match</h1>
+
     @if(session('message'))
-        <p>{{ session('message') }}</p>
+        <p class="alert alert-info">{{ session('message') }}</p>
     @endif
 
-    @if(!$lockedTournamentId)
-        <form method="POST" action="{{ route('matches.doubles_boys.store') }}">
-            @csrf
-            <label for="tournament_id">Select Tournament:</label>
-            <select name="tournament_id" id="tournament_id" required>
-                <option value="">Select Tournament</option>
-                @foreach($tournaments as $tournament)
-                    <option value="{{ $tournament->id }}">{{ $tournament->name }}</option>
-                @endforeach
-            </select>
+    {{-- Tournament Lock/Unlock Form --}}
+    <form method="POST" action="{{ route('matches.doubles_boys.store') }}">
+        @csrf
+        <label for="tournament_id">Select Tournament:</label>
+        <select name="tournament_id" id="tournament_id" required {{ $lockedTournament ? 'disabled' : '' }}>
+            <option value="">Select Tournament</option>
+            @foreach($tournaments as $tournament)
+                <option value="{{ $tournament->id }}"
+                    {{ (isset($lockedTournament) && $lockedTournament->id == $tournament->id) ? 'selected' : '' }}>
+                    {{ $tournament->name }}
+                </option>
+            @endforeach
+        </select>
+
+        @if($lockedTournament)
+            <button type="submit" formaction="{{ route('matches.doubles_boys.unlockTournament') }}" style="background-color: red;">Unlock Tournament</button>
+        @else
             <button type="submit" name="lock_tournament">Lock Tournament</button>
-        </form>
-    @else
-        <form method="POST" action="{{ route('matches.doubles_boys.store') }}">
-            @csrf
-            <p>Locked Tournament: {{ session('locked_tournament_name') ?? 'Unknown' }}</p>
-            <button type="submit" name="unlock_tournament">Unlock Tournament</button>
-        </form>
+        @endif
+    </form>
 
-        <form method="POST" action="{{ route('matches.doubles_boys.store') }}">
-            @csrf
-            <label for="category_id">Category:</label>
-            <select name="category_id" id="category_id" required onchange="loadPlayers(this.value)">
-                <option value="">Select Category</option>
-                @foreach($categories as $category)
-                    <option value="{{ $category->id }}">
-                        {{ $category->name }} ({{ $category->age_group }}, {{ $category->sex }})
-                    </option>
-                @endforeach
-            </select>
+    @if($lockedTournament)
+    <form method="POST" action="{{ route('matches.doubles_boys.store') }}">
+        @csrf
+        <input type="hidden" name="tournament_id" value="{{ $lockedTournament->id }}">
 
-            <label for="team1_player1_id">Team 1 - Player 1:</label>
-            <select name="team1_player1_id" id="team1_player1_id" required>
-                <option value="">Select Player</option>
-            </select>
+        <label for="category_id">Category:</label>
+        <select name="category_id" id="category_id" onchange="updatePlayerDropdown()" required>
+            <option value="">Select Category</option>
+            @foreach($categories as $category)
+                <option value="{{ $category->id }}" data-sex="{{ $category->sex }}" data-age="{{ $category->age_group }}">
+                    {{ $category->name }}
+                </option>
+            @endforeach
+        </select>
 
-            <label for="team1_player2_id">Team 1 - Player 2:</label>
-            <select name="team1_player2_id" id="team1_player2_id" required>
-                <option value="">Select Player</option>
-            </select>
+        @foreach (['team1_player1', 'team1_player2', 'team2_player1', 'team2_player2'] as $player)
+            <label for="{{ $player }}_id">{{ ucwords(str_replace('_', ' ', $player)) }}:</label>
+            <select name="{{ $player }}_id" id="{{ $player }}_id" required></select>
+        @endforeach
 
-            <label for="team2_player1_id">Team 2 - Player 1:</label>
-            <select name="team2_player1_id" id="team2_player1_id" required>
-                <option value="">Select Player</option>
-            </select>
+        <label for="stage">Match Stage:</label>
+        <select name="stage" id="stage" required>
+            <option value="Pre Quarter Finals">Pre Quarter Finals</option>
+            <option value="Quarter Finals">Quarter Finals</option>
+            <option value="Semifinals">Semifinals</option>
+            <option value="Finals">Finals</option>
+        </select>
 
-            <label for="team2_player2_id">Team 2 - Player 2:</label>
-            <select name="team2_player2_id" id="team2_player2_id" required>
-                <option value="">Select Player</option>
-            </select>
+        <label for="date">Match Date:</label>
+        <input type="date" name="date" id="date" required>
 
-            <label for="stage">Match Stage:</label>
-            <select name="stage" id="stage" required>
-                <option value="">Select Stage</option>
-                <option value="Pre Quarter Finals">Pre Quarter Finals</option>
-                <option value="Quarter Finals">Quarter Finals</option>
-                <option value="Semi Finals">Semi Finals</option>
-                <option value="Finals">Finals</option>
-            </select>
+        <label for="match_time">Match Time (24-hour format HH:MM):</label>
+        <input type="time" name="match_time" id="match_time" required>
 
-            <label for="date">Match Date:</label>
-            <input type="date" name="date" id="date" required>
+        @for ($i = 1; $i <= 3; $i++)
+            <label for="set{{ $i }}_team1_points">Set {{ $i }} Team 1 Points:</label>
+            <input type="number" name="set{{ $i }}_team1_points" id="set{{ $i }}_team1_points">
 
-            <label for="time">Match Time:</label>
-            <input type="time" name="time" id="time" required>
+            <label for="set{{ $i }}_team2_points">Set {{ $i }} Team 2 Points:</label>
+            <input type="number" name="set{{ $i }}_team2_points" id="set{{ $i }}_team2_points">
+        @endfor
 
-            <label for="set1_team1_points">Set 1 Team 1 Points:</label>
-            <input type="number" name="set1_team1_points" id="set1_team1_points" required>
-
-            <label for="set1_team2_points">Set 1 Team 2 Points:</label>
-            <input type="number" name="set1_team2_points" id="set1_team2_points" required>
-
-            <label for="set2_team1_points">Set 2 Team 1 Points:</label>
-            <input type="number" name="set2_team1_points" id="set2_team1_points" required>
-
-            <label for="set2_team2_points">Set 2 Team 2 Points:</label>
-            <input type="number" name="set2_team2_points" id="set2_team2_points" required>
-
-            <label for="set3_team1_points">Set 3 Team 1 Points:</label>
-            <input type="number" name="set3_team1_points" id="set3_team1_points">
-
-            <label for="set3_team2_points">Set 3 Team 2 Points:</label>
-            <input type="number" name="set3_team2_points" id="set3_team2_points">
-
-            <button type="submit">Add Match</button>
-        </form>
+        <button type="submit">Add Match</button>
+    </form>
     @endif
 </div>
 
 <script>
-function loadPlayers(categoryId) {
-    console.log("Loading players for category: " + categoryId);
-    if (!categoryId) return;
-    fetch(`/get_players?category_id=${categoryId}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Players data:", data);
-            const playerSelects = ['team1_player1_id', 'team1_player2_id', 'team2_player1_id', 'team2_player2_id'];
-            playerSelects.forEach(selectId => {
-                const select = document.getElementById(selectId);
-                select.innerHTML = '<option value="">Select Player</option>';
-                data.forEach(player => {
-                    const option = document.createElement('option');
-                    option.value = player.id;
-                    option.textContent = `${player.name} (${player.age} years, ${player.sex})`;
-                    select.appendChild(option);
-                });
-            });
-        })
-        .catch(error => console.error('Error fetching players:', error));
-}
+    const players = @json($players);
 
+    function updatePlayerDropdown() {
+        const category = document.getElementById('category_id');
+        const playerDropdowns = ['team1_player1_id', 'team1_player2_id', 'team2_player1_id', 'team2_player2_id'];
+
+        const selectedCategory = category.options[category.selectedIndex];
+        const categorySex = selectedCategory.getAttribute('data-sex');
+        const categoryAge = selectedCategory.getAttribute('data-age');
+
+        let maxAge = 100;
+        if (categoryAge && (categoryAge.includes("Under") || categoryAge.includes("Plus") || categoryAge.includes("+"))) {
+            maxAge = parseInt(categoryAge.replace(/\D/g, ''), 10);
+        }
+
+        playerDropdowns.forEach(selectId => {
+            let select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">Select Player</option>';
+        });
+
+        let filteredPlayers = players.filter(player => player.sex === categorySex && player.age < maxAge);
+
+        playerDropdowns.forEach(selectId => {
+            let select = document.getElementById(selectId);
+            filteredPlayers.forEach(player => {
+                let option = `<option value="${player.id}">${player.name} (${player.age}, ${player.sex})</option>`;
+                select.innerHTML += option;
+            });
+        });
+
+        // Ensure Player 1 & Player 2 are different in the same team
+        preventDuplicateSelection('team1_player1_id', 'team1_player2_id');
+        preventDuplicateSelection('team2_player1_id', 'team2_player2_id');
+    }
+
+    function preventDuplicateSelection(player1, player2) {
+        let p1 = document.getElementById(player1);
+        let p2 = document.getElementById(player2);
+
+        p1.addEventListener('change', () => {
+            filterDropdown(p1, p2);
+        });
+
+        p2.addEventListener('change', () => {
+            filterDropdown(p2, p1);
+        });
+    }
+
+    function filterDropdown(selected, target) {
+        let selectedValue = selected.value;
+        let allOptions = [...target.options];
+
+        target.innerHTML = '<option value="">Select Player</option>';
+
+        allOptions.forEach(option => {
+            if (option.value !== selectedValue) {
+                target.appendChild(option);
+            }
+        });
+    }
 </script>
 @endsection
