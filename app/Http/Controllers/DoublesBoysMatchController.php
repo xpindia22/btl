@@ -6,15 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Tournament;
 use App\Models\Category;
-use App\Models\Matches_bd; // Doubles model for Boys Doubles matches
+use App\Models\Matches_bd;
 use Carbon\Carbon;
 
 class DoublesBoysMatchController extends Controller
 {
     /**
-     * Helper method to format the match time.
-     * If the input is in "HH:MM" format (one colon), it appends ":00" to make it "HH:MM:SS".
-     * Otherwise, returns the input as-is.
+     * Format match time to HH:MM:SS.
+     * If the input contains only one colon (HH:MM), append ":00".
      */
     protected function formatMatchTime($timeInput)
     {
@@ -24,11 +23,12 @@ class DoublesBoysMatchController extends Controller
         return $timeInput;
     }
 
-    // Display a list of doubles matches (index)
+    /**
+     * Display a list of Boys Doubles matches.
+     */
     public function index()
     {
         $user = Auth::user();
-
         $matches = Matches_bd::with([
                 'tournament', 
                 'category', 
@@ -50,21 +50,23 @@ class DoublesBoysMatchController extends Controller
             ->get();
 
         $stages = ['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals', 'Preliminary'];
-
         return view('matches.doubles_boys.edit_results', compact('matches', 'stages'));
     }
 
-    // Alias for index to serve as the edit view
+    /**
+     * Alias for index (serves as the edit view).
+     */
     public function edit()
     {
         return $this->index();
     }
 
-    // Show the insert doubles match form
+    /**
+     * Show the create form for a Boys Doubles match.
+     */
     public function create(Request $request)
     {
         $user = Auth::user();
-
         $tournaments = Tournament::where('created_by', $user->id)
             ->orWhereHas('moderators', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
@@ -80,16 +82,17 @@ class DoublesBoysMatchController extends Controller
         } else {
             $categories = collect();
         }
-
         return view('matches.doubles_boys.create', compact('tournaments', 'categories', 'lockedTournamentId'));
     }
 
-    // Handle storing the new doubles match
+    /**
+     * Store a new Boys Doubles match.
+     */
     public function store(Request $request)
     {
         $user = Auth::user();
 
-        // Handle tournament locking/unlocking logic
+        // Tournament locking/unlocking logic
         if ($request->has('lock_tournament')) {
             $lockedTournament = intval($request->input('tournament_id'));
             session(['locked_tournament' => $lockedTournament]);
@@ -119,11 +122,11 @@ class DoublesBoysMatchController extends Controller
             'category_id'   => 'required|integer',
             'stage'         => 'required|string',
             'date'          => 'required|date_format:Y-m-d',
-            'match_time'    => 'required',
+            'time'          => 'required',
         ]);
 
         $match_date = Carbon::createFromFormat('Y-m-d', $validated['date'])->format('Y-m-d');
-        $match_time = $this->formatMatchTime($request->input('match_time'));
+        $match_time = $this->formatMatchTime($request->input('time'));
 
         $match = new Matches_bd();
         $match->tournament_id      = $request->input('tournament_id');
@@ -150,7 +153,9 @@ class DoublesBoysMatchController extends Controller
         }
     }
 
-    // Update a doubles match
+    /**
+     * Update an existing Boys Doubles match.
+     */
     public function update(Request $request, $id)
     {
         $user = Auth::user();
@@ -179,13 +184,13 @@ class DoublesBoysMatchController extends Controller
         }
     }
 
-    // Delete a doubles match
+    /**
+     * Delete a Boys Doubles match.
+     */
     public function destroy($id)
     {
         $user = Auth::user();
-
         $match = Matches_bd::findOrFail($id);
-
         if ($match->delete()) {
             return redirect()->route('matches.doubles_boys.index')->with('message', 'Match deleted successfully!');
         } else {

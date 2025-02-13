@@ -33,6 +33,7 @@ Route::get('/players', [PlayerController::class, 'index'])->name('players.index'
 
 // 🔹 Protected Routes (Only for Authenticated Users)
 Route::middleware(['auth'])->group(function () {
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // 🔹 User Management Routes (For Admin Only)
@@ -105,7 +106,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [ResultsController::class, 'index'])->name('results.index');
         Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');
         Route::get('/doubles', [ResultsController::class, 'doubles'])->name('results.doubles');
-        // Update the mixed-doubles route to use DoublesMixedMatchController:
+        // Use DoublesMixedMatchController for mixed doubles results
         Route::get('/mixed-doubles', [DoublesMixedMatchController::class, 'index'])->name('results.mixed_doubles');
         Route::get('/boys-doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
     });
@@ -139,4 +140,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}', [PlayerController::class, 'update'])->name('players.update');
         Route::delete('/{id}', [PlayerController::class, 'destroy'])->name('players.destroy');
     });
+
+    // 🔹 Get Players Route
+    Route::get('/get_players', [PlayerController::class, 'getPlayers']);
 });

@@ -209,4 +209,81 @@ class PlayerController extends Controller
 
         return redirect()->route('players.manage')->with('success', 'Player deleted successfully!');
     }
+
+
+
+    public function getPlayers(Request $request)
+    {
+        $category_id = $request->input('category_id');
+        if (!$category_id) {
+            return response()->json([]);
+        }
+
+        // Retrieve the category details using Eloquent
+        $category = Category::find($category_id);
+        if (!$category) {
+            return response()->json([]);
+        }
+
+        $age_group = $category->age_group;
+        $sex = $category->sex;
+        $category_name = $category->name;
+
+        if (!$age_group || !$sex || !$category_name) {
+            return response()->json([]);
+        }
+
+        // Set default min and max dates of birth
+        $min_dob = "1900-01-01"; 
+        $max_dob = date("Y-m-d");
+
+        if (strpos($age_group, 'Under') !== false) {
+            preg_match('/Under\s+(\d+)/i', $age_group, $matches);
+            if (isset($matches[1])) {
+                $max_age = intval($matches[1]);
+                $min_dob = date("Y-m-d", strtotime("-{$max_age} years -1 day")); 
+            }
+        } elseif (strpos($age_group, 'Over') !== false) {
+            preg_match('/Over\s+(\d+)/i', $age_group, $matches);
+            if (isset($matches[1])) {
+                $min_age = intval($matches[1]);
+                $max_dob = date("Y-m-d", strtotime("-{$min_age} years")); 
+            }
+        } elseif (strpos($age_group, 'Between') !== false) {
+            preg_match('/Between\s+(\d+)\s*-\s*(\d+)/i', $age_group, $matches);
+            if (isset($matches[1]) && isset($matches[2])) {
+                $min_age = intval($matches[1]);
+                $max_age = intval($matches[2]);
+                $max_dob = date("Y-m-d", strtotime("-{$min_age} years")); 
+                $min_dob = date("Y-m-d", strtotime("-{$max_age} years -1 day")); 
+            }
+        }
+
+        // Query players based on the category name and sex
+        if (strpos($category_name, 'XD') !== false) {
+            $players = DB::table('players')
+                ->select('id','name','dob','sex')
+                ->whereBetween('dob', [$min_dob, $max_dob])
+                ->get();
+        } else {
+            $players = DB::table('players')
+                ->select('id','name','dob','sex')
+                ->where('sex', $sex)
+                ->whereBetween('dob', [$min_dob, $max_dob])
+                ->get();
+        }
+
+        // Calculate each player's age
+        $players = $players->map(function($player) {
+            $dob = strtotime($player->dob);
+            $age = date("Y") - date("Y", $dob);
+            if (date("md", $dob) > date("md")) {
+                $age--;
+            }
+            $player->age = $age;
+            return $player;
+        });
+
+        return response()->json($players);
+    }
 }
