@@ -11,6 +11,7 @@ use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\ResultsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\DoublesBoysMatchController;
 
 // 🔹 Redirect root to dashboard if authenticated, else to login.
 Route::get('/', function () {
@@ -71,11 +72,12 @@ Route::middleware(['auth'])->group(function () {
 
     // 🔹 Doubles Boys Match Routes (views in resources/views/matches/doubles_boys)
     Route::prefix('matches/doubles_boys')->group(function () {
-        Route::get('/', [MatchController::class, 'indexDoublesBoys'])->name('matches.doubles_boys.index');
-        Route::get('/create', [MatchController::class, 'createDoublesBoys'])->name('matches.doubles_boys.create');
-        Route::get('/edit/{id}', [MatchController::class, 'editDoublesBoys'])->name('matches.doubles_boys.edit');
-        Route::put('/{id}', [MatchController::class, 'updateDoublesBoys'])->name('matches.doubles_boys.update');
-        Route::delete('/{id}', [MatchController::class, 'destroyDoublesBoys'])->name('matches.doubles_boys.destroy');
+        Route::get('/', [DoublesBoysMatchController::class, 'index'])->name('matches.doubles_boys.index');
+        Route::get('/create', [DoublesBoysMatchController::class, 'create'])->name('matches.doubles_boys.create');
+        Route::post('/', [DoublesBoysMatchController::class, 'store'])->name('matches.doubles_boys.store');
+        Route::get('/edit', [DoublesBoysMatchController::class, 'edit'])->name('matches.doubles_boys.edit');
+        Route::post('/{id}/update', [DoublesBoysMatchController::class, 'update'])->name('matches.doubles_boys.update');
+        Route::post('/{id}/delete', [DoublesBoysMatchController::class, 'destroy'])->name('matches.doubles_boys.destroy');
     });
 
     // 🔹 Doubles Girls Match Routes (views in resources/views/matches/doubles_girls)
@@ -128,10 +130,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('players')->group(function () {
         Route::get('/create', [PlayerController::class, 'create'])->name('players.create');
         Route::post('/', [PlayerController::class, 'store'])->name('players.store');
-
         Route::get('/register', [PlayerController::class, 'showRegistrationForm'])->name('player.register');
         Route::post('/register', [PlayerController::class, 'register']);
-
         Route::get('/{id}/edit', [PlayerController::class, 'edit'])->name('players.edit');
         Route::put('/{id}', [PlayerController::class, 'update'])->name('players.update');
         Route::delete('/{id}', [PlayerController::class, 'destroy'])->name('players.destroy');
