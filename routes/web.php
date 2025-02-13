@@ -13,6 +13,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\DoublesBoysMatchController;
 use App\Http\Controllers\DoublesGirlsMatchController;
+use App\Http\Controllers\DoublesMixedsMatchController;
+
 
 
 // 🔹 Redirect root to dashboard if authenticated, else to login.
@@ -149,5 +151,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/update', [DoublesGirlsMatchController::class, 'update'])->name('matches.doubles_girls.update');
         Route::post('/{id}/delete', [DoublesGirlsMatchController::class, 'destroy'])->name('matches.doubles_girls.destroy');
     });
+
+
+//Mixed doubles
+    Route::prefix('matches/doubles_mixed')->group(function () {
+        Route::get('/', [DoublesMixedMatchController::class, 'index'])->name('results.mixed_doubles');
+        Route::get('/create', [DoublesMixedMatchController::class, 'create'])->name('matches.doubles_mixed.create');
+        Route::post('/', [DoublesMixedMatchController::class, 'store'])->name('matches.doubles_mixed.store');
+        Route::post('/{id}/update', [DoublesMixedMatchController::class, 'update'])->name('matches.doubles_mixed.update');
+        Route::post('/{id}/delete', [DoublesMixedMatchController::class, 'destroy'])->name('matches.doubles_mixed.destroy');
+    });
+    
     
 });
