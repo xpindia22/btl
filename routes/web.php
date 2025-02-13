@@ -12,6 +12,8 @@ use App\Http\Controllers\ResultsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\DoublesBoysMatchController;
+use App\Http\Controllers\DoublesGirlsMatchController;
+
 
 // 🔹 Redirect root to dashboard if authenticated, else to login.
 Route::get('/', function () {
@@ -136,4 +138,16 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}', [PlayerController::class, 'update'])->name('players.update');
         Route::delete('/{id}', [PlayerController::class, 'destroy'])->name('players.destroy');
     });
+
+
+
+//Girls doubles
+    Route::prefix('matches/doubles_girls')->group(function () {
+        Route::get('/', [DoublesGirlsMatchController::class, 'index'])->name('results.girls_doubles');
+        Route::get('/create', [DoublesGirlsMatchController::class, 'create'])->name('matches.doubles_girls.create');
+        Route::post('/', [DoublesGirlsMatchController::class, 'store'])->name('matches.doubles_girls.store');
+        Route::post('/{id}/update', [DoublesGirlsMatchController::class, 'update'])->name('matches.doubles_girls.update');
+        Route::post('/{id}/delete', [DoublesGirlsMatchController::class, 'destroy'])->name('matches.doubles_girls.destroy');
+    });
+    
 });
