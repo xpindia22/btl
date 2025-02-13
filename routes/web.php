@@ -13,9 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\DoublesBoysMatchController;
 use App\Http\Controllers\DoublesGirlsMatchController;
-use App\Http\Controllers\DoublesMixedsMatchController;
-
-
+use App\Http\Controllers\DoublesMixedMatchController;
 
 // 🔹 Redirect root to dashboard if authenticated, else to login.
 Route::get('/', function () {
@@ -86,20 +84,39 @@ Route::middleware(['auth'])->group(function () {
 
     // 🔹 Doubles Girls Match Routes (views in resources/views/matches/doubles_girls)
     Route::prefix('matches/doubles_girls')->group(function () {
-        Route::get('/', [MatchController::class, 'indexDoublesGirls'])->name('matches.doubles_girls.index');
-        Route::get('/create', [MatchController::class, 'createDoublesGirls'])->name('matches.doubles_girls.create');
-        Route::get('/edit/{id}', [MatchController::class, 'editDoublesGirls'])->name('matches.doubles_girls.edit');
-        Route::put('/{id}', [MatchController::class, 'updateDoublesGirls'])->name('matches.doubles_girls.update');
-        Route::delete('/{id}', [MatchController::class, 'destroyDoublesGirls'])->name('matches.doubles_girls.destroy');
+        Route::get('/', [DoublesGirlsMatchController::class, 'index'])->name('results.girls_doubles');
+        Route::get('/create', [DoublesGirlsMatchController::class, 'create'])->name('matches.doubles_girls.create');
+        Route::post('/', [DoublesGirlsMatchController::class, 'store'])->name('matches.doubles_girls.store');
+        Route::post('/{id}/update', [DoublesGirlsMatchController::class, 'update'])->name('matches.doubles_girls.update');
+        Route::post('/{id}/delete', [DoublesGirlsMatchController::class, 'destroy'])->name('matches.doubles_girls.destroy');
     });
 
     // 🔹 Doubles Mixed Match Routes (views in resources/views/matches/doubles_mixed)
     Route::prefix('matches/doubles_mixed')->group(function () {
-        Route::get('/', [MatchController::class, 'indexDoublesMixed'])->name('matches.doubles_mixed.index');
-        Route::get('/create', [MatchController::class, 'createDoublesMixed'])->name('matches.doubles_mixed.create');
-        Route::get('/edit/{id}', [MatchController::class, 'editDoublesMixed'])->name('matches.doubles_mixed.edit');
-        Route::put('/{id}', [MatchController::class, 'updateDoublesMixed'])->name('matches.doubles_mixed.update');
-        Route::delete('/{id}', [MatchController::class, 'destroyDoublesMixed'])->name('matches.doubles_mixed.destroy');
+        Route::get('/', [DoublesMixedMatchController::class, 'index'])->name('matches.doubles_mixed.index');
+        Route::get('/create', [DoublesMixedMatchController::class, 'create'])->name('matches.doubles_mixed.create');
+        Route::post('/', [DoublesMixedMatchController::class, 'store'])->name('matches.doubles_mixed.store');
+        Route::post('/{id}/update', [DoublesMixedMatchController::class, 'update'])->name('matches.doubles_mixed.update');
+        Route::post('/{id}/delete', [DoublesMixedMatchController::class, 'destroy'])->name('matches.doubles_mixed.destroy');
+    });
+
+    // 🔹 Results Routes
+    Route::prefix('results')->group(function () {
+        Route::get('/', [ResultsController::class, 'index'])->name('results.index');
+        Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');
+        Route::get('/doubles', [ResultsController::class, 'doubles'])->name('results.doubles');
+        // Update the mixed-doubles route to use DoublesMixedMatchController:
+        Route::get('/mixed-doubles', [DoublesMixedMatchController::class, 'index'])->name('results.mixed_doubles');
+        Route::get('/boys-doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
+    });
+
+    // 🔹 Tournament Routes (Tournament Management)
+    Route::prefix('tournaments')->group(function () {
+        Route::get('/create', [TournamentController::class, 'create'])->name('tournaments.create');
+        Route::get('/manage', [TournamentController::class, 'index'])->name('tournaments.manage');
+        Route::get('/{id}/edit', [TournamentController::class, 'edit'])->name('tournaments.edit');
+        Route::put('/{id}', [TournamentController::class, 'update'])->name('tournaments.update');
+        Route::delete('/{id}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
     });
 
     // 🔹 Category Routes
@@ -112,24 +129,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
     });
 
-    // 🔹 Tournament Routes (Tournament Management)
-    Route::prefix('tournaments')->group(function () {
-        Route::get('/create', [TournamentController::class, 'create'])->name('tournaments.create');
-        Route::get('/manage', [TournamentController::class, 'index'])->name('tournaments.manage');
-        Route::get('/{id}/edit', [TournamentController::class, 'edit'])->name('tournaments.edit');
-        Route::put('/{id}', [TournamentController::class, 'update'])->name('tournaments.update');
-        Route::delete('/{id}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
-    });
-
-    // 🔹 Results Routes
-    Route::prefix('results')->group(function () {
-        Route::get('/', [ResultsController::class, 'index'])->name('results.index');
-        Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');
-        Route::get('/doubles', [ResultsController::class, 'doubles'])->name('results.doubles');
-        Route::get('/mixed-doubles', [ResultsController::class, 'mixedDoubles'])->name('results.mixed_doubles');
-        Route::get('/boys-doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
-    });
-
     // 🔹 Player Routes
     Route::prefix('players')->group(function () {
         Route::get('/create', [PlayerController::class, 'create'])->name('players.create');
@@ -140,27 +139,4 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}', [PlayerController::class, 'update'])->name('players.update');
         Route::delete('/{id}', [PlayerController::class, 'destroy'])->name('players.destroy');
     });
-
-
-
-//Girls doubles
-    Route::prefix('matches/doubles_girls')->group(function () {
-        Route::get('/', [DoublesGirlsMatchController::class, 'index'])->name('results.girls_doubles');
-        Route::get('/create', [DoublesGirlsMatchController::class, 'create'])->name('matches.doubles_girls.create');
-        Route::post('/', [DoublesGirlsMatchController::class, 'store'])->name('matches.doubles_girls.store');
-        Route::post('/{id}/update', [DoublesGirlsMatchController::class, 'update'])->name('matches.doubles_girls.update');
-        Route::post('/{id}/delete', [DoublesGirlsMatchController::class, 'destroy'])->name('matches.doubles_girls.destroy');
-    });
-
-
-//Mixed doubles
-    Route::prefix('matches/doubles_mixed')->group(function () {
-        Route::get('/', [DoublesMixedMatchController::class, 'index'])->name('results.mixed_doubles');
-        Route::get('/create', [DoublesMixedMatchController::class, 'create'])->name('matches.doubles_mixed.create');
-        Route::post('/', [DoublesMixedMatchController::class, 'store'])->name('matches.doubles_mixed.store');
-        Route::post('/{id}/update', [DoublesMixedMatchController::class, 'update'])->name('matches.doubles_mixed.update');
-        Route::post('/{id}/delete', [DoublesMixedMatchController::class, 'destroy'])->name('matches.doubles_mixed.destroy');
-    });
-    
-    
 });

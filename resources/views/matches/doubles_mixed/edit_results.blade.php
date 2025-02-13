@@ -8,7 +8,7 @@
     @endif
     @if($matches->count())
         <div class="doubles-mixed-columns">
-            <table border="1" cellspacing="0" cellpadding="5">
+            <table class="table" border="1" cellspacing="0" cellpadding="5">
                 <tr>
                     <th>Match ID</th>
                     <th>Tournament</th>

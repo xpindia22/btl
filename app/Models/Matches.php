@@ -12,7 +12,7 @@ class Matches extends Model
     public $timestamps = false;
 
     // Define fillable columns
-    protected $fillable = [
+protected $fillable = [
         'tournament_id',
         'category_id',
         'player1_id',
