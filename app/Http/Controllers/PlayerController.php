@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Player;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;  // Added for DB queries
 
 class PlayerController extends Controller
 {
@@ -210,8 +211,15 @@ class PlayerController extends Controller
         return redirect()->route('players.manage')->with('success', 'Player deleted successfully!');
     }
 
-
-
+    /**
+     * Retrieve players based on the category's age filter.
+     *
+     * This method populates players for mixed doubles (both male and female) 
+     * according to the age group defined in the category.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getPlayers(Request $request)
     {
         $category_id = $request->input('category_id');
@@ -220,7 +228,7 @@ class PlayerController extends Controller
         }
 
         // Retrieve the category details using Eloquent
-        $category = Category::find($category_id);
+        $category = \App\Models\Category::find($category_id);
         if (!$category) {
             return response()->json([]);
         }
@@ -259,7 +267,7 @@ class PlayerController extends Controller
             }
         }
 
-        // Query players based on the category name and sex
+        // For mixed doubles (category contains 'XD'), ignore sex filtering.
         if (strpos($category_name, 'XD') !== false) {
             $players = DB::table('players')
                 ->select('id','name','dob','sex')
@@ -273,14 +281,9 @@ class PlayerController extends Controller
                 ->get();
         }
 
-        // Calculate each player's age
+        // Calculate each player's age using Carbon for accuracy.
         $players = $players->map(function($player) {
-            $dob = strtotime($player->dob);
-            $age = date("Y") - date("Y", $dob);
-            if (date("md", $dob) > date("md")) {
-                $age--;
-            }
-            $player->age = $age;
+            $player->age = Carbon::parse($player->dob)->age;
             return $player;
         });
 

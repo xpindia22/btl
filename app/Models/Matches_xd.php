@@ -28,7 +28,8 @@ class Matches_xd extends Model
         'set2_team1_points',
         'set2_team2_points',
         'set3_team1_points',
-        'set3_team2_points'
+        'set3_team2_points',
+        'created_by',
     ];
 
     /**

@@ -85,9 +85,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/unlockTournament', [DoublesGirlsMatchController::class, 'unlockTournament'])->name('matches.doubles_girls.unlockTournament');
     });
     
-    
-
-    
     // 🔹 Doubles Mixed Matches
     Route::prefix('matches/doubles_mixed')->group(function () {
         Route::get('/', [DoublesMixedMatchController::class, 'index'])->name('matches.doubles_mixed.index');
@@ -117,7 +114,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // 🔹 Get Players Route
-    Route::get('/get_players', [PlayerController::class, 'getPlayers']);
+    Route::get('/get_players', [PlayerController::class, 'getPlayers'])->name('get_players');
 
     // 🔹 Admin Routes (Only Admins Can Access)
     Route::prefix('admin')->group(function () {
@@ -144,6 +141,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/doubles', [ResultsController::class, 'doubles'])->name('results.doubles');
         Route::get('/mixed-doubles', [DoublesMixedMatchController::class, 'index'])->name('results.mixed_doubles');
         Route::get('/boys-doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
+        
     });
-
 });
