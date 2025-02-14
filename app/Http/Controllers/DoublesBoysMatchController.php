@@ -13,14 +13,6 @@ use Carbon\Carbon;
 class DoublesBoysMatchController extends Controller
 {
     /**
-     * Format match time to HH:MM:SS if not already in that format.
-     */
-    protected function formatMatchTime($timeInput)
-    {
-        return substr_count($timeInput, ':') === 1 ? $timeInput . ':00' : $timeInput;
-    }
-
-    /**
      * Display a list of Boys Doubles matches.
      */
     public function index()
@@ -50,16 +42,13 @@ class DoublesBoysMatchController extends Controller
     {
         $user = Auth::user();
 
-        // Fetch user's tournaments (created by or moderated by the user)
         $tournaments = Tournament::where('created_by', $user->id)
             ->orWhereHas('moderators', fn ($q) => $q->where('user_id', $user->id))
             ->get();
 
-        // Retrieve locked tournament from session
         $lockedTournamentId = session('locked_tournament');
         $lockedTournament = $lockedTournamentId ? Tournament::find($lockedTournamentId) : null;
 
-        // Fetch categories only if a tournament is locked
         $categories = $lockedTournament
             ? Category::join('tournament_categories', 'categories.id', '=', 'tournament_categories.category_id')
                 ->where('tournament_categories.tournament_id', $lockedTournamentId)
@@ -68,10 +57,43 @@ class DoublesBoysMatchController extends Controller
                 ->get()
             : collect();
 
-        // Fetch all players (modify this query as per your database structure)
         $players = Player::all();
 
         return view('matches.doubles_boys.create', compact('tournaments', 'categories', 'lockedTournament', 'players'));
+    }
+
+    /**
+     * Lock the selected tournament.
+     */
+    public function lockTournament(Request $request)
+    {
+        $user = Auth::user();
+        $tournamentId = $request->input('tournament_id');
+
+        $tournament = Tournament::where('id', $tournamentId)
+            ->where(function ($query) use ($user) {
+                $query->where('created_by', $user->id)
+                      ->orWhereHas('moderators', fn ($q) => $q->where('user_id', $user->id));
+            })
+            ->first();
+
+        if (!$tournament) {
+            return redirect()->back()->with('error', 'Unauthorized access to lock this tournament.');
+        }
+
+        session(['locked_tournament' => $tournament->id]);
+
+        return redirect()->back()->with('message', "Tournament '{$tournament->name}' locked.");
+    }
+
+    /**
+     * Unlock the tournament.
+     */
+    public function unlockTournament()
+    {
+        session()->forget('locked_tournament');
+
+        return redirect()->back()->with('message', 'Tournament unlocked successfully.');
     }
 
     /**
@@ -79,66 +101,44 @@ class DoublesBoysMatchController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
+        try {
+            $validated = $request->validate([
+                'tournament_id'  => 'required|integer|exists:tournaments,id',
+                'category_id'    => 'required|integer|exists:categories,id',
+                'stage'          => 'required|string',
+                'date'           => 'required|date_format:Y-m-d',
+                'time'           => 'required',
+                'team1_player1_id' => 'required|integer|exists:players,id|different:team1_player2_id',
+                'team1_player2_id' => 'required|integer|exists:players,id',
+                'team2_player1_id' => 'required|integer|exists:players,id|different:team2_player2_id',
+                'team2_player2_id' => 'required|integer|exists:players,id',
+            ]);
 
-        // Tournament Locking / Unlocking Mechanism
-        if ($request->has('lock_tournament')) {
-            $lockedTournamentId = intval($request->input('tournament_id'));
-            session(['locked_tournament' => $lockedTournamentId]);
+            $match = Matches_bd::create([
+                'tournament_id'     => $validated['tournament_id'],
+                'category_id'       => $validated['category_id'],
+                'team1_player1_id'  => $validated['team1_player1_id'],
+                'team1_player2_id'  => $validated['team1_player2_id'],
+                'team2_player1_id'  => $validated['team2_player1_id'],
+                'team2_player2_id'  => $validated['team2_player2_id'],
+                'stage'             => $validated['stage'],
+                'match_date'        => Carbon::parse($validated['date'])->format('Y-m-d'),
+                'match_time'        => $this->formatMatchTime($validated['time']),
+                'set1_team1_points' => $request->input('set1_team1_points', 0),
+                'set1_team2_points' => $request->input('set1_team2_points', 0),
+                'set2_team1_points' => $request->input('set2_team1_points', 0),
+                'set2_team2_points' => $request->input('set2_team2_points', 0),
+                'set3_team1_points' => $request->input('set3_team1_points', 0),
+                'set3_team2_points' => $request->input('set3_team2_points', 0),
+                'created_by'        => Auth::id(),
+            ]);
 
-            $tournament = Tournament::where('id', $lockedTournamentId)
-                ->where(fn ($query) => $query->where('created_by', $user->id)
-                    ->orWhereHas('moderators', fn ($q) => $q->where('user_id', $user->id)))
-                ->first();
+            return back()->with('message', "Match added successfully!");
 
-            if ($tournament) {
-                session(['locked_tournament_name' => $tournament->name]);
-                return back()->with('message', "Tournament locked: " . e($tournament->name));
-            } else {
-                session()->forget('locked_tournament');
-                return back()->with('error', "Unauthorized access to the selected tournament.");
-            }
-        } elseif ($request->has('unlock_tournament')) {
-            session()->forget(['locked_tournament', 'locked_tournament_name']);
-            return back();
+        } catch (\Exception $e) {
+            \Log::error("Error storing match: " . $e->getMessage());
+            return back()->with('error', "Error adding match. Check logs.");
         }
-
-        // Validate form input
-        $validated = $request->validate([
-            'tournament_id'  => 'required|integer|exists:tournaments,id',
-            'category_id'    => 'required|integer|exists:categories,id',
-            'stage'          => 'required|string',
-            'date'           => 'required|date_format:Y-m-d',
-            'time'           => 'required',
-            'team1_player1_id' => 'required|integer|exists:players,id|different:team1_player2_id',
-            'team1_player2_id' => 'required|integer|exists:players,id',
-            'team2_player1_id' => 'required|integer|exists:players,id|different:team2_player2_id',
-            'team2_player2_id' => 'required|integer|exists:players,id',
-        ]);
-
-        // Store match details
-        $match = Matches_bd::create([
-            'tournament_id'     => $validated['tournament_id'],
-            'category_id'       => $validated['category_id'],
-            'team1_player1_id'  => $validated['team1_player1_id'],
-            'team1_player2_id'  => $validated['team1_player2_id'],
-            'team2_player1_id'  => $validated['team2_player1_id'],
-            'team2_player2_id'  => $validated['team2_player2_id'],
-            'stage'             => $validated['stage'],
-            'match_date'        => Carbon::parse($validated['date'])->format('Y-m-d'),
-            'match_time'        => $this->formatMatchTime($validated['time']),
-            'set1_team1_points' => $request->input('set1_team1_points', 0),
-            'set1_team2_points' => $request->input('set1_team2_points', 0),
-            'set2_team1_points' => $request->input('set2_team1_points', 0),
-            'set2_team2_points' => $request->input('set2_team2_points', 0),
-            'set3_team1_points' => $request->input('set3_team1_points', 0),
-            'set3_team2_points' => $request->input('set3_team2_points', 0),
-            'created_by'        => $user->id,
-        ]);
-
-        return $match
-            ? back()->with('message', "Match added successfully!")
-            : back()->with('error', "Error adding match.");
     }
 
     /**
@@ -157,12 +157,6 @@ class DoublesBoysMatchController extends Controller
             'stage'             => $validated['stage'],
             'match_date'        => Carbon::parse($validated['match_date'])->format('Y-m-d'),
             'match_time'        => $this->formatMatchTime($validated['match_time']),
-            'set1_team1_points' => $request->input('set1_team1_points', 0),
-            'set1_team2_points' => $request->input('set1_team2_points', 0),
-            'set2_team1_points' => $request->input('set2_team1_points', 0),
-            'set2_team2_points' => $request->input('set2_team2_points', 0),
-            'set3_team1_points' => $request->input('set3_team1_points', 0),
-            'set3_team2_points' => $request->input('set3_team2_points', 0),
         ]);
 
         return redirect()->route('matches.doubles_boys.index')->with('message', 'Match updated successfully!');
@@ -173,10 +167,16 @@ class DoublesBoysMatchController extends Controller
      */
     public function destroy($id)
     {
-        $match = Matches_bd::findOrFail($id);
+        Matches_bd::findOrFail($id)->delete();
 
-        return $match->delete()
-            ? redirect()->route('matches.doubles_boys.index')->with('message', 'Match deleted successfully!')
-            : redirect()->route('matches.doubles_boys.index')->with('error', 'Error deleting match.');
+        return redirect()->route('matches.doubles_boys.index')->with('message', 'Match deleted successfully!');
+    }
+
+    /**
+     * Ensure match time is in HH:MM:SS format.
+     */
+    private function formatMatchTime($timeInput)
+    {
+        return substr_count($timeInput, ':') === 1 ? $timeInput . ':00' : $timeInput;
     }
 }

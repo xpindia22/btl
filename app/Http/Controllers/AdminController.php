@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Models\Player;
 
 class AdminController extends Controller
 {
@@ -31,7 +33,8 @@ class AdminController extends Controller
      */
     public function editUsers()
     {
-        return view('admin.edit_users');
+        $users = User::all();
+        return view('admin.edit_users', compact('users'));
     }
 
     /**
@@ -39,7 +42,8 @@ class AdminController extends Controller
      */
     public function editPlayers()
     {
-        return view('admin.edit_players');
+        $players = Player::all();
+        return view('admin.edit_players', compact('players'));
     }
 
     /**
@@ -47,6 +51,7 @@ class AdminController extends Controller
      */
     public function addModerator()
     {
-        return view('admin.add_moderator');
+        $users = User::where('role', '!=', 'admin')->get();
+        return view('admin.add_moderator', compact('users'));
     }
 }

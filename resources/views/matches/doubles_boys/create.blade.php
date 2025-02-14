@@ -9,26 +9,26 @@
     @endif
 
     {{-- Tournament Lock/Unlock Form --}}
-    <form method="POST" action="{{ route('matches.doubles_boys.store') }}">
+    <form method="POST">
         @csrf
         <label for="tournament_id">Select Tournament:</label>
         <select name="tournament_id" id="tournament_id" required {{ $lockedTournament ? 'disabled' : '' }}>
             <option value="">Select Tournament</option>
             @foreach($tournaments as $tournament)
-                <option value="{{ $tournament->id }}"
-                    {{ (isset($lockedTournament) && $lockedTournament->id == $tournament->id) ? 'selected' : '' }}>
+                <option value="{{ $tournament->id }}" {{ (isset($lockedTournament) && $lockedTournament->id == $tournament->id) ? 'selected' : '' }}>
                     {{ $tournament->name }}
                 </option>
             @endforeach
         </select>
 
         @if($lockedTournament)
-            <button type="submit" formaction="{{ route('matches.doubles_boys.unlockTournament') }}" style="background-color: red;">Unlock Tournament</button>
+            <button type="submit" formaction="{{ route('matches.doubles_boys.unlockTournament') }}" id="unlock-btn" style="background-color: red;">Unlock Tournament</button>
         @else
-            <button type="submit" name="lock_tournament">Lock Tournament</button>
+            <button type="submit" formaction="{{ route('matches.doubles_boys.lockTournament') }}" id="lock-btn">Lock Tournament</button>
         @endif
     </form>
 
+    {{-- Form for Adding Matches (Only when Tournament is Locked) --}}
     @if($lockedTournament)
     <form method="POST" action="{{ route('matches.doubles_boys.store') }}">
         @csrf
@@ -60,8 +60,10 @@
         <label for="date">Match Date:</label>
         <input type="date" name="date" id="date" required>
 
+        <!-- Ensure the match time field is correctly named -->
         <label for="match_time">Match Time (24-hour format HH:MM):</label>
-        <input type="time" name="match_time" id="match_time" required>
+        <input type="time" name="time" id="match_time" required>
+
 
         @for ($i = 1; $i <= 3; $i++)
             <label for="set{{ $i }}_team1_points">Set {{ $i }} Team 1 Points:</label>
