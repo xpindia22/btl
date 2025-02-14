@@ -78,11 +78,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DoublesGirlsMatchController::class, 'index'])->name('matches.doubles_girls.index');
         Route::get('/create', [DoublesGirlsMatchController::class, 'create'])->name('matches.doubles_girls.create');
         Route::post('/', [DoublesGirlsMatchController::class, 'store'])->name('matches.doubles_girls.store');
-        Route::post('/lockTournament', [DoublesGirlsMatchController::class, 'lockTournament'])->name('matches.doubles_girls.lockTournament');
-        Route::post('/unlockTournament', [DoublesGirlsMatchController::class, 'unlockTournament'])->name('matches.doubles_girls.unlockTournament');
+        Route::get('/edit/{id}', [DoublesGirlsMatchController::class, 'edit'])->name('matches.doubles_girls.edit');
         Route::put('/{id}', [DoublesGirlsMatchController::class, 'update'])->name('matches.doubles_girls.update');
         Route::delete('/{id}', [DoublesGirlsMatchController::class, 'destroy'])->name('matches.doubles_girls.destroy');
+        Route::post('/lockTournament', [DoublesGirlsMatchController::class, 'lockTournament'])->name('matches.doubles_girls.lockTournament');
+        Route::post('/unlockTournament', [DoublesGirlsMatchController::class, 'unlockTournament'])->name('matches.doubles_girls.unlockTournament');
     });
+    
+    
+
     
     // 🔹 Doubles Mixed Matches
     Route::prefix('matches/doubles_mixed')->group(function () {
