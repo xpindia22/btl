@@ -114,4 +114,113 @@ class DoublesMixedMatchController extends Controller
     }
 }
 
+public function editResults()
+{
+    $user = Auth::user();
+
+    // Query mixed doubles matches with joins to get tournament, category, and player names.
+    $matches = DB::table('matches as m')
+        ->join('tournaments as t', 'm.tournament_id', '=', 't.id')
+        ->join('categories as c', 'm.category_id', '=', 'c.id')
+        ->leftJoin('players as p1', 'm.team1_player1_id', '=', 'p1.id')
+        ->leftJoin('players as p2', 'm.team1_player2_id', '=', 'p2.id')
+        ->leftJoin('players as p3', 'm.team2_player1_id', '=', 'p3.id')
+        ->leftJoin('players as p4', 'm.team2_player2_id', '=', 'p4.id')
+        ->select(
+            'm.id as match_id',
+            't.name as tournament_name',
+            'c.name as category_name',
+            'p1.name as team1_player1_name',
+            'p2.name as team1_player2_name',
+            'p3.name as team2_player1_name',
+            'p4.name as team2_player2_name',
+            'm.stage',
+            'm.match_date',
+            'm.match_time',
+            'm.set1_team1_points',
+            'm.set1_team2_points',
+            'm.set2_team1_points',
+            'm.set2_team2_points',
+            'm.set3_team1_points',
+            'm.set3_team2_points'
+        )
+        ->where('c.type', 'mixed doubles')
+        ->where(function ($q) use ($user) {
+            $q->where('m.created_by', $user->id)
+              ->orWhereExists(function ($query) use ($user) {
+                  $query->select(DB::raw(1))
+                        ->from('tournament_moderators as tm')
+                        ->join('tournaments as t2', 'tm.tournament_id', '=', 't2.id')
+                        ->whereRaw('t2.id = m.tournament_id')
+                        ->where('tm.user_id', $user->id);
+              });
+        })
+        ->orderBy('m.id')
+        ->get();
+
+    // Define available stages for the dropdown.
+    $stages = ['Pre Quarter Finals', 'Quarter Finals', 'Semi Finals', 'Finals'];
+
+    return view('matches.doubles_mixed.edit_results', compact('matches', 'stages'));
+}
+
+
+public function update(Request $request, $id)
+{
+    $user = Auth::user();
+
+    // Validate incoming data.
+    $validated = $request->validate([
+        'stage'             => 'required|string',
+        'match_date'        => 'required|date_format:Y-m-d',
+        'match_time'        => 'required',
+        'set1_team1_points' => 'required|integer',
+        'set1_team2_points' => 'required|integer',
+        'set2_team1_points' => 'required|integer',
+        'set2_team2_points' => 'required|integer',
+        'set3_team1_points' => 'nullable|integer',
+        'set3_team2_points' => 'nullable|integer',
+    ]);
+
+    // Format match time (append seconds if needed)
+    $match_time = $request->input('match_time');
+    if (substr_count($match_time, ':') === 1) {
+        $match_time .= ':00';
+    }
+
+    // Retrieve the match record.
+    $match = \App\Models\Matches_xd::findOrFail($id);
+
+    // Authorization:
+    // 1. Admins can update any match.
+    // 2. Non-admin users must either be the match creator or a moderator for the tournament.
+    if ($user->role !== 'admin') {
+        if ($match->created_by !== $user->id) {
+            $isModerator = DB::table('tournament_moderators')
+                ->where('tournament_id', $match->tournament_id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if (!$isModerator) {
+                return redirect()->back()->with('message', 'Unauthorized access.');
+            }
+        }
+    }
+
+    // Update the match record.
+    $match->stage             = $validated['stage'];
+    $match->match_date        = $validated['match_date'];
+    $match->match_time        = $match_time;
+    $match->set1_team1_points = $request->input('set1_team1_points');
+    $match->set1_team2_points = $request->input('set1_team2_points');
+    $match->set2_team1_points = $request->input('set2_team1_points');
+    $match->set2_team2_points = $request->input('set2_team2_points');
+    $match->set3_team1_points = $request->input('set3_team1_points', 0);
+    $match->set3_team2_points = $request->input('set3_team2_points', 0);
+
+    $match->save();
+
+    return redirect()->back()->with('message', 'Match updated successfully!');
+}
+
 }

@@ -90,6 +90,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DoublesMixedMatchController::class, 'index'])->name('matches.doubles_mixed.index');
         Route::get('/create', [DoublesMixedMatchController::class, 'create'])->name('matches.doubles_mixed.create');
         Route::post('/', [DoublesMixedMatchController::class, 'store'])->name('matches.doubles_mixed.store');
+        // NEW: Dedicated route for listing editable mixed doubles matches
+        Route::get('/edit', [DoublesMixedMatchController::class, 'editResults'])->name('matches.doubles_mixed.editResults');
+        // Individual edit route for a specific match (e.g. when clicking an "Edit" link)
+        Route::get('/{id}/edit', [DoublesMixedMatchController::class, 'edit'])->name('matches.doubles_mixed.edit');
         Route::put('/{id}', [DoublesMixedMatchController::class, 'update'])->name('matches.doubles_mixed.update');
         Route::delete('/{id}', [DoublesMixedMatchController::class, 'destroy'])->name('matches.doubles_mixed.destroy');
     });
@@ -141,6 +145,5 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/doubles', [ResultsController::class, 'doubles'])->name('results.doubles');
         Route::get('/mixed-doubles', [DoublesMixedMatchController::class, 'index'])->name('results.mixed_doubles');
         Route::get('/boys-doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
-        
     });
 });
