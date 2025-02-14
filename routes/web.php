@@ -75,12 +75,15 @@ Route::middleware(['auth'])->group(function () {
 
     // 🔹 Doubles Girls Matches
     Route::prefix('matches/doubles_girls')->group(function () {
-        Route::get('/', [DoublesGirlsMatchController::class, 'index'])->name('results.girls_doubles');
+        Route::get('/', [DoublesGirlsMatchController::class, 'index'])->name('matches.doubles_girls.index');
         Route::get('/create', [DoublesGirlsMatchController::class, 'create'])->name('matches.doubles_girls.create');
         Route::post('/', [DoublesGirlsMatchController::class, 'store'])->name('matches.doubles_girls.store');
+        Route::post('/lockTournament', [DoublesGirlsMatchController::class, 'lockTournament'])->name('matches.doubles_girls.lockTournament');  // ✅ Add this route
+        Route::post('/unlockTournament', [DoublesGirlsMatchController::class, 'unlockTournament'])->name('matches.doubles_girls.unlockTournament');  // ✅ Fix this
         Route::post('/{id}/update', [DoublesGirlsMatchController::class, 'update'])->name('matches.doubles_girls.update');
         Route::post('/{id}/delete', [DoublesGirlsMatchController::class, 'destroy'])->name('matches.doubles_girls.destroy');
     });
+    
 
     // 🔹 Doubles Mixed Matches
     Route::prefix('matches/doubles_mixed')->group(function () {
