@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Matches_xd extends Model
 {
-    // Specify the database table name (adjust if necessary)
+    use HasFactory;
+
+    // Specify the database table name
     protected $table = 'matches';
 
-    // Disable automatic timestamps if your table doesn't use created_at/updated_at
+    // Disable timestamps if not using created_at/updated_at columns
     public $timestamps = false;
 
-    // Define the fillable fields for mixed doubles matches
+    // Fillable fields
     protected $fillable = [
         'tournament_id',
         'category_id',
@@ -33,50 +36,44 @@ class Matches_xd extends Model
     ];
 
     /**
-     * Get the tournament associated with the match.
+     * Tournament Relationship - Each match belongs to one tournament.
      */
     public function tournament()
     {
-        return $this->belongsTo(\App\Models\Tournament::class);
+        return $this->belongsTo(Tournament::class);
     }
 
     /**
-     * Get the category associated with the match.
+     * Category Relationship - Each match belongs to one category.
      */
     public function category()
     {
-        return $this->belongsTo(\App\Models\Category::class);
+        return $this->belongsTo(Category::class);
     }
 
     /**
-     * Get the first player of Team 1.
+     * Player Relationships for Team 1
      */
     public function team1Player1()
     {
-        return $this->belongsTo(\App\Models\Player::class, 'team1_player1_id');
+        return $this->belongsTo(Player::class, 'team1_player1_id');
     }
 
-    /**
-     * Get the second player of Team 1.
-     */
     public function team1Player2()
     {
-        return $this->belongsTo(\App\Models\Player::class, 'team1_player2_id');
+        return $this->belongsTo(Player::class, 'team1_player2_id');
     }
 
     /**
-     * Get the first player of Team 2.
+     * Player Relationships for Team 2
      */
     public function team2Player1()
     {
-        return $this->belongsTo(\App\Models\Player::class, 'team2_player1_id');
+        return $this->belongsTo(Player::class, 'team2_player1_id');
     }
 
-    /**
-     * Get the second player of Team 2.
-     */
     public function team2Player2()
     {
-        return $this->belongsTo(\App\Models\Player::class, 'team2_player2_id');
+        return $this->belongsTo(Player::class, 'team2_player2_id');
     }
 }

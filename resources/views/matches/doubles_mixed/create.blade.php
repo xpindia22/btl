@@ -5,13 +5,13 @@
     <h1>Insert Mixed Doubles Match</h1>
     
     @if(session('message'))
-        <p class="message {{ strpos(session('message'), 'success') !== false ? 'success' : 'error' }}">
+        <p class="alert alert-info">
             {{ session('message') }}
         </p>
     @endif
 
     @if(!$lockedTournamentId)
-        <!-- If no tournament is locked, allow user to select and lock one -->
+        <!-- Tournament Selection Form -->
         <form method="POST" action="{{ route('matches.doubles_mixed.store') }}">
             @csrf
             <label for="tournament_id">Select Tournament:</label>
@@ -24,14 +24,14 @@
             <button type="submit" name="lock_tournament">Lock Tournament</button>
         </form>
     @else
-        <!-- Show locked tournament info with an unlock button -->
+        <!-- Locked Tournament Display with Unlock Button -->
+        <p><strong>Locked Tournament:</strong> {{ $lockedTournamentName }}</p>
         <form method="POST" action="{{ route('matches.doubles_mixed.store') }}">
             @csrf
-            <p>Locked Tournament: {{ session('locked_tournament_name') ?? 'Unknown' }}</p>
             <button type="submit" name="unlock_tournament">Unlock Tournament</button>
         </form>
 
-        <!-- Match entry form -->
+        <!-- Match Entry Form -->
         <form method="POST" action="{{ route('matches.doubles_mixed.store') }}">
             @csrf
             <label for="category_id">Category:</label>
@@ -58,10 +58,9 @@
 
             <label for="stage">Match Stage:</label>
             <select name="stage" id="stage" required>
-                <option value="Pre Quarter Finals">Pre Quarter Finals</option>
-                <option value="Quarter Finals">Quarter Finals</option>
-                <option value="Semi Finals">Semi Finals</option>
-                <option value="Finals">Finals</option>
+                @foreach($stages as $stage)
+                    <option value="{{ $stage }}">{{ $stage }}</option>
+                @endforeach
             </select>
 
             <label for="date">Match Date:</label>
@@ -69,6 +68,8 @@
 
             <label for="time">Match Time:</label>
             <input type="time" name="time" required>
+
+            <h3>Set Points</h3>
 
             <label for="set1_team1_points">Set 1 Team 1 Points:</label>
             <input type="number" name="set1_team1_points" required>
@@ -99,15 +100,15 @@ function loadPlayers(categoryId) {
     fetch(`{{ route('get_players') }}?category_id=${categoryId}`)
         .then(response => response.json())
         .then(data => {
-            // Filter players by sex
+            // Filter players by gender
             const femalePlayers = data.filter(player => player.sex === 'F');
             const malePlayers = data.filter(player => player.sex === 'M');
             
             // Get references to dropdown elements
-            const team1_player1_select = document.getElementById('team1_player1_id'); // female
-            const team1_player2_select = document.getElementById('team1_player2_id'); // male
-            const team2_player1_select = document.getElementById('team2_player1_id'); // female
-            const team2_player2_select = document.getElementById('team2_player2_id'); // male
+            const team1_player1_select = document.getElementById('team1_player1_id'); // Female
+            const team1_player2_select = document.getElementById('team1_player2_id'); // Male
+            const team2_player1_select = document.getElementById('team2_player1_id'); // Female
+            const team2_player2_select = document.getElementById('team2_player2_id'); // Male
             
             // Clear any existing options and add a default option
             [team1_player1_select, team1_player2_select, team2_player1_select, team2_player2_select].forEach(select => {
@@ -119,7 +120,6 @@ function loadPlayers(categoryId) {
                 const option = document.createElement('option');
                 option.value = player.id;
                 option.textContent = `${player.name} (${player.age} years, ${player.sex})`;
-                // Append a copy to each dropdown
                 team1_player1_select.appendChild(option.cloneNode(true));
                 team2_player1_select.appendChild(option);
             });
@@ -129,7 +129,6 @@ function loadPlayers(categoryId) {
                 const option = document.createElement('option');
                 option.value = player.id;
                 option.textContent = `${player.name} (${player.age} years, ${player.sex})`;
-                // Append a copy to each dropdown
                 team1_player2_select.appendChild(option.cloneNode(true));
                 team2_player2_select.appendChild(option);
             });
@@ -137,6 +136,5 @@ function loadPlayers(categoryId) {
         .catch(error => console.error('Error fetching players:', error));
 }
 </script>
-
 
 @endsection

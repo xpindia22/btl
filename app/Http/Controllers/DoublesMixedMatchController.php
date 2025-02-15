@@ -6,16 +6,41 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Tournament;
 use App\Models\Category;
-use App\Models\Matches_xd; // Your mixed doubles match model
+use App\Models\Matches_xd;
 use Carbon\Carbon;
 use DB;
 
 class DoublesMixedMatchController extends Controller
 {
     /**
-     * Display the form for creating a new mixed doubles match.
+     * Display all mixed doubles matches.
      */
-    public function create(Request $request)
+    public function index()
+{
+    $user = Auth::user();
+
+    // Fetch all mixed doubles matches
+    $matches = Matches_xd::with([
+        'tournament',
+        'category',
+        'team1Player1',
+        'team1Player2',
+        'team2Player1',
+        'team2Player2'
+    ])
+    ->whereHas('category', function ($query) {
+        $query->where('name', 'like', '%XD%');
+    })
+    ->orderBy('match_date', 'desc')
+    ->get();
+
+    return view('matches.doubles_mixed.index', compact('matches'));
+}
+
+    /**
+     * Show the form to create a new mixed doubles match.
+     */
+    public function create()
     {
         $user = Auth::user();
 
@@ -25,202 +50,157 @@ class DoublesMixedMatchController extends Controller
                 $q->where('user_id', $user->id);
             })->get();
 
-        // Get locked tournament ID from session, if any
-        $lockedTournamentId = session('locked_tournament');
-        if ($lockedTournamentId) {
-            // Get categories (e.g., those with 'XD' in the name) for the locked tournament.
-            $categories = Category::join('tournament_categories', 'categories.id', '=', 'tournament_categories.category_id')
-                ->where('tournament_categories.tournament_id', $lockedTournamentId)
-                ->where('categories.name', 'like', '%XD%')
-                ->select('categories.*')
-                ->get();
-        } else {
-            $categories = collect();
-        }
+        // Get categories for mixed doubles
+        $categories = Category::where('name', 'like', '%XD%')->get();
 
-        return view('matches.doubles_mixed.create', compact('tournaments', 'categories', 'lockedTournamentId'));
+        return view('matches.doubles_mixed.create', compact('tournaments', 'categories'));
     }
 
     /**
-     * Store a new mixed doubles match or handle tournament locking.
+     * Store a new mixed doubles match.
      */
     public function store(Request $request)
-{
-    // Debug: Dump request data to inspect submitted fields.
-    // dd($request->all()); // Remove or comment this line after debugging.
+    {
+        $user = Auth::user();
 
-    // If tournament_id is missing, merge it from session
-    if (!$request->has('tournament_id')) {
-        $request->merge(['tournament_id' => session('locked_tournament')]);
-    }
-    
-    $user = Auth::user();
+        // Validate match data
+        $validated = $request->validate([
+            'tournament_id'      => 'required|integer',
+            'category_id'        => 'required|integer',
+            'team1_player1_id'   => 'required|integer',
+            'team1_player2_id'   => 'required|integer',
+            'team2_player1_id'   => 'required|integer',
+            'team2_player2_id'   => 'required|integer',
+            'stage'              => 'required|string',
+            'date'               => 'required|date_format:Y-m-d',
+            'time'               => 'required',
+            'set1_team1_points'  => 'required|integer',
+            'set1_team2_points'  => 'required|integer',
+            'set2_team1_points'  => 'required|integer',
+            'set2_team2_points'  => 'required|integer',
+            'set3_team1_points'  => 'nullable|integer',
+            'set3_team2_points'  => 'nullable|integer',
+        ]);
 
-    // Handle tournament locking/unlocking if applicable...
-    if ($request->has('lock_tournament')) {
-        // ... existing code for locking ...
-    } elseif ($request->has('unlock_tournament')) {
-        // ... existing code for unlocking ...
-    }
+        // Format date and time
+        $match_date = Carbon::parse($validated['date'])->format('Y-m-d');
+        $match_time = Carbon::parse($validated['time'])->format('H:i:s');
 
-    // Validate the submitted match data.
-    $validated = $request->validate([
-        'tournament_id'      => 'required|integer',
-        'category_id'        => 'required|integer',
-        'team1_player1_id'   => 'required|integer',
-        'team1_player2_id'   => 'required|integer',
-        'team2_player1_id'   => 'required|integer',
-        'team2_player2_id'   => 'required|integer',
-        'stage'              => 'required|string',
-        'date'               => 'required|date_format:Y-m-d',
-        'time'               => 'required',
-        'set1_team1_points'  => 'required|integer',
-        'set1_team2_points'  => 'required|integer',
-        'set2_team1_points'  => 'required|integer',
-        'set2_team2_points'  => 'required|integer',
-        // set3 points are optional
-    ]);
+        // Create the match
+        Matches_xd::create([
+            'tournament_id' => $validated['tournament_id'],
+            'category_id' => $validated['category_id'],
+            'team1_player1_id' => $validated['team1_player1_id'],
+            'team1_player2_id' => $validated['team1_player2_id'],
+            'team2_player1_id' => $validated['team2_player1_id'],
+            'team2_player2_id' => $validated['team2_player2_id'],
+            'stage' => $validated['stage'],
+            'match_date' => $match_date,
+            'match_time' => $match_time,
+            'set1_team1_points' => $validated['set1_team1_points'],
+            'set1_team2_points' => $validated['set1_team2_points'],
+            'set2_team1_points' => $validated['set2_team1_points'],
+            'set2_team2_points' => $validated['set2_team2_points'],
+            'set3_team1_points' => $validated['set3_team1_points'] ?? 0,
+            'set3_team2_points' => $validated['set3_team2_points'] ?? 0,
+            'created_by' => $user->id,
+        ]);
 
-    // Format the date and time
-    $match_date = Carbon::createFromFormat('Y-m-d', $validated['date'])->format('Y-m-d');
-    $match_time = $request->input('time');
-    if (substr_count($match_time, ':') === 1) {
-        $match_time .= ':00';
-    }
-
-    // Create and save the match record.
-    $match = new Matches_xd();
-    $match->tournament_id      = $request->input('tournament_id');
-    $match->category_id        = $request->input('category_id');
-    $match->team1_player1_id   = $request->input('team1_player1_id');
-    $match->team1_player2_id   = $request->input('team1_player2_id');
-    $match->team2_player1_id   = $request->input('team2_player1_id');
-    $match->team2_player2_id   = $request->input('team2_player2_id');
-    $match->stage              = $validated['stage'];
-    $match->match_date         = $match_date;
-    $match->match_time         = $match_time;
-    $match->set1_team1_points  = $request->input('set1_team1_points');
-    $match->set1_team2_points  = $request->input('set1_team2_points');
-    $match->set2_team1_points  = $request->input('set2_team1_points');
-    $match->set2_team2_points  = $request->input('set2_team2_points');
-    $match->set3_team1_points  = $request->input('set3_team1_points', 0);
-    $match->set3_team2_points  = $request->input('set3_team2_points', 0);
-    $match->created_by         = $user->id;
-
-    if ($match->save()) {
         return redirect()->back()->with('message', "Match added successfully!");
-    } else {
-        return redirect()->back()->with('message', "Error adding match.");
     }
-}
 
-public function editResults()
+    /**
+     * Show the edit page for mixed doubles matches.
+     */
+    public function edit()
 {
     $user = Auth::user();
 
-    // Query mixed doubles matches with joins to get tournament, category, and player names.
-    $matches = DB::table('matches as m')
-        ->join('tournaments as t', 'm.tournament_id', '=', 't.id')
-        ->join('categories as c', 'm.category_id', '=', 'c.id')
-        ->leftJoin('players as p1', 'm.team1_player1_id', '=', 'p1.id')
-        ->leftJoin('players as p2', 'm.team1_player2_id', '=', 'p2.id')
-        ->leftJoin('players as p3', 'm.team2_player1_id', '=', 'p3.id')
-        ->leftJoin('players as p4', 'm.team2_player2_id', '=', 'p4.id')
-        ->select(
-            'm.id as match_id',
-            't.name as tournament_name',
-            'c.name as category_name',
-            'p1.name as team1_player1_name',
-            'p2.name as team1_player2_name',
-            'p3.name as team2_player1_name',
-            'p4.name as team2_player2_name',
-            'm.stage',
-            'm.match_date',
-            'm.match_time',
-            'm.set1_team1_points',
-            'm.set1_team2_points',
-            'm.set2_team1_points',
-            'm.set2_team2_points',
-            'm.set3_team1_points',
-            'm.set3_team2_points'
-        )
-        ->where('c.type', 'mixed doubles')
-        ->where(function ($q) use ($user) {
-            $q->where('m.created_by', $user->id)
-              ->orWhereExists(function ($query) use ($user) {
-                  $query->select(DB::raw(1))
-                        ->from('tournament_moderators as tm')
-                        ->join('tournaments as t2', 'tm.tournament_id', '=', 't2.id')
-                        ->whereRaw('t2.id = m.tournament_id')
-                        ->where('tm.user_id', $user->id);
-              });
-        })
-        ->orderBy('m.id')
-        ->get();
+    // Fetch all mixed doubles matches
+    $matches = Matches_xd::with([
+        'tournament',
+        'category',
+        'team1Player1',
+        'team1Player2',
+        'team2Player1',
+        'team2Player2'
+    ])
+    ->whereHas('category', function ($query) {
+        $query->where('name', 'like', '%XD%');
+    })
+    ->where(function ($query) use ($user) {
+        $query->where('created_by', $user->id)
+            ->orWhereHas('tournament.moderators', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+    })
+    ->orderBy('match_date', 'desc')
+    ->get();
 
-    // Define available stages for the dropdown.
+    // ✅ Ensure scores are passed
+    foreach ($matches as $match) {
+        $match->set1_team1_points = $match->set1_team1_points ?? 0;
+        $match->set1_team2_points = $match->set1_team2_points ?? 0;
+        $match->set2_team1_points = $match->set2_team1_points ?? 0;
+        $match->set2_team2_points = $match->set2_team2_points ?? 0;
+        $match->set3_team1_points = $match->set3_team1_points ?? 0;
+        $match->set3_team2_points = $match->set3_team2_points ?? 0;
+    }
+
+    // ✅ Define available match stages
     $stages = ['Pre Quarter Finals', 'Quarter Finals', 'Semi Finals', 'Finals'];
 
-    return view('matches.doubles_mixed.edit_results', compact('matches', 'stages'));
+    return view('matches.doubles_mixed.edit', compact('matches', 'stages'));
 }
 
 
-public function update(Request $request, $id)
-{
-    $user = Auth::user();
+    /**
+     * Update a mixed doubles match.
+     */
+    public function update(Request $request, $id)
+    {
+        $match = Matches_xd::findOrFail($id);
 
-    // Validate incoming data.
-    $validated = $request->validate([
-        'stage'             => 'required|string',
-        'match_date'        => 'required|date_format:Y-m-d',
-        'match_time'        => 'required',
-        'set1_team1_points' => 'required|integer',
-        'set1_team2_points' => 'required|integer',
-        'set2_team1_points' => 'required|integer',
-        'set2_team2_points' => 'required|integer',
-        'set3_team1_points' => 'nullable|integer',
-        'set3_team2_points' => 'nullable|integer',
-    ]);
+        // Validate data
+        $validated = $request->validate([
+            'stage' => 'required|string',
+            'match_date' => 'required|date_format:Y-m-d',
+            'match_time' => 'required',
+            'set1_team1_points' => 'required|integer',
+            'set1_team2_points' => 'required|integer',
+            'set2_team1_points' => 'required|integer',
+            'set2_team2_points' => 'required|integer',
+            'set3_team1_points' => 'nullable|integer',
+            'set3_team2_points' => 'nullable|integer',
+        ]);
 
-    // Format match time (append seconds if needed)
-    $match_time = $request->input('match_time');
-    if (substr_count($match_time, ':') === 1) {
-        $match_time .= ':00';
+        // Format time
+        $match_time = Carbon::parse($validated['match_time'])->format('H:i:s');
+
+        // Update match details
+        $match->update([
+            'stage'             => $validated['stage'],
+            'match_date'        => $validated['match_date'],
+            'match_time'        => $match_time,
+            'set1_team1_points' => $validated['set1_team1_points'],
+            'set1_team2_points' => $validated['set1_team2_points'],
+            'set2_team1_points' => $validated['set2_team1_points'],
+            'set2_team2_points' => $validated['set2_team2_points'],
+            'set3_team1_points' => $validated['set3_team1_points'] ?? 0,
+            'set3_team2_points' => $validated['set3_team2_points'] ?? 0,
+        ]);
+
+        return redirect()->back()->with('message', 'Match updated successfully!');
     }
 
-    // Retrieve the match record.
-    $match = \App\Models\Matches_xd::findOrFail($id);
+    /**
+     * Delete a mixed doubles match.
+     */
+    public function destroy($id)
+    {
+        $match = Matches_xd::findOrFail($id);
+        $match->delete();
 
-    // Authorization:
-    // 1. Admins can update any match.
-    // 2. Non-admin users must either be the match creator or a moderator for the tournament.
-    if ($user->role !== 'admin') {
-        if ($match->created_by !== $user->id) {
-            $isModerator = DB::table('tournament_moderators')
-                ->where('tournament_id', $match->tournament_id)
-                ->where('user_id', $user->id)
-                ->exists();
-
-            if (!$isModerator) {
-                return redirect()->back()->with('message', 'Unauthorized access.');
-            }
-        }
+        return redirect()->back()->with('message', 'Match deleted successfully!');
     }
-
-    // Update the match record.
-    $match->stage             = $validated['stage'];
-    $match->match_date        = $validated['match_date'];
-    $match->match_time        = $match_time;
-    $match->set1_team1_points = $request->input('set1_team1_points');
-    $match->set1_team2_points = $request->input('set1_team2_points');
-    $match->set2_team1_points = $request->input('set2_team1_points');
-    $match->set2_team2_points = $request->input('set2_team2_points');
-    $match->set3_team1_points = $request->input('set3_team1_points', 0);
-    $match->set3_team2_points = $request->input('set3_team2_points', 0);
-
-    $match->save();
-
-    return redirect()->back()->with('message', 'Match updated successfully!');
-}
-
 }
