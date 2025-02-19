@@ -137,4 +137,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/boys-doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
     });
 
+    Route::redirect('/matches/doubles-girls', '/matches/doubles_girls', 301);
+    Route::redirect('/matches/doubles-boys', '/matches/doubles_boys', 301);
+    Route::redirect('/matches/doubles-mixed', '/matches/doubles_mixed', 301);
+
+     
+
 });
