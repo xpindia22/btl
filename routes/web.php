@@ -151,6 +151,8 @@ Route::get('/edit/{id}', [MatchController::class, 'editSingleMatch'])->name('mat
 // For deleting a match
 Route::delete('/delete/{id}', [MatchController::class, 'deleteSingleMatch'])->name('matches.singles.deleteSingle');
 
+Route::put('/matches/singles/update/{id}', [MatchController::class, 'updateSingle'])->name('matches.singles.updateSingle');
+
 });
 
 

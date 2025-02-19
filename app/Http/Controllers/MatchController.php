@@ -20,48 +20,63 @@ class MatchController extends Controller
     // 1) View-Only: indexSingles
     // ------------------------------------------------------------------
     public function indexSingles(Request $request)
-    {
-        $user = Auth::user();
-        $isAdmin = $user->is_admin;
+{
+    $user = Auth::user();
+    $isAdmin = $user->is_admin;
 
-        $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
-            ->whereNull('deleted_at'); // If using soft deletes
+    $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
+        ->whereNull('deleted_at')
+        ->whereHas('category', function ($query) {
+            $query->where('name', 'LIKE', '%BS%')
+                  ->orWhere('name', 'LIKE', '%GS%');
+        })
+        ->whereDoesntHave('category', function ($query) {
+            $query->where('name', 'LIKE', '%BD%')
+                  ->orWhere('name', 'LIKE', '%GD%')
+                  ->orWhere('name', 'LIKE', '%XD%');
+        });
 
-        // Limit if not admin
-        if (!$isAdmin) {
-            $matchesQuery->where(function ($q) use ($user) {
-                $q->where('created_by', $user->id)
-                  ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
-            });
-        }
-
-        $matches = $matchesQuery->orderBy('id')->paginate(10);
-
-        return view('matches.singles.index', compact('matches'));
+    if (!$isAdmin) {
+        $matchesQuery->where(function ($q) use ($user) {
+            $q->where('created_by', $user->id)
+              ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
+        });
     }
 
-    // ------------------------------------------------------------------
-    // 2) Edit Table: indexSinglesWithEdit
-    // ------------------------------------------------------------------
-    public function indexSinglesWithEdit()
-    {
-        $user = Auth::user();
-        $isAdmin = $user->is_admin;
+    $matches = $matchesQuery->orderBy('id')->paginate(10);
 
-        $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
-            ->whereNull('deleted_at');
+    return view('matches.singles.index', compact('matches'));
+}
 
-        if (!$isAdmin) {
-            $matchesQuery->where(function ($q) use ($user) {
-                $q->where('created_by', $user->id)
-                  ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
-            });
-        }
+public function indexSinglesWithEdit()
+{
+    $user = Auth::user();
+    $isAdmin = $user->is_admin;
 
-        $matches = $matchesQuery->orderBy('id')->paginate(10);
+    $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
+        ->whereNull('deleted_at')
+        ->whereHas('category', function ($query) {
+            $query->where('name', 'LIKE', '%BS%')
+                  ->orWhere('name', 'LIKE', '%GS%');
+        })
+        ->whereDoesntHave('category', function ($query) {
+            $query->where('name', 'LIKE', '%BD%')
+                  ->orWhere('name', 'LIKE', '%GD%')
+                  ->orWhere('name', 'LIKE', '%XD%');
+        });
 
-        return view('matches.singles.edit', compact('matches'));
+    if (!$isAdmin) {
+        $matchesQuery->where(function ($q) use ($user) {
+            $q->where('created_by', $user->id)
+              ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
+        });
     }
+
+    $matches = $matchesQuery->orderBy('id')->paginate(10);
+
+    return view('matches.singles.edit', compact('matches'));
+}
+
 
     // ------------------------------------------------------------------
     // 3) Create & Store
