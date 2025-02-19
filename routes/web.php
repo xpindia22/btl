@@ -47,23 +47,40 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [MatchController::class, 'create'])->name('matches.create');
     });
 
-    // 🔹 Singles Matches (View Only & Edit Mode)
-    Route::prefix('matches/singles')->group(function () {
-        Route::get('/', [MatchController::class, 'indexSinglesViewOnly'])->name('matches.singles.index'); // No edit/delete
-        Route::get('/edit', [MatchController::class, 'indexSinglesWithEdit'])->name('matches.singles.edit'); // With edit/delete
-        // Route for viewing the singles match creation form
-        Route::get('/matches/singles/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
+// ✅ Singles Matches Routes
+// ✅ Singles Matches Routes
+Route::prefix('matches/singles')->group(function () {
+    // ✅ View All Singles Matches
+    Route::get('/', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
+    
+    // ✅ Create & Store a Match
+    Route::get('/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
+    Route::post('/store', [MatchController::class, 'storeSingles'])->name('matches.singles.store');
 
-        // Route for inserting a singles match
-        Route::post('/matches/singles/store', [MatchController::class, 'insertSinglesMatch'])->name('matches.singles.store');
+    // ✅ Lock/Unlock Tournament for Match Entry
+    Route::post('/lock', [MatchController::class, 'lockTournament'])->name('matches.singles.lockTournament');
+    Route::post('/unlock', [MatchController::class, 'unlockTournament'])->name('matches.singles.unlockTournament');
 
-    });
+    // ✅ Edit Matches - View full table with edit/delete options
+    Route::get('/edit', [MatchController::class, 'editSinglesTable'])->name('matches.singles.editTable'); // ✅ NEW: Edit all matches
+
+    // ✅ Edit, Update & Delete a Single Match
+    Route::get('/edit/{id}', [MatchController::class, 'editSingles'])->name('matches.singles.edit'); // ✅ Edit a single match
+    Route::put('/update/{id}', [MatchController::class, 'updateSingles'])->name('matches.singles.update'); // ✅ Update
+    Route::delete('/delete/{id}', [MatchController::class, 'deleteSingles'])->name('matches.singles.delete'); // ✅ Delete
+});
+
+
 
     // 🔹 Doubles Boys Matches (View Only & Edit Mode)
-    Route::prefix('matches/doubles_boys')->group(function () {
-        Route::get('/', [DoublesBoysMatchController::class, 'indexViewOnly'])->name('matches.doubles_boys.index'); // No edit/delete
-        Route::get('/edit', [DoublesBoysMatchController::class, 'indexWithEdit'])->name('matches.doubles_boys.edit'); // With edit/delete
-    });
+// 🔹 Doubles Boys Matches (View, Create, Edit)
+Route::prefix('matches/doubles_boys')->group(function () {
+    Route::get('/', [DoublesBoysMatchController::class, 'indexViewOnly'])->name('matches.doubles_boys.index'); // No edit/delete
+    Route::get('/edit', [DoublesBoysMatchController::class, 'indexWithEdit'])->name('matches.doubles_boys.edit'); // With edit/delete
+    Route::get('/create', [DoublesBoysMatchController::class, 'create'])->name('matches.doubles_boys.create'); // ✅ Fix this
+    Route::post('/store', [DoublesBoysMatchController::class, 'store'])->name('matches.doubles_boys.store'); // ✅ Fix this
+});
+
 
     // 🔹 Doubles Girls Matches (View Only & Edit Mode)
     Route::prefix('matches/doubles_girls')->group(function () {
