@@ -47,17 +47,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [MatchController::class, 'create'])->name('matches.create');
     });
 
-    // 🔹 Singles Matches (View Only & Edit Mode)
-    Route::prefix('matches/singles')->group(function () {
-        Route::get('/', [MatchController::class, 'indexSinglesViewOnly'])->name('matches.singles.index'); // No edit/delete
-        Route::get('/edit', [MatchController::class, 'indexSinglesWithEdit'])->name('matches.singles.edit'); // With edit/delete
-        // Route for viewing the singles match creation form
-        Route::get('/matches/singles/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
-
-        // Route for inserting a singles match
-        Route::post('/matches/singles/store', [MatchController::class, 'insertSinglesMatch'])->name('matches.singles.store');
-
-    });
 
     // 🔹 Doubles Boys Matches (View Only & Edit Mode)
     Route::prefix('matches/doubles_boys')->group(function () {
@@ -135,6 +124,30 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/doubles', [ResultsController::class, 'doubles'])->name('results.doubles');
         Route::get('/mixed-doubles', [DoublesMixedMatchController::class, 'index'])->name('results.mixed_doubles');
         Route::get('/boys-doubles', [ResultsController::class, 'boysDoubles'])->name('results.boys_doubles');
+    });
+
+
+// 🔹 Singles Matches (View Only & Edit Mode)
+Route::prefix('matches/singles')->group(function () {
+    // ✅ Main View (No Edit/Delete)
+    Route::get('/', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
+
+    // ✅ Edit View (With Edit/Delete)
+    Route::get('/edit', [MatchController::class, 'indexSinglesWithEdit'])->name('matches.singles.edit');
+
+    // ✅ Show the singles match creation form
+    Route::get('/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
+
+    // ✅ Insert a singles match
+    Route::post('/store', [MatchController::class, 'storeSingles'])->name('matches.singles.store');
+
+    // ✅ Lock/Unlock tournament routes
+    Route::post('/lock', [MatchController::class, 'lockTournament'])->name('matches.singles.lockTournament');
+    Route::post('/unlock', [MatchController::class, 'unlockTournament'])->name('matches.singles.unlockTournament');
+});
+
+
+
     });
 
     //Redirecting routes

@@ -16,62 +16,78 @@ class MatchController extends Controller
         $this->middleware('auth');
     }
 
-    // ✅ List all singles matches
+    // ------------------------------------------------------------------
+    // 1) View-Only: indexSingles
+    // ------------------------------------------------------------------
     public function indexSingles(Request $request)
     {
         $user = Auth::user();
         $isAdmin = $user->is_admin;
 
-        $matches = Matches::with(['tournament', 'category', 'player1', 'player2'])
-            ->whereNull('deleted_at');
+        $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
+            ->whereNull('deleted_at'); // If using soft deletes
 
+        // Limit if not admin
         if (!$isAdmin) {
-            $matches->where(function ($q) use ($user) {
+            $matchesQuery->where(function ($q) use ($user) {
                 $q->where('created_by', $user->id)
-                    ->orWhereHas('tournament.moderators', fn ($q2) => $q2->where('user_id', $user->id));
+                  ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
             });
         }
 
-        $matches = $matches->orderBy('id')->paginate(10);
-        $tournaments = Tournament::all();
-        $categories = Category::all();
-        $players = Player::all();
+        $matches = $matchesQuery->orderBy('id')->paginate(10);
 
-        return view('matches.singles.index', compact('matches', 'tournaments', 'categories', 'players'));
+        return view('matches.singles.index', compact('matches'));
     }
 
-    // ✅ Lock a tournament
-    public function lockTournament(Request $request)
+    // ------------------------------------------------------------------
+    // 2) Edit Table: indexSinglesWithEdit
+    // ------------------------------------------------------------------
+    public function indexSinglesWithEdit()
     {
-        $request->validate(['tournament_id' => 'required|exists:tournaments,id']);
+        $user = Auth::user();
+        $isAdmin = $user->is_admin;
 
-        $tournament = Tournament::find($request->tournament_id);
-        session(['locked_tournament' => $tournament->id, 'locked_tournament_name' => $tournament->name]);
+        $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
+            ->whereNull('deleted_at');
 
-        return redirect()->back()->with('success', 'Tournament locked: ' . $tournament->name);
+        if (!$isAdmin) {
+            $matchesQuery->where(function ($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
+            });
+        }
+
+        $matches = $matchesQuery->orderBy('id')->paginate(10);
+
+        return view('matches.singles.edit', compact('matches'));
     }
 
-    // ✅ Unlock a tournament
-    public function unlockTournament(Request $request)
-    {
-        session()->forget(['locked_tournament', 'locked_tournament_name']);
-        return redirect()->back()->with('success', 'Tournament unlocked');
-    }
-
-    // ✅ Show the create form
+    // ------------------------------------------------------------------
+    // 3) Create & Store
+    // ------------------------------------------------------------------
     public function createSingles(Request $request)
     {
         $user = Auth::user();
-        $tournaments = Tournament::where('created_by', $user->id)->orWhereHas('moderators', fn ($q) => $q->where('user_id', $user->id))->get();
+
+        // Tournaments
+        $tournaments = Tournament::where('created_by', $user->id)
+            ->orWhereHas('moderators', fn($q) => $q->where('user_id', $user->id))
+            ->get();
+
         $lockedTournamentId = session('locked_tournament');
-        $lockedTournament = $lockedTournamentId ? Tournament::find($lockedTournamentId) : null;
+        $lockedTournament   = $lockedTournamentId ? Tournament::find($lockedTournamentId) : null;
+
         $players = Player::all();
-        $categories = Category::whereHas('tournaments', fn ($q) => $q->where('tournament_id', $lockedTournamentId))->get();
+
+        $categories = [];
+        if ($lockedTournamentId) {
+            $categories = Category::whereHas('tournaments', fn($q) => $q->where('tournament_id', $lockedTournamentId))->get();
+        }
 
         return view('matches.singles.create', compact('tournaments', 'lockedTournament', 'players', 'categories'));
     }
 
-    // ✅ Store a new singles match
     public function storeSingles(Request $request)
     {
         if (!session('locked_tournament')) {
@@ -79,77 +95,57 @@ class MatchController extends Controller
         }
 
         $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'player1_id' => 'required|exists:players,id|different:player2_id',
-            'player2_id' => 'required|exists:players,id',
-            'stage' => 'required|string',
-            'date' => 'required|date',
-            'match_time' => 'required',
-            'set1_player1_points' => 'required|integer',
-            'set1_player2_points' => 'required|integer',
-            'set2_player1_points' => 'required|integer',
-            'set2_player2_points' => 'required|integer',
-            'set3_player1_points' => 'nullable|integer',
-            'set3_player2_points' => 'nullable|integer',
+            'category_id'            => 'required|exists:categories,id',
+            'player1_id'             => 'required|exists:players,id|different:player2_id',
+            'player2_id'             => 'required|exists:players,id',
+            'stage'                  => 'required|string',
+            'date'                   => 'required|date',
+            'match_time'             => 'required',
+            'set1_player1_points'    => 'required|integer',
+            'set1_player2_points'    => 'required|integer',
+            'set2_player1_points'    => 'required|integer',
+            'set2_player2_points'    => 'required|integer',
+            'set3_player1_points'    => 'nullable|integer',
+            'set3_player2_points'    => 'nullable|integer',
         ]);
 
-        Matches::create($request->all() + ['tournament_id' => session('locked_tournament'), 'created_by' => Auth::id()]);
+        Matches::create([
+            'tournament_id'            => session('locked_tournament'),
+            'category_id'              => $request->input('category_id'),
+            'player1_id'               => $request->input('player1_id'),
+            'player2_id'               => $request->input('player2_id'),
+            'stage'                    => $request->input('stage'),
+            'match_date'               => $request->input('date'),
+            'match_time'               => $request->input('match_time'),
+            'set1_player1_points'      => $request->input('set1_player1_points'),
+            'set1_player2_points'      => $request->input('set1_player2_points'),
+            'set2_player1_points'      => $request->input('set2_player1_points'),
+            'set2_player2_points'      => $request->input('set2_player2_points'),
+            'set3_player1_points'      => $request->input('set3_player1_points'),
+            'set3_player2_points'      => $request->input('set3_player2_points'),
+            'created_by'               => Auth::id(),
+        ]);
 
         return redirect()->route('matches.singles.index')->with('success', 'Match successfully added!');
     }
 
-    public function editSingles($id)
-{
-    $match = Matches::with(['tournament', 'category', 'player1', 'player2'])->findOrFail($id);
+    // ------------------------------------------------------------------
+    // 4) Lock/Unlock
+    // ------------------------------------------------------------------
+    public function lockTournament(Request $request)
+    {
+        $request->validate(['tournament_id' => 'required|exists:tournaments,id']);
+        $tournament = Tournament::findOrFail($request->tournament_id);
 
-    // Check permissions
-    $user = Auth::user();
-    $isAdmin = $user->is_admin;
+        session(['locked_tournament' => $tournament->id]);
+        session(['locked_tournament_name' => $tournament->name]);
 
-    if (!$isAdmin && $match->created_by != $user->id) {
-        if (!$match->tournament || !$match->tournament->moderators()->where('user_id', $user->id)->exists()) {
-            abort(403, 'You do not have permission to edit this match.');
-        }
+        return redirect()->back()->with('success', 'Tournament locked: ' . $tournament->name);
     }
 
-    // Match stages
-    $stages = ['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals'];
-
-    return view('matches.singles.edit', compact('match', 'stages'));
-}
-public function editSinglesTable()
-{
-    $matches = Matches::with(['tournament', 'category', 'player1', 'player2'])->paginate(10);
-    return view('matches.singles.edit', compact('matches'));
-}
-
-public function updateSingles(Request $request, $id)
-{
-    $match = Matches::findOrFail($id);
-    
-    $request->validate([
-        'match_date'            => 'required|date',
-        'match_time'            => 'required',
-        'stage'                 => 'required|string',
-        'set1_player1_points'   => 'nullable|integer',
-        'set1_player2_points'   => 'nullable|integer',
-        'set2_player1_points'   => 'nullable|integer',
-        'set2_player2_points'   => 'nullable|integer',
-        'set3_player1_points'   => 'nullable|integer',
-        'set3_player2_points'   => 'nullable|integer',
-    ]);
-
-    $match->update($request->all());
-
-    return redirect()->route('matches.singles.edit')->with('success', 'Match updated successfully.');
-}
-
-public function deleteSingles($id)
-{
-    $match = Matches::findOrFail($id);
-    $match->delete();
-    return redirect()->route('matches.singles.edit')->with('success', 'Match deleted successfully.');
-}
-
-
+    public function unlockTournament(Request $request)
+    {
+        session()->forget(['locked_tournament', 'locked_tournament_name']);
+        return redirect()->back()->with('success', 'Tournament unlocked');
+    }
 }

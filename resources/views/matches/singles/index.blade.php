@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Singles Matches</h1>
+    <h1>Singles Matches (View-Only)</h1>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -41,32 +41,31 @@
                 </td>
                 <td>
                     @php
-                        $player1 = optional($match->player1)->name;
-                        $player2 = optional($match->player2)->name;
+                        $p1_sets = 0; 
+                        $p2_sets = 0;
 
-                        $player1_sets = 0;
-                        $player2_sets = 0;
+                        if ($match->set1_player1_points > $match->set1_player2_points) $p1_sets++;
+                        if ($match->set1_player2_points > $match->set1_player1_points) $p2_sets++;
 
-                        if ($match->set1_player1_points > $match->set1_player2_points) $player1_sets++;
-                        if ($match->set1_player2_points > $match->set1_player1_points) $player2_sets++;
-
-                        if ($match->set2_player1_points > $match->set2_player2_points) $player1_sets++;
-                        if ($match->set2_player2_points > $match->set2_player1_points) $player2_sets++;
+                        if ($match->set2_player1_points > $match->set2_player2_points) $p1_sets++;
+                        if ($match->set2_player2_points > $match->set2_player1_points) $p2_sets++;
 
                         if (!is_null($match->set3_player1_points) && !is_null($match->set3_player2_points)) {
-                            if ($match->set3_player1_points > $match->set3_player2_points) $player1_sets++;
-                            if ($match->set3_player2_points > $match->set3_player1_points) $player2_sets++;
+                            if ($match->set3_player1_points > $match->set3_player2_points) $p1_sets++;
+                            if ($match->set3_player2_points > $match->set3_player1_points) $p2_sets++;
                         }
 
-                        $winner = $player1_sets > $player2_sets ? $player1 : ($player2_sets > $player1_sets ? $player2 : 'Draw');
+                        $winner = $p1_sets > $p2_sets ? optional($match->player1)->name : 
+                                  ($p2_sets > $p1_sets ? optional($match->player2)->name : 'Draw');
                     @endphp
-                    {{ $winner ?? 'N/A' }}
+                    {{ $winner }}
                 </td>
             </tr>
             @endforeach
         </tbody>
     </table>
 
+    {{-- Pagination --}}
     <div class="d-flex justify-content-center">
         {{ $matches->links() }}
     </div>
