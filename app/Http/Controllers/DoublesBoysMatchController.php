@@ -179,4 +179,33 @@ class DoublesBoysMatchController extends Controller
     {
         return substr_count($timeInput, ':') === 1 ? $timeInput . ':00' : $timeInput;
     }
+
+    public function indexViewOnly()
+    {
+        $matches = Matches_bd::with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2'])
+            ->orderBy('id')
+            ->get();
+
+        return view('matches.doubles_boys.index', compact('matches'));
+    }
+
+    /**
+     * Editable Boys Doubles Matches (With Edit/Delete)
+     */
+    public function indexWithEdit()
+    {
+        $user = Auth::user();
+        $matches = Matches_bd::with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2']);
+
+        if (!$user->is_admin) {
+            $matches->where(function ($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereHas('tournament.moderators', fn ($q2) => $q2->where('user_id', $user->id));
+            });
+        }
+
+        $matches = $matches->orderBy('id')->get();
+
+        return view('matches.doubles_boys.edit', compact('matches'));
+    }
 }

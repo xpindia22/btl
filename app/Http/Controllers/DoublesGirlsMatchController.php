@@ -256,4 +256,36 @@ class DoublesGirlsMatchController extends Controller
             return redirect()->back()->with('error', 'Error deleting match. Check logs.');
         }
     }
+
+    public function indexViewOnly()
+    {
+        $matches = Matches::with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2'])
+            ->whereHas('category', function ($q) {
+                $q->where('type', 'doubles')->where('sex', 'F');
+            })
+            ->orderBy('id')
+            ->get();
+
+        return view('matches.doubles_girls.index', compact('matches'));
+    }
+
+    /**
+     * Editable Girls Doubles Matches (With Edit/Delete)
+     */
+    public function indexWithEdit()
+    {
+        $user = Auth::user();
+        $matches = Matches::with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2']);
+
+        if (!$user->is_admin) {
+            $matches->where(function ($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereHas('tournament.moderators', fn ($q2) => $q2->where('user_id', $user->id));
+            });
+        }
+
+        $matches = $matches->orderBy('id')->get();
+
+        return view('matches.doubles_girls.edit', compact('matches'));
+    }
 }

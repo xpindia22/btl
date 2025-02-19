@@ -7,7 +7,7 @@ body {
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 20px auto;
     background: #ffffff;
     padding: 20px;
@@ -18,155 +18,225 @@ body {
 /* Navbar */
 .navbar {
     background-color: #007bff !important;
-    padding: 10px;
+    padding: 12px 15px;
 }
 
 .navbar a {
     color: white !important;
     font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    color: #d4e4ff !important;
 }
 
 /* Table Styles */
+.table-container {
+    overflow-x: auto; /* Ensure responsiveness */
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 15px;
+    background: white;
 }
 
 .table th, .table td {
     border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
+    padding: 12px;
+    text-align: center;
 }
 
 .table th {
     background-color: #007bff;
     color: white;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 .table tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
-/* Form Styles */
-input[type="text"], input[type="email"], select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.table tr:hover {
+    background-color: #e0e0e0;
 }
 
-button, .btn {
-    padding: 8px 15px;
-    border: none;
+/* Highlight Winner Column */
+.winner-badge {
+    padding: 6px 12px;
     border-radius: 5px;
-    cursor: pointer;
-    display: inline-block;
-    text-align: center;
-    font-size: 14px;
+    font-weight: bold;
 }
 
-.btn-success {
+.winner-badge.win {
     background-color: #28a745;
     color: white;
 }
 
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
+.winner-badge.draw {
+    background-color: #ffc107;
+    color: black;
+}
+
+/* Button Styles */
+.btn {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    margin: 5px;
+    cursor: pointer;
 }
 
 .btn-primary {
     background-color: #007bff;
     color: white;
+    border: none;
 }
 
-.btn-sm {
-    padding: 8px 15px;
-    font-size: 14px;
-    line-height: 1.5;
+.btn-success {
+    background-color: #28a745;
+    color: white;
+    border: none;
 }
 
-/* Custom Pagination Overrides */
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.btn-danger:hover {
+    background-color: #a71d2a;
+}
+
+/* Pagination Styling */
 .pagination {
-    font-size: 14px !important;
-    line-height: 1.2 !important;
-    margin: 1rem 0;
-    display: inline-flex;
-    padding-left: 0;
-    list-style: none;
-    border-radius: 0.25rem;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
 }
 
 .pagination .page-item {
-    margin: 0 2px;
+    margin: 0 3px;
 }
 
 .pagination .page-link {
-    color: #333 !important;
-    background-color: #fff !important;
-    border: 1px solid #ddd !important;
-    padding: 0.375rem 0.75rem !important;
-    font-size: 14px !important;
-    line-height: 1.2 !important;
-    border-radius: 0.25rem !important;
-    text-align: center;
+    color: #007bff;
+    padding: 8px 12px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
     min-width: 2.5rem;
     display: inline-block;
 }
 
-.pagination .page-link:hover,
-.pagination .page-link:focus {
-    background-color: #f0f0f0 !important;
-    border-color: #ccc !important;
-}
-
-.pagination .page-item.active .page-link {
-    background-color: #007bff !important;
-    border-color: #007bff !important;
-    color: #fff !important;
-}
-
-/* If using Font Awesome icons for arrows */
-.pagination .page-link .fa {
-    font-size: 14px !important;
-    vertical-align: middle;
-}
-
-/* Optionally, if the arrows are plain HTML entities */
-.pagination .page-link span {
-    font-size: 14px !important;
-}
-
-/* Boys Doubles Columns Styles */
-.boys-doubles-columns .table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.boys-doubles-columns .table th,
-.boys-doubles-columns .table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-}
-
-.boys-doubles-columns .table th {
-    background-color: #0056b3; /* Darker blue for doubles headers */
+.pagination .page-link:hover {
+    background-color: #007bff;
     color: white;
-    text-transform: uppercase;
-    font-weight: bold;
-    padding: 12px;
 }
 
-.boys-doubles-columns .table td {
-    font-weight: bold;
-    vertical-align: middle;
+.pagination .active .page-link {
+    background-color: #007bff;
+    color: white;
+    border: none;
 }
 
-.boys-doubles-columns .table tr:hover {
-    background-color: #e9ecef;
+/* Form Styles */
+form {
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+select {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Singles Matches */
+.singles-container .table th {
+    background-color: #007bff;
+}
+
+.singles-container .table td {
+    font-weight: bold;
+}
+
+/* Boys Doubles */
+.boys-doubles-container .table th {
+    background-color: #0056b3;
+    color: white;
+}
+
+.boys-doubles-container .table td {
+    font-weight: bold;
+    color: #0056b3;
+}
+
+/* Girls Doubles */
+.girls-doubles-container .table th {
+    background-color: #c2185b;
+    color: white;
+}
+
+.girls-doubles-container .table td {
+    font-weight: bold;
+    color: #c2185b;
+}
+
+/* Mixed Doubles */
+.mixed-doubles-container .table th {
+    background-color: #ff9800;
+    color: white;
+}
+
+.mixed-doubles-container .table td {
+    font-weight: bold;
+    color: #ff9800;
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .btn {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .pagination .page-link {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
 }
