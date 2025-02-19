@@ -144,6 +144,13 @@ Route::prefix('matches/singles')->group(function () {
     // ✅ Lock/Unlock tournament routes
     Route::post('/lock', [MatchController::class, 'lockTournament'])->name('matches.singles.lockTournament');
     Route::post('/unlock', [MatchController::class, 'unlockTournament'])->name('matches.singles.unlockTournament');
+
+    // For editing a single match
+Route::get('/edit/{id}', [MatchController::class, 'editSingleMatch'])->name('matches.singles.editSingle');
+
+// For deleting a match
+Route::delete('/delete/{id}', [MatchController::class, 'deleteSingleMatch'])->name('matches.singles.deleteSingle');
+
 });
 
 
@@ -159,4 +166,3 @@ Route::prefix('matches/singles')->group(function () {
     Route::redirect('/matches/doubles-mixed/edit', '/matches/doubles_mixed/edit', 301);
      
 
-});

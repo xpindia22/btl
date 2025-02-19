@@ -148,4 +148,87 @@ class MatchController extends Controller
         session()->forget(['locked_tournament', 'locked_tournament_name']);
         return redirect()->back()->with('success', 'Tournament unlocked');
     }
+
+
+    // Edit a single match
+public function editSingleMatch($id)
+{
+    $match = Matches::findOrFail($id);
+    // optional: permission checks
+
+    // Return a dedicated Blade e.g. resources/views/matches/singles/edit_single.blade.php
+    return view('matches.singles.edit_single', compact('match'));
+}
+
+// Delete a single match
+public function deleteSingleMatch($id)
+{
+    $match = Matches::findOrFail($id);
+    // optional: permission checks
+
+    $match->delete();
+    return redirect()->route('matches.singles.edit')->with('success', 'Match deleted successfully!');
+}
+
+/**
+ * Update a single match (inline edit in the table).
+ */
+public function updateSingle(Request $request, $id)
+{
+    $match = Matches::findOrFail($id);
+
+    // (Optional) permission checks for who can edit.
+    // if not admin, must be match creator or tournament moderator
+    $user = Auth::user();
+    if (!$user->is_admin && $match->created_by != $user->id) {
+        if (!$match->tournament || !$match->tournament->moderators()->where('user_id', $user->id)->exists()) {
+            abort(403, 'You do not have permission to update this match.');
+        }
+    }
+
+    // Validate fields
+    $request->validate([
+        'stage'                 => 'required|string',
+        'set1_player1_points'   => 'nullable|integer',
+        'set1_player2_points'   => 'nullable|integer',
+        'set2_player1_points'   => 'nullable|integer',
+        'set2_player2_points'   => 'nullable|integer',
+        'set3_player1_points'   => 'nullable|integer',
+        'set3_player2_points'   => 'nullable|integer',
+    ]);
+
+    // Update match
+    $match->stage                 = $request->input('stage');
+    $match->set1_player1_points   = $request->input('set1_player1_points') ?? 0;
+    $match->set1_player2_points   = $request->input('set1_player2_points') ?? 0;
+    $match->set2_player1_points   = $request->input('set2_player1_points') ?? 0;
+    $match->set2_player2_points   = $request->input('set2_player2_points') ?? 0;
+    $match->set3_player1_points   = $request->input('set3_player1_points') ?? 0;
+    $match->set3_player2_points   = $request->input('set3_player2_points') ?? 0;
+    $match->save();
+
+    return redirect()->route('matches.singles.edit')->with('success', 'Match updated successfully.');
+}
+
+/**
+ * Delete a single match (inline in the table).
+ */
+public function deleteSingle($id)
+{
+    $match = Matches::findOrFail($id);
+
+    // (Optional) permission checks
+    $user = Auth::user();
+    if (!$user->is_admin && $match->created_by != $user->id) {
+        if (!$match->tournament || !$match->tournament->moderators()->where('user_id', $user->id)->exists()) {
+            abort(403, 'You do not have permission to delete this match.');
+        }
+    }
+
+    $match->delete();
+
+    return redirect()->route('matches.singles.edit')->with('success', 'Match deleted successfully.');
+}
+
+
 }
