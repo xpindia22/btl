@@ -64,6 +64,17 @@ body {
     background-color: #e0e0e0;
 }
 
+/* Adjusted Column Widths */
+.table th:nth-child(6),
+.table td:nth-child(6) { /* Stage Column */
+    width: 200px;
+}
+
+.table th:nth-child(9),
+.table td:nth-child(9) { /* Winner Column */
+    width: 300px;
+}
+
 /* Highlight Winner Column */
 .winner-badge {
     padding: 6px 12px;
@@ -180,48 +191,6 @@ select {
 
 .form-group {
     margin-bottom: 15px;
-}
-
-/* Singles Matches */
-.singles-container .table th {
-    background-color: #007bff;
-}
-
-.singles-container .table td {
-    font-weight: bold;
-}
-
-/* Boys Doubles */
-.boys-doubles-container .table th {
-    background-color: #0056b3;
-    color: white;
-}
-
-.boys-doubles-container .table td {
-    font-weight: bold;
-    color: #0056b3;
-}
-
-/* Girls Doubles */
-.girls-doubles-container .table th {
-    background-color: #c2185b;
-    color: white;
-}
-
-.girls-doubles-container .table td {
-    font-weight: bold;
-    color: #c2185b;
-}
-
-/* Mixed Doubles */
-.mixed-doubles-container .table th {
-    background-color: #ff9800;
-    color: white;
-}
-
-.mixed-doubles-container .table td {
-    font-weight: bold;
-    color: #ff9800;
 }
 
 /* Mobile Responsiveness */
