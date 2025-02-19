@@ -63,12 +63,24 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('matches/doubles_boys')->group(function () {
         Route::get('/', [DoublesBoysMatchController::class, 'indexViewOnly'])->name('matches.doubles_boys.index'); // No edit/delete
         Route::get('/edit', [DoublesBoysMatchController::class, 'indexWithEdit'])->name('matches.doubles_boys.edit'); // With edit/delete
+        Route::get('/matches/doubles_boys/create', [MatchesController::class, 'createDoublesBoys'])
+        ->name('matches.doubles_boys.create');
+        Route::get('/matches/doubles_mixed/create', [MatchesController::class, 'createDoublesMixed'])
+     ->name('matches.doubles_mixed.create');
+         
     });
 
     // 🔹 Doubles Girls Matches (View Only & Edit Mode)
     Route::prefix('matches/doubles_girls')->group(function () {
         Route::get('/', [DoublesGirlsMatchController::class, 'indexViewOnly'])->name('matches.doubles_girls.index'); // No edit/delete
         Route::get('/edit', [DoublesGirlsMatchController::class, 'indexWithEdit'])->name('matches.doubles_girls.edit'); // With edit/delete
+        Route::get('/matches/doubles/create', [DoublesGirlsMatchController::class, 'create'])
+        ->name('matches.doubles.create');
+   
+   Route::get('/matches/doubles', [DoublesGirlsMatchController::class, 'index'])
+        ->name('matches.doubles.index');
+    
+    
     });
 
     // 🔹 Doubles Mixed Matches (View Only & Edit Mode)
