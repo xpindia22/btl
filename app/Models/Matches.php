@@ -58,6 +58,8 @@ class Matches extends Model
         return $this->belongsTo(Category::class);
     }
 
+    // 🏸 **Singles Match Relationships**
+    
     /**
      * Get the first player for a singles match.
      */
@@ -74,7 +76,7 @@ class Matches extends Model
         return $this->belongsTo(Player::class, 'player2_id');
     }
 
-    // 🏸 Doubles Relationships
+    // 🏸 **Doubles Match Relationships**
 
     /**
      * Get the first player of Team 1 in a doubles match.
@@ -106,5 +108,45 @@ class Matches extends Model
     public function team2Player2()
     {
         return $this->belongsTo(Player::class, 'team2_player2_id');
+    }
+
+    // 🏸 **Helper Functions for Easy Access**
+
+    /**
+     * Get the full names of players in Team 1 for doubles.
+     */
+    public function getTeam1Names()
+    {
+        return trim(($this->team1Player1->name ?? '') . ' & ' . ($this->team1Player2->name ?? '')) ?: 'N/A';
+    }
+
+    /**
+     * Get the full names of players in Team 2 for doubles.
+     */
+    public function getTeam2Names()
+    {
+        return trim(($this->team2Player1->name ?? '') . ' & ' . ($this->team2Player2->name ?? '')) ?: 'N/A';
+    }
+
+    /**
+     * Get the winner for both singles and doubles matches.
+     */
+    public function getWinnerAttribute()
+    {
+        if ($this->player1_id && $this->player2_id) {
+            // Singles match winner
+            $player1SetsWon = ($this->set1_player1_points > $this->set1_player2_points ? 1 : 0) +
+                              ($this->set2_player1_points > $this->set2_player2_points ? 1 : 0) +
+                              ($this->set3_player1_points > $this->set3_player2_points ? 1 : 0);
+
+            return ($player1SetsWon >= 2) ? ($this->player1->name ?? 'N/A') : ($this->player2->name ?? 'N/A');
+        } else {
+            // Doubles match winner
+            $team1SetsWon = ($this->set1_team1_points > $this->set1_team2_points ? 1 : 0) +
+                            ($this->set2_team1_points > $this->set2_team2_points ? 1 : 0) +
+                            ($this->set3_team1_points > $this->set3_team2_points ? 1 : 0);
+
+            return ($team1SetsWon >= 2) ? $this->getTeam1Names() : $this->getTeam2Names();
+        }
     }
 }

@@ -20,7 +20,7 @@ class DoublesMatchController extends Controller
     // ----------------------------------------
     // 1) Create Doubles Match Form
     // ----------------------------------------
-    public function createDoubles(Request $request)
+    public function createDoubles()
     {
         $user = Auth::user();
 
@@ -30,8 +30,6 @@ class DoublesMatchController extends Controller
         // Get tournaments accessible by the user (for locking)
         $lockedTournamentId = session('locked_tournament');
         $lockedTournament   = $lockedTournamentId ? Tournament::find($lockedTournamentId) : null;
-
-        $players = Player::all();
 
         // Get only doubles categories (BD, GD, XD) for the locked tournament.
         $categories = [];
@@ -47,7 +45,7 @@ class DoublesMatchController extends Controller
             ->get();
         }
 
-        return view('matches.doubles.create', compact('championships', 'lockedTournament', 'players', 'categories'));
+        return view('matches.doubles.create', compact('championships', 'lockedTournament', 'categories'));
     }
 
     // ----------------------------------------
@@ -89,15 +87,15 @@ class DoublesMatchController extends Controller
         ];
 
         if ($isMixed) {
-            $rules['team1_male']   = 'required';
-            $rules['team1_female'] = 'required';
-            $rules['team2_male']   = 'required';
-            $rules['team2_female'] = 'required';
+            $rules['team1_male']   = 'required|exists:players,id';
+            $rules['team1_female'] = 'required|exists:players,id';
+            $rules['team2_male']   = 'required|exists:players,id';
+            $rules['team2_female'] = 'required|exists:players,id';
         } else {
-            $rules['team1_player1'] = 'required|different:team1_player2';
-            $rules['team1_player2'] = 'required';
-            $rules['team2_player1'] = 'required|different:team2_player2';
-            $rules['team2_player2'] = 'required';
+            $rules['team1_player1'] = 'required|different:team1_player2|exists:players,id';
+            $rules['team1_player2'] = 'required|exists:players,id';
+            $rules['team2_player1'] = 'required|different:team2_player2|exists:players,id';
+            $rules['team2_player2'] = 'required|exists:players,id';
         }
 
         Log::info('Applying validation rules.');
@@ -168,7 +166,7 @@ class DoublesMatchController extends Controller
             $playersQuery->where('sex', 'F');
         }
 
-        return response()->json($playersQuery->get());
+        return response()->json($playersQuery->select('id', 'name', 'age', 'sex')->get());
     }
 
     // ----------------------------------------
@@ -189,4 +187,39 @@ class DoublesMatchController extends Controller
         session()->forget('locked_tournament');
         return redirect()->back()->with('success', 'Championship unlocked.');
     }
+
+
+    public function index(Request $request)
+{
+    // Get the selected filter category from dropdown
+    $filterCategory = $request->input('filter_category', 'all'); // Default to 'all'
+
+    // Query matches with necessary relationships
+    $matchesQuery = Matches::with([
+        'tournament',
+        'category',
+        'team1Player1',
+        'team1Player2',
+        'team2Player1',
+        'team2Player2'
+    ])->whereHas('category', function ($query) {
+        $query->where('name', 'LIKE', '%BD%')
+              ->orWhere('name', 'LIKE', '%GD%')
+              ->orWhere('name', 'LIKE', '%XD%');
+    });
+
+    // Apply filtering if a specific category is selected
+    if ($filterCategory !== 'all') {
+        $matchesQuery->whereHas('category', function ($query) use ($filterCategory) {
+            $query->where('name', 'LIKE', "%{$filterCategory}%");
+        });
+    }
+
+    // Get the final matches list
+    $matches = $matchesQuery->orderBy('match_date', 'desc')->get();
+
+    return view('matches.doubles.index', compact('matches', 'filterCategory'));
+}
+
+
 }

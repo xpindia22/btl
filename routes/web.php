@@ -171,32 +171,46 @@ Route::middleware(['auth'])->group(function () {
     Route::redirect('/matches/doubles-mixed/edit', '/matches/doubles_mixed/edit', 301);
 
 
-// Doubles BD, GD, XD matches
-Route::prefix('matches/doubles')->group(function() {
-    // Route::get('/', [DoublesMatchController::class, 'indexViewOnly'])->name('matches.doubles.index');
+ //Doubles routes
+    Route::prefix('matches/doubles')->group(function () {
+        
+        // View all doubles matches (read-only)
+        Route::get('/', [DoublesMatchController::class, 'index'])->name('matches.doubles.index');
     
-    Route::get('/edit', [DoublesMatchController::class, 'indexWithEdit'])->name('matches.doubles.edit');
-
-    Route::get('/create', [DoublesMatchController::class, 'createDoubles'])->name('matches.doubles.create');
-    Route::post('/store', [DoublesMatchController::class, 'storeDoubles'])->name('matches.doubles.store');
-
-    // For filtered players
-    Route::get('/filtered-players', [DoublesMatchController::class, 'getFilteredPlayers'])
-         ->name('matches.doubles.filteredPlayers');
-
-    // Add lock/unlock routes if doubles require tournament locking:
-    Route::post('/lock', [DoublesMatchController::class, 'lockTournament'])->name('matches.doubles.lockTournament');
-    Route::post('/unlock', [DoublesMatchController::class, 'unlockTournament'])->name('matches.doubles.unlockTournament');
-
-    Route::prefix('matches/doubles')->group(function() {
-        // ... other routes ...
+        // View doubles matches with edit/delete options
+        Route::get('/edit', [DoublesMatchController::class, 'indexWithEdit'])->name('matches.doubles.edit');
+    
+        // Create a new doubles match
+        Route::get('/create', [DoublesMatchController::class, 'createDoubles'])->name('matches.doubles.create');
+        
+        // Store a new doubles match
         Route::post('/store', [DoublesMatchController::class, 'storeDoubles'])->name('matches.doubles.store');
+    
+        // Get filtered players based on category (BD, GD, XD)
+        Route::get('/filtered-players', [DoublesMatchController::class, 'getFilteredPlayers'])
+             ->name('matches.doubles.filteredPlayers');
+    
+        // Lock/unlock tournament for doubles matches
+        Route::post('/lock', [DoublesMatchController::class, 'lockTournament'])->name('matches.doubles.lockTournament');
+        Route::post('/unlock', [DoublesMatchController::class, 'unlockTournament'])->name('matches.doubles.unlockTournament');
+    
+        // Show match details (view single match)
+        Route::get('/{match}', [DoublesMatchController::class, 'show'])->name('matches.doubles.show');
+    
+        // Edit match details
+        Route::get('/{match}/edit', [DoublesMatchController::class, 'edit'])->name('matches.doubles.editMatch');
+        
+        // Update match details
+        Route::post('/{match}/update', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
+    
+        // Soft delete a match (admin/moderator only)
+        Route::post('/{match}/delete', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
+    
+        // Restore a soft-deleted match (admin only)
+        Route::post('/{match}/restore', [DoublesMatchController::class, 'restore'])->name('matches.doubles.restore');
+    
+        // Permanently delete a match (admin only)
+        Route::post('/{match}/force-delete', [DoublesMatchController::class, 'forceDelete'])->name('matches.doubles.forceDelete');
     });
     
-});
-
-
-
-
-
 });
