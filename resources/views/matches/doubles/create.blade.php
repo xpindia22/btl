@@ -219,4 +219,66 @@ document.getElementById('doublesForm').addEventListener('submit', function(e) {
     console.log("Form submitted!");
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.getElementById('category_id');
+
+    categorySelect.addEventListener('change', function() {
+        const categoryId = this.value;
+
+        if (!categoryId) {
+            document.getElementById('mixed-doubles').style.display = 'none';
+            document.getElementById('non-mixed-doubles').style.display = 'none';
+            removeRequiredFields();
+            return;
+        }
+
+        // Determine category type by name
+        const selectedOption = this.options[this.selectedIndex];
+        const catText = selectedOption.text.toUpperCase();
+        const isMixed = catText.includes('XD') || catText.includes('MIXED');
+
+        if (isMixed) {
+            document.getElementById('mixed-doubles').style.display = 'block';
+            document.getElementById('non-mixed-doubles').style.display = 'none';
+            setRequiredFields('mixed');
+        } else {
+            document.getElementById('mixed-doubles').style.display = 'none';
+            document.getElementById('non-mixed-doubles').style.display = 'block';
+            setRequiredFields('non-mixed');
+        }
+    });
+
+    function setRequiredFields(type) {
+        removeRequiredFields();
+        if (type === 'mixed') {
+            document.getElementById('team1_male').setAttribute('required', 'required');
+            document.getElementById('team1_female').setAttribute('required', 'required');
+            document.getElementById('team2_male').setAttribute('required', 'required');
+            document.getElementById('team2_female').setAttribute('required', 'required');
+        } else {
+            document.getElementById('team1_player1').setAttribute('required', 'required');
+            document.getElementById('team1_player2').setAttribute('required', 'required');
+            document.getElementById('team2_player1').setAttribute('required', 'required');
+            document.getElementById('team2_player2').setAttribute('required', 'required');
+        }
+    }
+
+    function removeRequiredFields() {
+        const allFields = ['team1_male', 'team1_female', 'team2_male', 'team2_female', 
+                           'team1_player1', 'team1_player2', 'team2_player1', 'team2_player2'];
+
+        allFields.forEach(id => {
+            let element = document.getElementById(id);
+            if (element) element.removeAttribute('required');
+        });
+    }
+
+    // Ensure hidden fields do not block form submission
+    document.getElementById('doublesForm').addEventListener('submit', function(event) {
+        removeRequiredFields(); // Remove required attributes before submission
+    });
+});
+</script>
+
 @endsection

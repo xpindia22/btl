@@ -173,7 +173,8 @@ Route::middleware(['auth'])->group(function () {
 
 // Doubles BD, GD, XD matches
 Route::prefix('matches/doubles')->group(function() {
-    Route::get('/', [DoublesMatchController::class, 'indexViewOnly'])->name('matches.doubles.index');
+    // Route::get('/', [DoublesMatchController::class, 'indexViewOnly'])->name('matches.doubles.index');
+    
     Route::get('/edit', [DoublesMatchController::class, 'indexWithEdit'])->name('matches.doubles.edit');
 
     Route::get('/create', [DoublesMatchController::class, 'createDoubles'])->name('matches.doubles.create');
