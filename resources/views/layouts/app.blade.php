@@ -3,16 +3,24 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>{{ config('app.name', 'Laravel BTL Project') }}</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
-    <!-- Styles & Scripts -->
+    <!-- 1) Load jQuery BEFORE Vite (only if you actually need jQuery) -->
+    <!-- If your child views rely on jQuery, be sure to load it here -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 2) Your main app scripts & styles (compiled via Vite) -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
+    <!-- Optionally, your own custom CSS (if any) -->
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
 </head>
 <body>
@@ -30,7 +38,7 @@
         @csrf
     </form>
 
-    <!-- Logout Link Script -->
+    <!-- 3) Logout Link Script -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const logoutLink = document.getElementById("logout-link");
@@ -43,7 +51,8 @@
         });
     </script>
 
-    <!-- Session Script -->
+    <!-- 4) Your additional scripts can go here (e.g. session.js) -->
     <script src="{{ asset('js/session.js') }}"></script>
+
 </body>
 </html>

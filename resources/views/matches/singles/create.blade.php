@@ -98,26 +98,22 @@
 $(document).ready(function() {
     $('#category_id').change(function() {
         let categoryId = $(this).val();
-
         if (categoryId) {
             $.ajax({
                 url: "{{ route('matches.filteredPlayers') }}",
                 type: "GET",
                 data: { category_id: categoryId },
                 success: function(players) {
-                    console.log("Received players:", players); // Debugging
-
-                    // Clear previous options
-                    $('#player1_id, #player2_id').html('<option value="">Select Player</option>');
-
-                    // Populate dropdowns
-                    players.forEach(player => {
-                        let option = `<option value="${player.id}">${player.name} (Age: ${player.age}, Sex: ${player.sex})</option>`;
-                        $('#player1_id, #player2_id').append(option);
+                    console.log("Received players:", players);
+                    // Clear old dropdown options
+                    $('#player1_id, #player2_id').empty().append('<option value="">Select Player</option>');
+                    // Populate new ones
+                    players.forEach(function(player) {
+                        let optionText = `${player.name} (Age: ${player.age}, Sex: ${player.sex})`;
+                        let optionHtml = `<option value="${player.id}">${optionText}</option>`;
+                        $('#player1_id').append(optionHtml);
+                        $('#player2_id').append(optionHtml);
                     });
-                },
-                error: function(xhr, status, error) {
-                    console.error("AJAX Error:", error);
                 }
             });
         } else {
@@ -126,5 +122,7 @@ $(document).ready(function() {
     });
 });
 </script>
+
+
 
 @endsection
