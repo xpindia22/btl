@@ -215,11 +215,57 @@ class DoublesMatchController extends Controller
         });
     }
 
-    // Get the final matches list
-    $matches = $matchesQuery->orderBy('match_date', 'desc')->get();
+    // Apply pagination (10 matches per page)
+    $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
 
     return view('matches.doubles.index', compact('matches', 'filterCategory'));
 }
 
+
+public function indexWithEdit(Request $request)
+{
+    // Get selected filter category
+    $filterCategory = $request->input('filter_category', 'all');
+
+    // Query matches
+    $matchesQuery = Matches::with([
+        'tournament',
+        'category',
+        'team1Player1',
+        'team1Player2',
+        'team2Player1',
+        'team2Player2'
+    ])->whereHas('category', function ($query) {
+        $query->where('name', 'LIKE', '%BD%')
+              ->orWhere('name', 'LIKE', '%GD%')
+              ->orWhere('name', 'LIKE', '%XD%');
+    });
+
+    // Apply filter
+    if ($filterCategory !== 'all') {
+        $matchesQuery->whereHas('category', function ($query) use ($filterCategory) {
+            $query->where('name', 'LIKE', "%{$filterCategory}%");
+        });
+    }
+
+    // Fetch matches with pagination
+    $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
+
+    return view('matches.doubles.edit', compact('matches', 'filterCategory'));
+}
+
+
+
+public function updateMultiple(Request $request)
+{
+    foreach ($request->matches as $matchId => $matchData) {
+        $match = Matches::find($matchId);
+        if ($match) {
+            $match->update($matchData);
+        }
+    }
+
+    return redirect()->back()->with('success', 'Matches updated successfully!');
+}
 
 }

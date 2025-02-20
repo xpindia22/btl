@@ -211,6 +211,9 @@ Route::middleware(['auth'])->group(function () {
     
         // Permanently delete a match (admin only)
         Route::post('/{match}/force-delete', [DoublesMatchController::class, 'forceDelete'])->name('matches.doubles.forceDelete');
+    
+        Route::put('/matches/doubles/update-multiple', [DoublesMatchController::class, 'updateMultiple'])->name('matches.doubles.updateMultiple');
+
     });
     
 });

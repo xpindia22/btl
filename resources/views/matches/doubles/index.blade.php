@@ -100,5 +100,11 @@
             @endforeach
         </tbody>
     </table>
+
+    <!-- Pagination Links -->
+    <div class="d-flex justify-content-center">
+        {{ $matches->appends(['filter_category' => $filterCategory])->links() }}
+    </div>
+
 </div>
 @endsection

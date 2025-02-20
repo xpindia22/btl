@@ -208,4 +208,24 @@ select {
         padding: 6px 10px;
         font-size: 12px;
     }
+    
+/* Widen Set 1, Set 2, Set 3, and Stage Columns */
+.table th:nth-child(6),
+.table td:nth-child(6) { /* Stage Column */
+    width: 250px;
+}
+
+.table th:nth-child(9),
+.table td:nth-child(9), /* Set 1 Column */
+.table th:nth-child(10),
+.table td:nth-child(10), /* Set 2 Column */
+.table th:nth-child(11),
+.table td:nth-child(11) { /* Set 3 Column */
+    width: 180px; /* Adjust as needed */
+}
+
+/* Ensure input fields inside score columns are wider */
+.table input[type="number"] {
+    width: 60px; /* Adjust for better visibility */
+    text-align: center;
 }
