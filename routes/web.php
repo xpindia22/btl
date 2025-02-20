@@ -155,9 +155,11 @@ Route::put('/matches/singles/update/{id}', [MatchController::class, 'updateSingl
 
 });
 
+//Matches age n sex filter to select players.
+Route::get('/matches/filtered-players', [MatchesController::class, 'getFilteredPlayers'])->name('matches.filteredPlayers');
 
 
-    });
+   
 
     //Redirecting routes
     Route::redirect('/matches/doubles-girls', '/matches/doubles_girls', 301);
@@ -168,3 +170,4 @@ Route::put('/matches/singles/update/{id}', [MatchController::class, 'updateSingl
     Route::redirect('/matches/doubles-mixed/edit', '/matches/doubles_mixed/edit', 301);
      
 
+});

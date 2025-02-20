@@ -46,7 +46,7 @@
         <input type="hidden" name="tournament_id" value="{{ $lockedTournament->id }}">
 
         <label for="category_id">Category:</label>
-        <select name="category_id" required>
+        <select name="category_id" id="category_id" required>
             <option value="">Select Category</option>
             @foreach($categories as $cat)
                 <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -54,19 +54,13 @@
         </select>
 
         <label for="player1_id">Player 1:</label>
-        <select name="player1_id" required>
+        <select name="player1_id" id="player1_id" required>
             <option value="">Select Player 1</option>
-            @foreach($players as $p)
-                <option value="{{ $p->id }}">{{ $p->name }}</option>
-            @endforeach
         </select>
 
         <label for="player2_id">Player 2:</label>
-        <select name="player2_id" required>
+        <select name="player2_id" id="player2_id" required>
             <option value="">Select Player 2</option>
-            @foreach($players as $p)
-                <option value="{{ $p->id }}">{{ $p->name }}</option>
-            @endforeach
         </select>
 
         <label for="stage">Stage:</label>
@@ -99,4 +93,38 @@
     </form>
     @endif
 </div>
+
+<script>
+$(document).ready(function() {
+    $('#category_id').change(function() {
+        let categoryId = $(this).val();
+
+        if (categoryId) {
+            $.ajax({
+                url: "{{ route('matches.filteredPlayers') }}",
+                type: "GET",
+                data: { category_id: categoryId },
+                success: function(players) {
+                    console.log("Received players:", players); // Debugging
+
+                    // Clear previous options
+                    $('#player1_id, #player2_id').html('<option value="">Select Player</option>');
+
+                    // Populate dropdowns
+                    players.forEach(player => {
+                        let option = `<option value="${player.id}">${player.name} (Age: ${player.age}, Sex: ${player.sex})</option>`;
+                        $('#player1_id, #player2_id').append(option);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
+            });
+        } else {
+            $('#player1_id, #player2_id').html('<option value="">Select Player</option>');
+        }
+    });
+});
+</script>
+
 @endsection

@@ -123,7 +123,7 @@ public function indexSinglesWithEdit()
             'set3_player1_points'    => 'nullable|integer',
             'set3_player2_points'    => 'nullable|integer',
         ]);
-
+        
         Matches::create([
             'tournament_id'            => session('locked_tournament'),
             'category_id'              => $request->input('category_id'),
@@ -243,6 +243,30 @@ public function deleteSingle($id)
     $match->delete();
 
     return redirect()->route('matches.singles.edit')->with('success', 'Match deleted successfully.');
+}
+
+public function getFilteredPlayers(Request $request)
+{
+    \Log::info('Fetching players for category ID: ' . $request->category_id);
+
+    $categoryId = $request->category_id;
+    $category = Category::find($categoryId);
+
+    if (!$category) {
+        return response()->json(['error' => 'Category not found'], 404);
+    }
+
+    \Log::info('Category found:', $category->toArray());
+
+    $players = Player::where('age', '<=', $category->max_age)
+                     ->where('age', '>=', $category->min_age)
+                     ->where('sex', $category->sex)
+                     ->select('id', 'name', 'age', 'sex') // Fetch only necessary data
+                     ->get();
+
+    \Log::info('Filtered Players:', $players->toArray());
+
+    return response()->json($players);
 }
 
 
