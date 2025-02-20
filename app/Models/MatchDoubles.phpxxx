@@ -4,41 +4,31 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Matches extends Model
+class MatchDoubles extends Model
 {
+    // The underlying table for both singles and doubles matches.
     protected $table = 'matches';
 
-    // Disable automatic timestamps since your table doesn't include created_at/updated_at
+    // Disable automatic timestamps since your table doesn't include created_at/updated_at columns.
     public $timestamps = false;
 
-    // Define fillable columns (for both Singles & Doubles)
+    // Define fillable fields for doubles matches.
     protected $fillable = [
         'tournament_id',
         'category_id',
-        // Singles
-        'player1_id',
-        'player2_id',
-        'set1_player1_points',
-        'set1_player2_points',
-        'set2_player1_points',
-        'set2_player2_points',
-        'set3_player1_points',
-        'set3_player2_points',
-        // Doubles
         'team1_player1_id',
         'team1_player2_id',
         'team2_player1_id',
         'team2_player2_id',
+        'stage',
+        'match_date',
+        'match_time',
         'set1_team1_points',
         'set1_team2_points',
         'set2_team1_points',
         'set2_team2_points',
         'set3_team1_points',
         'set3_team2_points',
-        // Common fields
-        'stage',
-        'match_date',
-        'match_time',
         'created_by'
     ];
 
@@ -59,25 +49,7 @@ class Matches extends Model
     }
 
     /**
-     * Get the first player for a singles match.
-     */
-    public function player1()
-    {
-        return $this->belongsTo(Player::class, 'player1_id');
-    }
-
-    /**
-     * Get the second player for a singles match.
-     */
-    public function player2()
-    {
-        return $this->belongsTo(Player::class, 'player2_id');
-    }
-
-    // 🏸 Doubles Relationships
-
-    /**
-     * Get the first player of Team 1 in a doubles match.
+     * Get the first player of Team 1.
      */
     public function team1Player1()
     {
@@ -85,7 +57,7 @@ class Matches extends Model
     }
 
     /**
-     * Get the second player of Team 1 in a doubles match.
+     * Get the second player of Team 1.
      */
     public function team1Player2()
     {
@@ -93,7 +65,7 @@ class Matches extends Model
     }
 
     /**
-     * Get the first player of Team 2 in a doubles match.
+     * Get the first player of Team 2.
      */
     public function team2Player1()
     {
@@ -101,7 +73,7 @@ class Matches extends Model
     }
 
     /**
-     * Get the second player of Team 2 in a doubles match.
+     * Get the second player of Team 2.
      */
     public function team2Player2()
     {

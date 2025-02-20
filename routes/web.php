@@ -15,6 +15,9 @@ use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\DoublesBoysMatchController;
 use App\Http\Controllers\DoublesGirlsMatchController;
 use App\Http\Controllers\DoublesMixedMatchController;
+use App\Http\Controllers\DoublesMatchController;
+use App\Models\MatchDoubles;
+
 
 // Redirect root to dashboard if authenticated, else to login.
 Route::get('/', function () {
@@ -166,4 +169,34 @@ Route::middleware(['auth'])->group(function () {
     Route::redirect('/matches/doubles-girls/edit', '/matches/doubles_girls/edit', 301);
     Route::redirect('/matches/doubles-boys/edit', '/matches/doubles_boys/edit', 301);
     Route::redirect('/matches/doubles-mixed/edit', '/matches/doubles_mixed/edit', 301);
+
+
+// Doubles BD, GD, XD matches
+Route::prefix('matches/doubles')->group(function() {
+    // Route::get('/', [DoublesMatchController::class, 'indexViewOnly'])->name('matches.doubles.index');
+    
+    Route::get('/edit', [DoublesMatchController::class, 'indexWithEdit'])->name('matches.doubles.edit');
+
+    Route::get('/create', [DoublesMatchController::class, 'createDoubles'])->name('matches.doubles.create');
+    Route::post('/store', [DoublesMatchController::class, 'storeDoubles'])->name('matches.doubles.store');
+
+    // For filtered players
+    Route::get('/filtered-players', [DoublesMatchController::class, 'getFilteredPlayers'])
+         ->name('matches.doubles.filteredPlayers');
+
+    // Add lock/unlock routes if doubles require tournament locking:
+    Route::post('/lock', [DoublesMatchController::class, 'lockTournament'])->name('matches.doubles.lockTournament');
+    Route::post('/unlock', [DoublesMatchController::class, 'unlockTournament'])->name('matches.doubles.unlockTournament');
+
+    Route::prefix('matches/doubles')->group(function() {
+        // ... other routes ...
+        Route::post('/store', [DoublesMatchController::class, 'storeDoubles'])->name('matches.doubles.store');
+    });
+    
+});
+
+
+
+
+
 });
