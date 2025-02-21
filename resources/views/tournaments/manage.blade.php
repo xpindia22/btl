@@ -2,55 +2,72 @@
 
 @section('content')
 <div class="container">
-    <h1>Manage Tournaments</h1>
+    <h2 class="text-center">Manage Tournaments</h2>
 
-    {{-- Flash Messages --}}
-    @if(session('success'))
+    {{-- Success/Error Messages --}}
+    @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
-    @elseif(session('error'))
+    @endif
+    @if (session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    {{-- Button to Create New Tournament --}}
-    <a href="{{ route('tournaments.create') }}" class="btn btn-primary">Create New Tournament</a>
-    <hr>
-
-    {{-- Table of Tournaments --}}
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Categories</th>
-                <th>Moderators</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php
-                $currentUser = Auth::user();
-            @endphp
-            @foreach($tournaments as $tournament)
+    <div class="table-container">
+        <table class="table table-striped table-bordered">
+            <thead>
                 <tr>
-                    <td>{{ $tournament->tournament_id }}</td>
-                    <td>{{ $tournament->tournament_name }}</td>
-                    <td>{{ $tournament->categories }}</td>
-                    <td>{{ $tournament->moderators }}</td>
-                    <td>
-                        @if($currentUser->role == 'admin' || $tournament->created_by == $currentUser->id)
-                            <a href="{{ route('tournaments.edit', $tournament->tournament_id) }}" class="btn btn-primary btn-sm">Edit</a>
-                            <form action="{{ route('tournaments.destroy', $tournament->tournament_id) }}" method="POST" style="display:inline-block;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this tournament?')">Delete</button>
-                            </form>
-                        @else
-                            <span>N/A</span>
-                        @endif
-                    </td>
+                    <th style="width: 60px;">ID</th>
+                    <th style="width: 200px;">Tournament Name</th>
+                    <th style="width: 120px;">Created By</th>
+                    <th style="width: 180px;">Moderators</th>
+                    <th style="width: 220px;">Categories</th> <!-- Fixed width for categories -->
+                    <th style="width: 120px;">Actions</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach ($tournaments as $tournament)
+                    @php
+                        $categories = explode(', ', $tournament->categories ?? 'None');
+                        $chunks = array_chunk($categories, 2); // Group categories into pairs
+                        $maxRows = count($chunks);
+                    @endphp
+
+                    @for ($i = 0; $i < $maxRows; $i++)
+                        <tr>
+                            @if ($i == 0)
+                                <td rowspan="{{ $maxRows }}">{{ $tournament->tournament_id }}</td>
+                                <td rowspan="{{ $maxRows }}">{{ $tournament->tournament_name }}</td>
+                                <td rowspan="{{ $maxRows }}">{{ $tournament->created_by ?? 'Unknown' }}</td>
+                                <td rowspan="{{ $maxRows }}">{{ $tournament->moderators ?? 'None' }}</td>
+                            @endif
+
+                            <td>
+                                {{ $chunks[$i][0] ?? '' }} 
+                                @if(isset($chunks[$i][1]))
+                                    , {{ $chunks[$i][1] }}
+                                @endif
+                            </td>
+
+                            @if ($i == 0)
+                                <td rowspan="{{ $maxRows }}">
+                                    <a href="{{ route('tournaments.edit', $tournament->tournament_id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <form action="{{ route('tournaments.destroy', $tournament->tournament_id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                    </form>
+                                </td>
+                            @endif
+                        </tr>
+                    @endfor
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Pagination --}}
+    <div class="pagination justify-content-center">
+        {{ $tournaments->links() }}
+    </div>
 </div>
 @endsection
