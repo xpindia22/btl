@@ -370,29 +370,24 @@ public function indexWithEdit(Request $request)
 
 public function update(Request $request, $id)
 {
-    // Find the match, or return error if not found
-    $match = Matches::find($id);
-    if (!$match) {
-        return redirect()->back()->withErrors('Match not found.');
+    try {
+        $match = Matches::findOrFail($id);
+        $match->update([
+            'stage' => $request->stage,
+            'match_date' => $request->match_date,
+            'match_time' => $request->match_time,
+            'set1_team1_points' => $request->set1_team1_points,
+            'set1_team2_points' => $request->set1_team2_points,
+            'set2_team1_points' => $request->set2_team1_points,
+            'set2_team2_points' => $request->set2_team2_points,
+            'set3_team1_points' => $request->set3_team1_points,
+            'set3_team2_points' => $request->set3_team2_points
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Match updated successfully!']);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => 'Update failed!', 'error' => $e->getMessage()], 500);
     }
-
-    // Validate incoming request data
-    $validated = $request->validate([
-        'match_date' => 'required|date',
-        'match_time' => 'required',
-        'stage' => 'required|string',
-        'set1_team1_points' => 'nullable|integer',
-        'set1_team2_points' => 'nullable|integer',
-        'set2_team1_points' => 'nullable|integer',
-        'set2_team2_points' => 'nullable|integer',
-        'set3_team1_points' => 'nullable|integer',
-        'set3_team2_points' => 'nullable|integer',
-    ]);
-
-    // Update match details
-    $match->update($validated);
-
-    return redirect()->route('matches.doubles.edit')->with('success', 'Match updated successfully!');
 }
 
 public function softDelete($id)

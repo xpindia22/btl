@@ -116,7 +116,6 @@
     text-align: center;
 }
 </style>
-
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     function showFlashMessage(message, type) {
@@ -128,6 +127,7 @@ document.addEventListener("DOMContentLoaded", function() {
         setTimeout(() => { flashMessage.style.display = "none"; }, 3000);
     }
 
+    // ✅ UPDATE MATCH FUNCTION
     document.querySelectorAll(".update-match").forEach(button => {
         button.addEventListener("click", function() {
             let matchId = this.getAttribute("data-id");
@@ -147,21 +147,50 @@ document.addEventListener("DOMContentLoaded", function() {
                 body: JSON.stringify(formData)
             })
             .then(response => response.json())
-            .then(data => showFlashMessage(data.success ? "Match updated successfully!" : "Update failed.", data.success ? "success" : "error"))
-            .catch(() => showFlashMessage("Error updating match.", "error"));
+            .then(data => {
+                if (data.success) {  
+                    showFlashMessage("Match updated successfully!", "success"); 
+                } else {
+                    showFlashMessage("Update failed: " + (data.message || "Unknown error"), "error");
+                }
+            })
+            .catch(error => {
+                console.error("Update Error:", error);
+                showFlashMessage("Error updating match. Please try again.", "error");
+            });
         });
     });
 
+    // ✅ DELETE MATCH FUNCTION
     document.querySelectorAll(".delete-match").forEach(button => {
         button.addEventListener("click", function() {
             let matchId = this.getAttribute("data-id");
-            fetch(`/matches/doubles/${matchId}`, { method: "DELETE", headers: { "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content }})
-            .then(() => document.getElementById(`match-${matchId}`).remove())
-            .then(() => showFlashMessage("Match deleted successfully!", "success"))
-            .catch(() => showFlashMessage("Error deleting match.", "error"));
+            if (!confirm("Are you sure you want to delete this match?")) return;
+
+            fetch(`/matches/doubles/${matchId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showFlashMessage("Match deleted successfully!", "success");
+                    document.getElementById(`match-${matchId}`).remove(); // Remove row from table
+                } else {
+                    showFlashMessage("Failed to delete match: " + (data.message || "Unknown error"), "error");
+                }
+            })
+            .catch(error => {
+                console.error("Delete Error:", error);
+                showFlashMessage("Error deleting match. Check console logs.", "error");
+            });
         });
     });
 });
+
 </script>
 
 @endsection
