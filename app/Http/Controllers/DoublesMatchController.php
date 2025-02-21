@@ -400,13 +400,14 @@ public function softDelete($id)
     $match = Matches::find($id);
 
     if (!$match) {
-        return redirect()->back()->withErrors('Match not found.');
+        return response()->json(['success' => false, 'message' => 'Match not found.'], 404);
     }
 
     $match->delete(); // Soft delete the match
 
-    return redirect()->route('matches.doubles.edit')->with('success', 'Match soft deleted successfully!');
+    return response()->json(['success' => true, 'message' => 'Match soft deleted successfully.']);
 }
+
 
 public function updateMatch(Request $request, $id)
 {
@@ -429,7 +430,7 @@ public function updateMatch(Request $request, $id)
         'set3_team2_points' => 'nullable|integer',
     ]);
 
-    // Update fields
+    // Update match fields
     $match->update($validatedData);
 
     // Recalculate winner
@@ -445,5 +446,6 @@ public function updateMatch(Request $request, $id)
 
     return response()->json(['success' => true, 'winner' => $match->winner]);
 }
+
 
 }

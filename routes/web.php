@@ -96,9 +96,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/restore', [DoublesMatchController::class, 'restore'])->name('matches.doubles.restore');
         Route::delete('/{id}/force-delete', [DoublesMatchController::class, 'forceDelete'])->name('matches.doubles.forceDelete');
 
- 
-Route::delete('/matches/doubles/delete/{id}', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
-Route::put('/matches/doubles/update/{id}', [DoublesMatchController::class, 'updateMatch'])->name('matches.doubles.update');
+        Route::put('/matches/doubles/update/{id}', [DoublesMatchController::class, 'updateMatch'])->name('matches.doubles.update');
+        Route::delete('/matches/doubles/delete/{id}', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
+        
 
 
 

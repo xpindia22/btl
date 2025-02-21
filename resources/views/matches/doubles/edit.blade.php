@@ -2,16 +2,16 @@
 
 @section('content')
 <div class="container">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <h1 class="text-center">Edit Doubles Matches (BD, GD, XD)</h1>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    <!-- Flash Messages -->
+    <div id="flash-message" class="alert text-center d-none" style="position: fixed; top: 10px; right: 10px; z-index: 1000;"></div>
 
     <!-- Filters Row -->
     <form method="GET" action="{{ route('matches.doubles.edit') }}" class="mb-3">
         <div class="d-flex flex-wrap align-items-center gap-2">
-            <!-- Tournament Filter -->
             <label for="filter_tournament">Tournament:</label>
             <select name="filter_tournament" id="filter_tournament" class="form-control w-auto">
                 <option value="all" {{ request('filter_tournament', 'all') == 'all' ? 'selected' : '' }}>All</option>
@@ -22,38 +22,12 @@
                 @endforeach
             </select>
 
-            <!-- Player Filter -->
-            <label for="filter_player">Player:</label>
-            <select name="filter_player" id="filter_player" class="form-control w-auto">
-                <option value="all" {{ request('filter_player', 'all') == 'all' ? 'selected' : '' }}>All</option>
-                @foreach($players as $player)
-                    <option value="{{ $player->id }}" {{ request('filter_player') == $player->id ? 'selected' : '' }}>
-                        {{ $player->name }}
-                    </option>
-                @endforeach
-            </select>
-
-            <!-- Category Filter -->
             <label for="filter_category">Category:</label>
             <select name="filter_category" id="filter_category" class="form-control w-auto">
                 <option value="all" {{ request('filter_category', 'all') == 'all' ? 'selected' : '' }}>All</option>
                 <option value="BD" {{ request('filter_category') == 'BD' ? 'selected' : '' }}>Boys Doubles (BD)</option>
                 <option value="GD" {{ request('filter_category') == 'GD' ? 'selected' : '' }}>Girls Doubles (GD)</option>
                 <option value="XD" {{ request('filter_category') == 'XD' ? 'selected' : '' }}>Mixed Doubles (XD)</option>
-            </select>
-
-            <!-- Date Filter -->
-            <label for="filter_date">Date:</label>
-            <input type="date" name="filter_date" id="filter_date" class="form-control w-auto" value="{{ request('filter_date') }}">
-
-            <!-- Stage Filter -->
-            <label for="filter_stage">Stage:</label>
-            <select name="filter_stage" id="filter_stage" class="form-control w-auto">
-                <option value="all" {{ request('filter_stage', 'all') == 'all' ? 'selected' : '' }}>All</option>
-                <option value="Pre Quarter Finals" {{ request('filter_stage') == 'Pre Quarter Finals' ? 'selected' : '' }}>Pre Quarter Finals</option>
-                <option value="Quarter Finals" {{ request('filter_stage') == 'Quarter Finals' ? 'selected' : '' }}>Quarter Finals</option>
-                <option value="Semifinals" {{ request('filter_stage') == 'Semifinals' ? 'selected' : '' }}>Semifinals</option>
-                <option value="Finals" {{ request('filter_stage') == 'Finals' ? 'selected' : '' }}>Finals</option>
             </select>
 
             <button type="submit" class="btn btn-primary">Apply Filters</button>
@@ -82,13 +56,13 @@
             </thead>
             <tbody>
                 @foreach($matches as $match)
-                <tr>
+                <tr id="match-{{ $match->id }}">
                     <td>{{ $match->id }}</td>
                     <td>{{ $match->tournament->name ?? 'N/A' }}</td>
                     <td>{{ $match->category->name ?? 'N/A' }}</td>
                     <td>{{ $match->team1Player1->name ?? 'N/A' }} & {{ $match->team1Player2->name ?? 'N/A' }}</td>
                     <td>{{ $match->team2Player1->name ?? 'N/A' }} & {{ $match->team2Player2->name ?? 'N/A' }}</td>
-                    
+
                     <!-- Editable Fields -->
                     <td><input type="text" class="editable form-control" data-id="{{ $match->id }}" data-field="stage" value="{{ $match->stage }}"></td>
                     <td><input type="date" class="editable form-control" data-id="{{ $match->id }}" data-field="match_date" value="{{ $match->match_date }}"></td>
@@ -97,7 +71,7 @@
                     <td><input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set1_team1_points" value="{{ $match->set1_team1_points }}"> - 
                         <input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set1_team2_points" value="{{ $match->set1_team2_points }}">
                     </td>
-                    
+
                     <td><input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set2_team1_points" value="{{ $match->set2_team1_points }}"> - 
                         <input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set2_team2_points" value="{{ $match->set2_team2_points }}">
                     </td>
@@ -107,7 +81,7 @@
                     </td>
 
                     <td id="winner-{{ $match->id }}">{{ $match->winner ?? 'TBD' }}</td>
-                    
+
                     <!-- Actions -->
                     <td class="text-center">
                         <button class="btn btn-success btn-sm update-match" data-id="{{ $match->id }}">Update</button>
@@ -125,43 +99,39 @@
 </div>
 
 <style>
-/* Make the table fit the screen */
-.table-responsive {
-    overflow-x: auto;
+/* Flash message styling */
+#flash-message {
+    display: none;
+    font-weight: bold;
 }
 
-/* Adjust input field size */
+/* Small input adjustments */
 .small-input {
     width: 50px;
     text-align: center;
 }
-
-/* Button spacing */
-.btn-sm {
-    margin: 3px;
-}
 </style>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Handle Update Button Click
+    function showFlashMessage(message, type) {
+        let flashMessage = document.getElementById("flash-message");
+        flashMessage.innerText = message;
+        flashMessage.classList.remove("d-none", "alert-success", "alert-danger");
+        flashMessage.classList.add(type === "success" ? "alert-success" : "alert-danger");
+        flashMessage.style.display = "block";
+        setTimeout(() => { flashMessage.style.display = "none"; }, 3000);
+    }
+
     document.querySelectorAll(".update-match").forEach((button) => {
         button.addEventListener("click", function() {
             let matchId = this.getAttribute("data-id");
+            let row = document.getElementById(`match-${matchId}`);
 
-            // Select the row of the current match
-            let row = this.closest("tr");
-
-            // Extract values from input fields in the row
             let formData = {
                 stage: row.querySelector(`[data-field="stage"]`).value,
                 match_date: row.querySelector(`[data-field="match_date"]`).value,
-                match_time: row.querySelector(`[data-field="match_time"]`).value,
-                set1_team1_points: row.querySelector(`[data-field="set1_team1_points"]`).value || null,
-                set1_team2_points: row.querySelector(`[data-field="set1_team2_points"]`).value || null,
-                set2_team1_points: row.querySelector(`[data-field="set2_team1_points"]`).value || null,
-                set2_team2_points: row.querySelector(`[data-field="set2_team2_points"]`).value || null,
-                set3_team1_points: row.querySelector(`[data-field="set3_team1_points"]`).value || null,
-                set3_team2_points: row.querySelector(`[data-field="set3_team2_points"]`).value || null
+                match_time: row.querySelector(`[data-field="match_time"]`).value
             };
 
             fetch(`/matches/doubles/update/${matchId}`, {
@@ -174,19 +144,31 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    alert("Match updated successfully!");
-                    document.getElementById(`winner-${matchId}`).innerText = data.winner ?? "TBD";
-                } else {
-                    alert("Failed to update match.");
-                }
-            })
-            .catch(error => console.error("Error:", error));
+                showFlashMessage(data.success ? "Match updated successfully!" : "Failed to update match.", data.success ? "success" : "error");
+                location.reload();
+            });
+        });
+    });
+
+    document.querySelectorAll(".delete-match").forEach((button) => {
+        button.addEventListener("click", function() {
+            let matchId = this.getAttribute("data-id");
+            if (confirm("Are you sure you want to delete this match?")) {
+                fetch(`/matches/doubles/delete/${matchId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showFlashMessage("Match deleted successfully!", "success");
+                    document.getElementById(`match-${matchId}`).remove();
+                });
+            }
         });
     });
 });
-
-
 </script>
 
 @endsection
