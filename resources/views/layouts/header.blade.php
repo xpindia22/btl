@@ -105,8 +105,7 @@
                     <div class="dropdown-content">
                         <a href="{{ route('admin.edit_users') }}">Edit Tournament Manager</a>
                         <a href="{{ route('admin.edit_players') }}">Edit Player</a>
-                        <a href="{{ route('matches.create') }}">Insert Match</a> 
-                        <a href="{{ route('categories.create') }}">Insert Category</a> 
+                         <a href="{{ route('categories.create') }}">Insert Category</a> 
                         <a href="{{ route('admin.add_moderator') }}">Add Moderator</a>
                         <a href="{{ route('tournaments.create') }}">Insert Tournament</a>
                     </div>
@@ -121,30 +120,41 @@
         @if (in_array($user_Role, ['admin', 'moderator', 'user']))
             <a href="{{ route('matches.singles.create') }}">Add Singles</a>
         @endif
-        <a href="{{ route('results.singles') }}">Singles Results</a>
+        <a href="{{ route('matches.singles.index') }}">Singles Results</a>
         @if (in_array($user_Role, ['admin', 'moderator', 'user']))
             <!-- Linking to the index where singles matches can be managed -->
-            <a href="{{ route('matches.singles.index') }}">Manage Singles</a>
+            <a href="{{ route('matches.singles.edit') }}">Manage Singles</a>
         @endif
     </div>
 </div>
 
 
-            <!-- Dropdown: Boys Doubles -->
+            <!-- Dropdown: Doubles - BD-GD-XD -->
             <div class="dropdown">
-                <a href="#">Boys Doubles</a>
+                <a href="#">Doubles & Mixed Doubles</a>
                 <div class="dropdown-content">
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('matches.doubles_boys.create') }}">Insert Boys Doubles</a>
+                        <a href="{{ route('matches.doubles.create') }}">Create Boys Doubles</a>
                     @endif
-                    <a href="{{ route('results.boys_doubles') }}">Result Boys Doubles</a>
+                    <a href="{{ route('matches.doubles.index') }}">Result Boys Doubles</a>
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
                         <!-- Assuming you have an index route for boys doubles; adjust if needed -->
-                        <a href="{{ route('matches.doubles_boys.index') }}">Edit Boys Doubles</a>
+                        <a href="{{ route('matches.doubles.edit') }}">Edit Doubles</a>
                     @endif
                 </div>
             </div>
 
+    <div class="dropdown">
+    <a href="#">Match Results</a>
+    <div class="dropdown-content">
+        
+        <a href="{{ route('matches.singles.index') }}">Singles Results</a>
+        @if (in_array($user_Role, ['admin', 'moderator', 'user']))
+            <!-- Linking to the index where singles matches can be managed -->
+            <a href="{{ route('matches.doubles.index') }}">Doubles Results</a>
+        @endif
+    </div>
+</div>
             <!-- Logout Form (Hidden) -->
             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                 @csrf
