@@ -20,62 +20,240 @@ class SinglesMatchController extends Controller
     // 1) View-Only: indexSingles
     // ------------------------------------------------------------------
     public function indexSingles(Request $request)
-    {
-        $user = Auth::user();
-        $isAdmin = $user->is_admin;
+{
+    $user = Auth::user();
+    $isAdmin = $user->is_admin;
 
-        $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
-            ->whereNull('deleted_at')
-            ->whereHas('category', function ($query) {
-                $query->where('name', 'LIKE', '%BS%')
-                      ->orWhere('name', 'LIKE', '%GS%');
-            })
-            ->whereDoesntHave('category', function ($query) {
-                $query->where('name', 'LIKE', '%BD%')
-                      ->orWhere('name', 'LIKE', '%GD%')
-                      ->orWhere('name', 'LIKE', '%XD%');
-            });
+    // Get filter values from request
+    $selectedTournament = $request->input('filter_tournament', 'all');
+    $selectedPlayer = $request->input('filter_player', 'all');
+    $selectedCategory = $request->input('filter_category', 'all');
+    $selectedDate = $request->input('filter_date', '');
+    $selectedStage = $request->input('filter_stage', 'all');
+    $selectedResults = $request->input('filter_results', 'all');
 
-        if (!$isAdmin) {
-            $matchesQuery->where(function ($q) use ($user) {
-                $q->where('created_by', $user->id)
-                  ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
-            });
-        }
+    // Start matches query
+    $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
+        ->whereNull('deleted_at')
+        ->whereHas('category', function ($query) {
+            $query->where('name', 'LIKE', '%BS%')
+                  ->orWhere('name', 'LIKE', '%GS%');
+        });
 
-        $matches = $matchesQuery->orderBy('id')->paginate(10);
-
-        return view('matches.singles.index', compact('matches'));
+    // Apply Tournament filter
+    if ($selectedTournament !== 'all') {
+        $matchesQuery->where('tournament_id', $selectedTournament);
     }
 
-    public function indexSinglesWithEdit()
-    {
-        $user = Auth::user();
-        $isAdmin = $user->is_admin;
-
-        $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
-            ->whereNull('deleted_at')
-            ->whereHas('category', function ($query) {
-                $query->where('name', 'LIKE', '%BS%')
-                      ->orWhere('name', 'LIKE', '%GS%');
-            })
-            ->whereDoesntHave('category', function ($query) {
-                $query->where('name', 'LIKE', '%BD%')
-                      ->orWhere('name', 'LIKE', '%GD%')
-                      ->orWhere('name', 'LIKE', '%XD%');
-            });
-
-        if (!$isAdmin) {
-            $matchesQuery->where(function ($q) use ($user) {
-                $q->where('created_by', $user->id)
-                  ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
-            });
-        }
-
-        $matches = $matchesQuery->orderBy('id')->paginate(10);
-
-        return view('matches.singles.edit', compact('matches'));
+    // Apply Player filter (Check both player1_id and player2_id)
+    if ($selectedPlayer !== 'all') {
+        $matchesQuery->where(function ($query) use ($selectedPlayer) {
+            $query->where('player1_id', $selectedPlayer)
+                  ->orWhere('player2_id', $selectedPlayer);
+        });
     }
+
+    // Apply Category filter
+    if ($selectedCategory !== 'all') {
+        $matchesQuery->whereHas('category', function ($query) use ($selectedCategory) {
+            $query->where('name', 'LIKE', "%{$selectedCategory}%");
+        });
+    }
+
+    // Apply Date filter
+    if (!empty($selectedDate)) {
+        $matchesQuery->whereDate('match_date', $selectedDate);
+    }
+
+    // Apply Stage filter
+    if ($selectedStage !== 'all') {
+        $matchesQuery->where('stage', $selectedStage);
+    }
+
+    // **Fix: Apply Winner (Results) Filter**
+    if ($selectedResults !== 'all') {
+        $matchesQuery->where(function ($query) use ($selectedResults) {
+            if ($selectedResults === 'Player 1') {
+                $query->whereRaw("
+                    (set1_player1_points > set1_player2_points) +
+                    (set2_player1_points > set2_player2_points) +
+                    (IFNULL(set3_player1_points, 0) > IFNULL(set3_player2_points, 0))
+                    >
+                    (set1_player2_points > set1_player1_points) +
+                    (set2_player2_points > set2_player1_points) +
+                    (IFNULL(set3_player2_points, 0) > IFNULL(set3_player1_points, 0))
+                ");
+            } elseif ($selectedResults === 'Player 2') {
+                $query->whereRaw("
+                    (set1_player2_points > set1_player1_points) +
+                    (set2_player2_points > set2_player1_points) +
+                    (IFNULL(set3_player2_points, 0) > IFNULL(set3_player1_points, 0))
+                    >
+                    (set1_player1_points > set1_player2_points) +
+                    (set2_player1_points > set2_player2_points) +
+                    (IFNULL(set3_player1_points, 0) > IFNULL(set3_player2_points, 0))
+                ");
+            } elseif ($selectedResults === 'Draw') {
+                $query->whereRaw("
+                    (set1_player1_points = set1_player2_points) +
+                    (set2_player1_points = set2_player2_points) +
+                    (IFNULL(set3_player1_points, 0) = IFNULL(set3_player2_points, 0)) = 3
+                ");
+            }
+        });
+    }
+
+    // Restrict non-admin users
+    if (!$isAdmin) {
+        $matchesQuery->where(function ($q) use ($user) {
+            $q->where('created_by', $user->id)
+              ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
+        });
+    }
+
+    // Get paginated matches
+    $matches = $matchesQuery->orderBy('id')->paginate(10);
+
+    // Fetch tournaments for filter dropdown
+    $tournaments = Tournament::where('created_by', $user->id)
+        ->orWhereHas('moderators', fn($q) => $q->where('user_id', $user->id))
+        ->get();
+
+    // Fetch all players for filter dropdown
+    $players = Player::all();
+
+    // Pass selected filters to the view
+    return view('matches.singles.index', compact(
+        'matches', 
+        'tournaments', 
+        'players', 
+        'selectedTournament', 
+        'selectedPlayer', 
+        'selectedCategory', 
+        'selectedDate', 
+        'selectedStage', 
+        'selectedResults'
+    ));
+}
+
+    
+
+public function indexSinglesWithEdit(Request $request)
+{
+    $user = Auth::user();
+    $isAdmin = $user->is_admin;
+
+    // Get filter values from request
+    $selectedTournament = $request->input('filter_tournament', 'all');
+    $selectedPlayer = $request->input('filter_player', 'all');
+    $selectedCategory = $request->input('filter_category', 'all');
+    $selectedDate = $request->input('filter_date', '');
+    $selectedStage = $request->input('filter_stage', 'all');
+    $selectedResults = $request->input('filter_results', 'all');
+
+    // Start matches query
+    $matchesQuery = Matches::with(['tournament', 'category', 'player1', 'player2'])
+        ->whereNull('deleted_at')
+        ->whereHas('category', function ($query) {
+            $query->where('name', 'LIKE', '%BS%')
+                  ->orWhere('name', 'LIKE', '%GS%');
+        });
+
+    // Apply Tournament filter
+    if ($selectedTournament !== 'all') {
+        $matchesQuery->where('tournament_id', $selectedTournament);
+    }
+
+    // Apply Player filter (Check both player1_id and player2_id)
+    if ($selectedPlayer !== 'all') {
+        $matchesQuery->where(function ($query) use ($selectedPlayer) {
+            $query->where('player1_id', $selectedPlayer)
+                  ->orWhere('player2_id', $selectedPlayer);
+        });
+    }
+
+    // Apply Category filter
+    if ($selectedCategory !== 'all') {
+        $matchesQuery->whereHas('category', function ($query) use ($selectedCategory) {
+            $query->where('name', 'LIKE', "%{$selectedCategory}%");
+        });
+    }
+
+    // Apply Date filter
+    if (!empty($selectedDate)) {
+        $matchesQuery->whereDate('match_date', $selectedDate);
+    }
+
+    // Apply Stage filter
+    if ($selectedStage !== 'all') {
+        $matchesQuery->where('stage', $selectedStage);
+    }
+
+    // **Fix: Apply Results Filter**
+    if ($selectedResults !== 'all') {
+        $matchesQuery->where(function ($query) use ($selectedResults) {
+            if ($selectedResults === 'Player 1') {
+                $query->whereRaw("
+                    (set1_player1_points > set1_player2_points) +
+                    (set2_player1_points > set2_player2_points) +
+                    (IFNULL(set3_player1_points, 0) > IFNULL(set3_player2_points, 0))
+                    >
+                    (set1_player2_points > set1_player1_points) +
+                    (set2_player2_points > set2_player1_points) +
+                    (IFNULL(set3_player2_points, 0) > IFNULL(set3_player1_points, 0))
+                ");
+            } elseif ($selectedResults === 'Player 2') {
+                $query->whereRaw("
+                    (set1_player2_points > set1_player1_points) +
+                    (set2_player2_points > set2_player1_points) +
+                    (IFNULL(set3_player2_points, 0) > IFNULL(set3_player1_points, 0))
+                    >
+                    (set1_player1_points > set1_player2_points) +
+                    (set2_player1_points > set2_player2_points) +
+                    (IFNULL(set3_player1_points, 0) > IFNULL(set3_player2_points, 0))
+                ");
+            } elseif ($selectedResults === 'Draw') {
+                $query->whereRaw("
+                    (set1_player1_points = set1_player2_points) +
+                    (set2_player1_points = set2_player2_points) +
+                    (IFNULL(set3_player1_points, 0) = IFNULL(set3_player2_points, 0)) = 3
+                ");
+            }
+        });
+    }
+
+    // Restrict non-admin users
+    if (!$isAdmin) {
+        $matchesQuery->where(function ($q) use ($user) {
+            $q->where('created_by', $user->id)
+              ->orWhereHas('tournament.moderators', fn($q2) => $q2->where('user_id', $user->id));
+        });
+    }
+
+    // Get paginated matches
+    $matches = $matchesQuery->orderBy('id')->paginate(10);
+
+    // Fetch tournaments for filter dropdown
+    $tournaments = Tournament::where('created_by', $user->id)
+        ->orWhereHas('moderators', fn($q) => $q->where('user_id', $user->id))
+        ->get();
+
+    // Fetch all players for filter dropdown
+    $players = Player::all();
+
+    // Pass selected filters to the view
+    return view('matches.singles.edit', compact(
+        'matches', 
+        'tournaments', 
+        'players', 
+        'selectedTournament', 
+        'selectedPlayer', 
+        'selectedCategory', 
+        'selectedDate', 
+        'selectedStage', 
+        'selectedResults'
+    ));
+}
 
     // ------------------------------------------------------------------
     // 3) Create & Store

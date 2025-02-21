@@ -191,69 +191,177 @@ class DoublesMatchController extends Controller
 
     public function index(Request $request)
 {
-    // Get the selected filter category from dropdown
-    $filterCategory = $request->input('filter_category', 'all'); // Default to 'all'
+    // Fetch all tournaments and players
+    $tournaments = Tournament::all();
+    $players = Player::all();
 
-    // Query matches with necessary relationships
-    $matchesQuery = Matches::with([
-        'tournament',
-        'category',
-        'team1Player1',
-        'team1Player2',
-        'team2Player1',
-        'team2Player2'
-    ])->whereHas('category', function ($query) {
-        $query->where('name', 'LIKE', '%BD%')
-              ->orWhere('name', 'LIKE', '%GD%')
-              ->orWhere('name', 'LIKE', '%XD%');
-    });
+    // Get selected filters
+    $filterTournament = $request->input('filter_tournament', 'all');
+    $filterCategory = $request->input('filter_category', 'all');
+    $filterPlayer = $request->input('filter_player', 'all');
+    $filterDate = $request->input('filter_date', '');
+    $filterStage = $request->input('filter_stage', 'all');
+    $filterResults = $request->input('filter_results', 'all');
 
-    // Apply filtering if a specific category is selected
+    // Query matches
+    $matchesQuery = Matches::with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2'])
+        ->whereNull('deleted_at');
+
+    // Apply filters
+    if ($filterTournament !== 'all') {
+        $matchesQuery->where('tournament_id', $filterTournament);
+    }
+
     if ($filterCategory !== 'all') {
         $matchesQuery->whereHas('category', function ($query) use ($filterCategory) {
             $query->where('name', 'LIKE', "%{$filterCategory}%");
         });
     }
 
-    // Apply pagination (10 matches per page)
-    $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
+    if ($filterPlayer !== 'all') {
+        $matchesQuery->where(function ($query) use ($filterPlayer) {
+            $query->where('team1_player1_id', $filterPlayer)
+                  ->orWhere('team1_player2_id', $filterPlayer)
+                  ->orWhere('team2_player1_id', $filterPlayer)
+                  ->orWhere('team2_player2_id', $filterPlayer);
+        });
+    }
 
-    return view('matches.doubles.index', compact('matches', 'filterCategory'));
-}
+    if (!empty($filterDate)) {
+        $matchesQuery->whereDate('match_date', $filterDate);
+    }
 
+    if ($filterStage !== 'all') {
+        $matchesQuery->where('stage', $filterStage);
+    }
 
-public function indexWithEdit(Request $request)
-{
-    // Get selected filter category
-    $filterCategory = $request->input('filter_category', 'all');
-
-    // Query matches
-    $matchesQuery = Matches::with([
-        'tournament',
-        'category',
-        'team1Player1',
-        'team1Player2',
-        'team2Player1',
-        'team2Player2'
-    ])->whereHas('category', function ($query) {
-        $query->where('name', 'LIKE', '%BD%')
-              ->orWhere('name', 'LIKE', '%GD%')
-              ->orWhere('name', 'LIKE', '%XD%');
-    });
-
-    // Apply filter
-    if ($filterCategory !== 'all') {
-        $matchesQuery->whereHas('category', function ($query) use ($filterCategory) {
-            $query->where('name', 'LIKE', "%{$filterCategory}%");
+    // **Fix: Apply Results Filter**
+    if ($filterResults !== 'all') {
+        $matchesQuery->where(function ($query) use ($filterResults) {
+            if ($filterResults === 'Team 1') {
+                $query->whereRaw("
+                    (set1_team1_points > set1_team2_points) +
+                    (set2_team1_points > set2_team2_points) +
+                    (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
+                    >
+                    (set1_team2_points > set1_team1_points) +
+                    (set2_team2_points > set2_team1_points) +
+                    (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
+                ");
+            } elseif ($filterResults === 'Team 2') {
+                $query->whereRaw("
+                    (set1_team2_points > set1_team1_points) +
+                    (set2_team2_points > set2_team1_points) +
+                    (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
+                    >
+                    (set1_team1_points > set1_team2_points) +
+                    (set2_team1_points > set2_team2_points) +
+                    (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
+                ");
+            } elseif ($filterResults === 'Draw') {
+                $query->whereRaw("
+                    (set1_team1_points = set1_team2_points) +
+                    (set2_team1_points = set2_team2_points) +
+                    (IFNULL(set3_team1_points, 0) = IFNULL(set3_team2_points, 0)) = 3
+                ");
+            }
         });
     }
 
     // Fetch matches with pagination
     $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
 
-    return view('matches.doubles.edit', compact('matches', 'filterCategory'));
+    return view('matches.doubles.index', compact(
+        'matches', 'tournaments', 'players', 'filterTournament', 'filterCategory', 'filterPlayer', 'filterDate', 'filterStage', 'filterResults'
+    ));
 }
 
+public function indexWithEdit(Request $request)
+{
+    // Fetch all tournaments and players
+    $tournaments = Tournament::all();
+    $players = Player::all();
+
+    // Get selected filters
+    $filterTournament = $request->input('filter_tournament', 'all');
+    $filterCategory = $request->input('filter_category', 'all');
+    $filterPlayer = $request->input('filter_player', 'all');
+    $filterDate = $request->input('filter_date', '');
+    $filterStage = $request->input('filter_stage', 'all');
+    $filterResults = $request->input('filter_results', 'all');
+
+    // Query matches
+    $matchesQuery = Matches::with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2'])
+        ->whereNull('deleted_at');
+
+    // Apply filters
+    if ($filterTournament !== 'all') {
+        $matchesQuery->where('tournament_id', $filterTournament);
+    }
+
+    if ($filterCategory !== 'all') {
+        $matchesQuery->whereHas('category', function ($query) use ($filterCategory) {
+            $query->where('name', 'LIKE', "%{$filterCategory}%");
+        });
+    }
+
+    if ($filterPlayer !== 'all') {
+        $matchesQuery->where(function ($query) use ($filterPlayer) {
+            $query->where('team1_player1_id', $filterPlayer)
+                  ->orWhere('team1_player2_id', $filterPlayer)
+                  ->orWhere('team2_player1_id', $filterPlayer)
+                  ->orWhere('team2_player2_id', $filterPlayer);
+        });
+    }
+
+    if (!empty($filterDate)) {
+        $matchesQuery->whereDate('match_date', $filterDate);
+    }
+
+    if ($filterStage !== 'all') {
+        $matchesQuery->where('stage', $filterStage);
+    }
+
+    // **Fix: Apply Results Filter**
+    if ($filterResults !== 'all') {
+        $matchesQuery->where(function ($query) use ($filterResults) {
+            if ($filterResults === 'Team 1') {
+                $query->whereRaw("
+                    (set1_team1_points > set1_team2_points) +
+                    (set2_team1_points > set2_team2_points) +
+                    (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
+                    >
+                    (set1_team2_points > set1_team1_points) +
+                    (set2_team2_points > set2_team1_points) +
+                    (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
+                ");
+            } elseif ($filterResults === 'Team 2') {
+                $query->whereRaw("
+                    (set1_team2_points > set1_team1_points) +
+                    (set2_team2_points > set2_team1_points) +
+                    (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
+                    >
+                    (set1_team1_points > set1_team2_points) +
+                    (set2_team1_points > set2_team2_points) +
+                    (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
+                ");
+            } elseif ($filterResults === 'Draw') {
+                $query->whereRaw("
+                    (set1_team1_points = set1_team2_points) +
+                    (set2_team1_points = set2_team2_points) +
+                    (IFNULL(set3_team1_points, 0) = IFNULL(set3_team2_points, 0)) = 3
+                ");
+            }
+        });
+    }
+
+    // Fetch matches with pagination
+    $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
+
+    return view('matches.doubles.edit', compact(
+        'matches', 'tournaments', 'players', 'filterTournament', 'filterCategory', 'filterPlayer', 'filterDate', 'filterStage', 'filterResults'
+    ));
+}
 
 
 public function updateMultiple(Request $request)
