@@ -31,9 +31,9 @@
                 <th>Stage</th>
                 <th>Match Date</th>
                 <th>Match Time</th>
-                <th>Set 1 (Team 1 - Team 2)</th>
-                <th>Set 2 (Team 1 - Team 2)</th>
-                <th>Set 3 (Team 1 - Team 2)</th>
+                <th>Set 1 (T1 - T2)</th>
+                <th>Set 2 (T1 - T2)</th>
+                <th>Set 3 (T1 - T2)</th>
                 <th>Winner</th>
             </tr>
         </thead>

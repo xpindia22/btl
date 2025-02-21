@@ -27,12 +27,12 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Match ID</th>
+                    <th>ID</th>
                     <th>Tournament</th>
                     <th>Category</th>
                     <th>Team 1</th>
                     <th>Team 2</th>
-                    <th>Stage</th>
+                    <th>Match Stage</th>
                     <th>Match Date</th>
                     <th>Match Time</th>
                     <th>Set 1 (T1 - T2)</th>
