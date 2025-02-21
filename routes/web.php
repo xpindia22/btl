@@ -117,4 +117,11 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
     });
+
+    Route::post('/matches/singles/lock-tournament', [SinglesMatchController::class, 'lockTournament'])
+    ->name('matches.singles.lockTournament');
+    Route::get('/matches/filtered-players', [MatchController::class, 'filteredPlayers'])
+    ->name('matches.filteredPlayers');
+
+
 });
