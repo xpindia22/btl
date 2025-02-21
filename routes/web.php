@@ -83,25 +83,22 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ✅ **Doubles Matches**
-    Route::prefix('matches/doubles')->group(function () {
+     // ✅ **Doubles Matches**
+     Route::prefix('matches/doubles')->group(function () {
         Route::get('/', [DoublesMatchController::class, 'index'])->name('matches.doubles.index');
         Route::get('/edit', [DoublesMatchController::class, 'indexWithEdit'])->name('matches.doubles.edit');
         Route::get('/create', [DoublesMatchController::class, 'createDoubles'])->name('matches.doubles.create');
         Route::post('/store', [DoublesMatchController::class, 'storeDoubles'])->name('matches.doubles.store');
-        Route::get('/filtered-players', [DoublesMatchController::class, 'getFilteredPlayers'])->name('matches.doubles.filteredPlayers');
-        Route::post('/lock', [DoublesMatchController::class, 'lockTournament'])->name('matches.doubles.lockTournament');
-        Route::post('/unlock', [DoublesMatchController::class, 'unlockTournament'])->name('matches.doubles.unlockTournament');
-        Route::put('/{id}/update', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
-        Route::delete('/{id}/delete', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
+
+        // ✅ **Update and Delete Matches**
+        Route::put('/{id}', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
+        Route::delete('/{id}', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
+
+        // ✅ **Restore and Force Delete**
         Route::post('/{id}/restore', [DoublesMatchController::class, 'restore'])->name('matches.doubles.restore');
         Route::delete('/{id}/force-delete', [DoublesMatchController::class, 'forceDelete'])->name('matches.doubles.forceDelete');
-
-        Route::put('/matches/doubles/update/{id}', [DoublesMatchController::class, 'updateMatch'])->name('matches.doubles.update');
-        Route::delete('/matches/doubles/delete/{id}', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
-        
-
-
-
+   
+        Route::put('/matches/doubles/{id}', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
 
     });
 
