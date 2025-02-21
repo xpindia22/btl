@@ -371,21 +371,43 @@ public function indexWithEdit(Request $request)
 public function update(Request $request, $id)
 {
     try {
+        // Log incoming request
+        \Log::info('🔄 Update request received', ['match_id' => $id, 'data' => $request->all()]);
+
         $match = Matches::findOrFail($id);
-        $match->update([
-            'stage' => $request->stage,
-            'match_date' => $request->match_date,
-            'match_time' => $request->match_time,
-            'set1_team1_points' => $request->set1_team1_points,
-            'set1_team2_points' => $request->set1_team2_points,
-            'set2_team1_points' => $request->set2_team1_points,
-            'set2_team2_points' => $request->set2_team2_points,
-            'set3_team1_points' => $request->set3_team1_points,
-            'set3_team2_points' => $request->set3_team2_points
+
+        // ✅ Correct ENUM values
+        $allowedStages = ['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals'];
+
+        // Validate input
+        $validatedData = $request->validate([
+            'stage' => ['nullable', 'string', function ($attribute, $value, $fail) use ($allowedStages) {
+                if (!in_array($value, $allowedStages, true)) {
+                    $fail("Invalid ENUM value for stage: $value");
+                }
+            }],
+            'match_date' => 'nullable|date',
+            'match_time' => 'nullable|string',
+            'set1_team1_points' => 'nullable|integer',
+            'set1_team2_points' => 'nullable|integer',
+            'set2_team1_points' => 'nullable|integer',
+            'set2_team2_points' => 'nullable|integer',
+            'set3_team1_points' => 'nullable|integer',
+            'set3_team2_points' => 'nullable|integer',
         ]);
 
+        // Log validated data
+        \Log::info('✅ Validated Data:', $validatedData);
+
+        // Update match fields
+        $match->update($validatedData);
+
         return response()->json(['success' => true, 'message' => 'Match updated successfully!']);
+    } catch (\Illuminate\Database\QueryException $e) {
+        \Log::error('❌ SQL Error:', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'message' => 'Database error!', 'error' => $e->getMessage()], 500);
     } catch (\Exception $e) {
+        \Log::error('❌ General Update Error:', ['error' => $e->getMessage()]);
         return response()->json(['success' => false, 'message' => 'Update failed!', 'error' => $e->getMessage()], 500);
     }
 }
