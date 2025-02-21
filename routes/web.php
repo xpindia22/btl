@@ -84,6 +84,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/edit', [TournamentController::class, 'edit'])->name('tournaments.edit');
         Route::put('/{id}', [TournamentController::class, 'update'])->name('tournaments.update');
         Route::delete('/{id}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
+        Route::post('/tournaments/add', [TournamentController::class, 'storeTournament'])->name('tournaments.add');
+
     });
 
     // User Management (Admin)
