@@ -33,8 +33,58 @@ class AdminController extends Controller
      */
     public function editUsers()
     {
-        $users = User::all();
-        return view('admin.edit_users', compact('users'));
+        $users = User::all(); // ✅ Fetch all users from the database
+        return view('admin.edit_users', compact('users')); // ✅ Pass users to the view
+    }
+
+    /**
+     * Edit User Page (Admin Only)
+     */
+    public function editUser($id)
+    {
+        $user = User::findOrFail($id);
+        return view('admin.edit_users', compact('user')); // ✅ Ensure correct view
+    }
+
+    /**
+     * Update User via AJAX (Admin or User Creator Only)
+     */
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        // Check if the logged-in user is Admin or the user who created this user
+        if (Auth::user()->role !== 'admin' && Auth::user()->id !== $user->created_by) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'username' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|max:255|unique:users,email,' . $id,
+            'role' => 'sometimes|in:admin,user,visitor',
+        ]);
+
+        // Update the user
+        $user->update($request->only(['username', 'email', 'role']));
+
+        return response()->json(['success' => true, 'message' => 'User updated successfully.']);
+    }
+
+    /**
+     * Delete User (Admin Only)
+     */
+    public function deleteUser($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Allow deletion only if the logged-in user is an Admin
+        if (Auth::user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $user->delete();
+
+        return response()->json(['success' => true, 'message' => 'User deleted successfully.']);
     }
 
     /**

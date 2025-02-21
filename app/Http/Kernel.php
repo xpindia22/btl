@@ -45,5 +45,10 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':60,1', // ✅ Throttle API requests
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
+
+        protected $routeMiddleware = [
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ];
+        
     ];
 }

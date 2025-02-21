@@ -40,7 +40,7 @@ Route::post('/players/register', [PlayerController::class, 'register']);
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Tournaments
+    // ✅ **Tournaments Management**
     Route::prefix('tournaments')->group(function () {
         Route::get('/create', [TournamentController::class, 'create'])->name('tournaments.create');
         Route::get('/manage', [TournamentController::class, 'index'])->name('tournaments.manage');
@@ -50,7 +50,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
     });
 
-    // User Management (Admin)
+    // ✅ **User Management**
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users.index');
         Route::get('/create', [UserController::class, 'create'])->name('users.create');
@@ -60,17 +60,32 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 
-    // Matches - Singles
+    // ✅ **Admin Panel**
+    Route::prefix('admin')->group(function () {
+        Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
+        Route::get('/edit_users', [AdminController::class, 'editUsers'])->name('admin.edit_users');
+        Route::get('/edit_users/{id}/edit', [AdminController::class, 'editUser'])->name('admin.edit_users.edit');
+        Route::put('/edit_users/{id}', [AdminController::class, 'updateUser'])->name('admin.edit_users.update');
+        Route::delete('/edit_users/{id}', [AdminController::class, 'deleteUser'])->name('admin.edit_users.destroy');
+        Route::get('/admin/edit_users', [AdminController::class, 'editUsers'])->name('admin.edit_users');
+
+        // ✅ FIXED: Ensure players edit route exists
+        Route::get('/edit_players', [AdminController::class, 'editPlayers'])->name('admin.edit_players');
+
+        Route::get('/add_moderator', [AdminController::class, 'addModerator'])->name('admin.add_moderator');
+    });
+
+    // ✅ **Singles Matches**
     Route::prefix('matches/singles')->group(function () {
         Route::get('/', [SinglesMatchController::class, 'indexSingles'])->name('matches.singles.index');
         Route::get('/edit', [SinglesMatchController::class, 'indexSinglesWithEdit'])->name('matches.singles.edit');
         Route::get('/create', [SinglesMatchController::class, 'createSingles'])->name('matches.singles.create');
         Route::post('/store', [SinglesMatchController::class, 'storeSingles'])->name('matches.singles.store');
-        Route::put('/update/{id}', [SinglesMatchController::class, 'updateSingle'])->name('matches.singles.updateSingle');
-        Route::delete('/delete/{id}', [SinglesMatchController::class, 'deleteSingleMatch'])->name('matches.singles.deleteSingle');
+        Route::put('/update/{id}', [SinglesMatchController::class, 'updateSingle'])->name('matches.singles.update');
+        Route::delete('/delete/{id}', [SinglesMatchController::class, 'deleteSingleMatch'])->name('matches.singles.delete');
     });
 
-    // Matches - Doubles (Includes Boys, Girls, Mixed)
+    // ✅ **Doubles Matches**
     Route::prefix('matches/doubles')->group(function () {
         Route::get('/', [DoublesMatchController::class, 'index'])->name('matches.doubles.index');
         Route::get('/edit', [DoublesMatchController::class, 'indexWithEdit'])->name('matches.doubles.edit');
@@ -79,13 +94,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/filtered-players', [DoublesMatchController::class, 'getFilteredPlayers'])->name('matches.doubles.filteredPlayers');
         Route::post('/lock', [DoublesMatchController::class, 'lockTournament'])->name('matches.doubles.lockTournament');
         Route::post('/unlock', [DoublesMatchController::class, 'unlockTournament'])->name('matches.doubles.unlockTournament');
-        Route::put('/{match}/update', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
-        Route::delete('/{match}/delete', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
-        Route::post('/{match}/restore', [DoublesMatchController::class, 'restore'])->name('matches.doubles.restore');
-        Route::delete('/{match}/force-delete', [DoublesMatchController::class, 'forceDelete'])->name('matches.doubles.forceDelete');
+        Route::put('/{id}/update', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
+        Route::delete('/{id}/delete', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
+        Route::post('/{id}/restore', [DoublesMatchController::class, 'restore'])->name('matches.doubles.restore');
+        Route::delete('/{id}/force-delete', [DoublesMatchController::class, 'forceDelete'])->name('matches.doubles.forceDelete');
     });
 
-    // Results
+    // ✅ **Results**
     Route::prefix('results')->group(function () {
         Route::get('/', [ResultsController::class, 'index'])->name('results.index');
         Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');
@@ -93,7 +108,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/mixed-doubles', [DoublesMixedMatchController::class, 'index'])->name('results.mixed_doubles');
     });
 
-    // Categories
+    // ✅ **Categories**
     Route::prefix('categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/create', [CategoryController::class, 'create'])->name('categories.create');
@@ -101,15 +116,5 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
         Route::put('/{id}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
-    });
-
-    // Admin Panel
-    Route::prefix('admin')->group(function () {
-        Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
-        Route::get('/edit_users', [AdminController::class, 'editUsers'])->name('admin.edit_users');
-        Route::get('/edit_players', [AdminController::class, 'editPlayers'])->name('admin.edit_players');
-
-        // ✅ Added the missing "Add Moderator" route
-        Route::get('/add_moderator', [AdminController::class, 'addModerator'])->name('admin.add_moderator');
     });
 });
