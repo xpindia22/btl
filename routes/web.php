@@ -11,9 +11,6 @@ use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\ResultsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlayerController;
-use App\Http\Controllers\DoublesBoysMatchController;
-use App\Http\Controllers\DoublesGirlsMatchController;
-use App\Http\Controllers\DoublesMixedMatchController;
 use App\Http\Controllers\DoublesMatchController;
 
 // Redirect root to dashboard if authenticated, else to login.
