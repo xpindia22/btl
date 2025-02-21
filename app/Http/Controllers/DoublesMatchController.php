@@ -268,4 +268,45 @@ public function updateMultiple(Request $request)
     return redirect()->back()->with('success', 'Matches updated successfully!');
 }
 
+public function update(Request $request, $id)
+{
+    // Find the match, or return error if not found
+    $match = Matches::find($id);
+    if (!$match) {
+        return redirect()->back()->withErrors('Match not found.');
+    }
+
+    // Validate incoming request data
+    $validated = $request->validate([
+        'match_date' => 'required|date',
+        'match_time' => 'required',
+        'stage' => 'required|string',
+        'set1_team1_points' => 'nullable|integer',
+        'set1_team2_points' => 'nullable|integer',
+        'set2_team1_points' => 'nullable|integer',
+        'set2_team2_points' => 'nullable|integer',
+        'set3_team1_points' => 'nullable|integer',
+        'set3_team2_points' => 'nullable|integer',
+    ]);
+
+    // Update match details
+    $match->update($validated);
+
+    return redirect()->route('matches.doubles.edit')->with('success', 'Match updated successfully!');
+}
+
+public function softDelete($id)
+{
+    $match = Matches::find($id);
+
+    if (!$match) {
+        return redirect()->back()->withErrors('Match not found.');
+    }
+
+    $match->delete(); // Soft delete the match
+
+    return redirect()->route('matches.doubles.edit')->with('success', 'Match soft deleted successfully!');
+}
+
+
 }

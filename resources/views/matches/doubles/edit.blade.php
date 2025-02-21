@@ -39,6 +39,7 @@
                     <th>Set 2 (T1 - T2)</th>
                     <th>Set 3 (T1 - T2)</th>
                     <th>Winner</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,14 +48,8 @@
                     <td>{{ $match->id }}</td>
                     <td>{{ $match->tournament->name ?? 'N/A' }}</td>
                     <td>{{ $match->category->name ?? 'N/A' }}</td>
-                    <td>
-                        {{ $match->team1Player1->name ?? 'N/A' }} & 
-                        {{ $match->team1Player2->name ?? 'N/A' }}
-                    </td>
-                    <td>
-                        {{ $match->team2Player1->name ?? 'N/A' }} & 
-                        {{ $match->team2Player2->name ?? 'N/A' }}
-                    </td>
+                    <td>{{ $match->team1Player1->name ?? 'N/A' }} & {{ $match->team1Player2->name ?? 'N/A' }}</td>
+                    <td>{{ $match->team2Player1->name ?? 'N/A' }} & {{ $match->team2Player2->name ?? 'N/A' }}</td>
                     <td>
                         <select name="matches[{{ $match->id }}][stage]" class="form-control">
                             <option value="Pre Quarter Finals" {{ $match->stage == 'Pre Quarter Finals' ? 'selected' : '' }}>Pre Quarter Finals</option>
@@ -65,77 +60,38 @@
                     </td>
                     <td><input type="date" name="matches[{{ $match->id }}][match_date]" class="form-control" value="{{ $match->match_date }}"></td>
                     <td><input type="time" name="matches[{{ $match->id }}][match_time]" class="form-control" value="{{ $match->match_time }}"></td>
-                    <td>
-    <input type="number" name="matches[{{ $match->id }}][set1_team1_points]" class="form-control" 
-           value="{{ old('matches.'.$match->id.'.set1_team1_points', $match->set1_team1_points ?? 0) }}">
-    -
-    <input type="number" name="matches[{{ $match->id }}][set1_team2_points]" class="form-control" 
-           value="{{ old('matches.'.$match->id.'.set1_team2_points', $match->set1_team2_points ?? 0) }}">
-</td>
-<td>
-    <input type="number" name="matches[{{ $match->id }}][set2_team1_points]" class="form-control" 
-           value="{{ old('matches.'.$match->id.'.set2_team1_points', $match->set2_team1_points ?? 0) }}">
-    -
-    <input type="number" name="matches[{{ $match->id }}][set2_team2_points]" class="form-control" 
-           value="{{ old('matches.'.$match->id.'.set2_team2_points', $match->set2_team2_points ?? 0) }}">
-</td>
-<td>
-    <input type="number" name="matches[{{ $match->id }}][set3_team1_points]" class="form-control" 
-           value="{{ old('matches.'.$match->id.'.set3_team1_points', $match->set3_team1_points ?? 0) }}">
-    -
-    <input type="number" name="matches[{{ $match->id }}][set3_team2_points]" class="form-control" 
-           value="{{ old('matches.'.$match->id.'.set3_team2_points', $match->set3_team2_points ?? 0) }}">
-</td>
-
-
-
+                    <td><input type="number" name="matches[{{ $match->id }}][set1_team1_points]" class="form-control" value="{{ $match->set1_team1_points }}"> - <input type="number" name="matches[{{ $match->id }}][set1_team2_points]" class="form-control" value="{{ $match->set1_team2_points }}"></td>
+                    <td><input type="number" name="matches[{{ $match->id }}][set2_team1_points]" class="form-control" value="{{ $match->set2_team1_points }}"> - <input type="number" name="matches[{{ $match->id }}][set2_team2_points]" class="form-control" value="{{ $match->set2_team2_points }}"></td>
+                    <td><input type="number" name="matches[{{ $match->id }}][set3_team1_points]" class="form-control" value="{{ $match->set3_team1_points }}"> - <input type="number" name="matches[{{ $match->id }}][set3_team2_points]" class="form-control" value="{{ $match->set3_team2_points }}"></td>
                     <td>
                         @php
-                            // Count sets won by each team
-                            $team1_sets = 0;
-                            $team2_sets = 0;
-
-                            if ($match->set1_team1_points > $match->set1_team2_points) {
-                                $team1_sets++;
-                            } elseif ($match->set1_team2_points > $match->set1_team1_points) {
-                                $team2_sets++;
-                            }
-
-                            if ($match->set2_team1_points > $match->set2_team2_points) {
-                                $team1_sets++;
-                            } elseif ($match->set2_team2_points > $match->set2_team1_points) {
-                                $team2_sets++;
-                            }
-
-                            if (!is_null($match->set3_team1_points) && !is_null($match->set3_team2_points)) {
-                                if ($match->set3_team1_points > $match->set3_team2_points) {
-                                    $team1_sets++;
-                                } elseif ($match->set3_team2_points > $match->set3_team1_points) {
-                                    $team2_sets++;
-                                }
-                            }
-
-                            // Determine winner
-                            if ($team1_sets > $team2_sets) {
-                                echo "Team 1";
-                            } elseif ($team2_sets > $team1_sets) {
-                                echo "Team 2";
-                            } else {
-                                echo "Draw";
-                            }
+                            $team1_sets = ($match->set1_team1_points > $match->set1_team2_points) + ($match->set2_team1_points > $match->set2_team2_points) + ($match->set3_team1_points > $match->set3_team2_points);
+                            $team2_sets = ($match->set1_team2_points > $match->set1_team1_points) + ($match->set2_team2_points > $match->set2_team1_points) + ($match->set3_team2_points > $match->set3_team1_points);
                         @endphp
+                        {{ $team1_sets > $team2_sets ? 'Team 1' : ($team2_sets > $team1_sets ? 'Team 2' : 'Draw') }}
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ route('matches.doubles.update', $match->id) }}">
+                            @csrf
+                            @method('PUT')
+                            <button type="submit" class="btn btn-sm btn-warning">Update</button>
+                        </form>
+                        <form method="POST" action="{{ route('matches.doubles.delete', $match->id) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <!-- Pagination Links -->
         <div class="d-flex justify-content-center">
             {{ $matches->withQueryString()->links() }}
         </div>
 
-        <button type="submit" class="btn btn-success mt-3">Update Matches</button>
+        <button type="submit" class="btn btn-success mt-3">Update All Matches</button>
     </form>
 </div>
 @endsection

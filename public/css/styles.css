@@ -7,12 +7,14 @@ body {
 }
 
 .container {
-    max-width: 1200px;
-    margin: 20px auto;
+    max-width: 100%; /* Ensure full width usage */
+    margin: 20px auto 20px 10px; /* Decreased left margin */
     background: #ffffff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    text-align: center; /* Center the content inside the container */
+    overflow-x: auto; /* Prevent content overflow */
 }
 
 /* Navbar */
@@ -34,10 +36,14 @@ body {
 /* Table Styles */
 .table-container {
     overflow-x: auto; /* Ensure responsiveness */
+    display: flex;
+    justify-content: center; /* Center the table horizontally */
+    max-width: 100%;
 }
 
 .table {
-    width: 100%;
+    width: 100%; /* Adjust the table width to prevent overflow */
+    max-width: 1200px;
     border-collapse: collapse;
     margin-top: 15px;
     background: white;
@@ -45,8 +51,9 @@ body {
 
 .table th, .table td {
     border: 1px solid #ddd;
-    padding: 12px;
+    padding: 5px; /* Reduce padding for better fit */
     text-align: center;
+    white-space: nowrap; /* Prevent text wrapping in table cells */
 }
 
 .table th {
@@ -65,14 +72,42 @@ body {
 }
 
 /* Adjusted Column Widths */
+.table th:nth-child(1),
+.table td:nth-child(1) { /* Match ID Column */
+    width: 80px; /* Reduced width for better fit */
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4), /* Team 1 Column */
+.table th:nth-child(5),
+.table td:nth-child(5) { /* Team 2 Column */
+    width: 28px; /* Further reduced width by 40% */
+}
+
 .table th:nth-child(6),
 .table td:nth-child(6) { /* Stage Column */
-    width: 200px;
+    width: 300px; /* Increased width */
 }
 
 .table th:nth-child(9),
-.table td:nth-child(9) { /* Winner Column */
-    width: 300px;
+.table td:nth-child(9), /* Set 1 Column */
+.table th:nth-child(10),
+.table td:nth-child(10), /* Set 2 Column */
+.table th:nth-child(11),
+.table td:nth-child(11) { /* Set 3 Column */
+    width: 140px; /* Adjusted width to fit display */
+}
+
+.table th:last-child,
+.table td:last-child { /* Ensure Actions column fits */
+    width: 140px;
+    text-align: center;
+}
+
+/* Ensure input fields inside score columns are properly visible */
+.table input[type="number"] {
+    width: 55px; /* Adjusted for better fit */
+    text-align: center;
 }
 
 /* Highlight Winner Column */
@@ -95,8 +130,8 @@ body {
 /* Button Styles */
 .btn {
     display: inline-block;
-    padding: 10px 15px;
-    font-size: 14px;
+    padding: 5px 8px; /* Adjusted for smaller fit */
+    font-size: 11px;
     text-align: center;
     text-decoration: none;
     border-radius: 5px;
@@ -147,11 +182,11 @@ body {
 
 .pagination .page-link {
     color: #007bff;
-    padding: 8px 12px;
+    padding: 5px 7px; /* Reduced padding */
     text-decoration: none;
     border: 1px solid #ddd;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 11px;
     min-width: 2.5rem;
     display: inline-block;
 }
@@ -183,7 +218,7 @@ input[type="date"],
 input[type="time"],
 select {
     width: 100%;
-    padding: 8px;
+    padding: 5px; /* Reduced padding */
     margin: 5px 0;
     border: 1px solid #ced4da;
     border-radius: 5px;
@@ -200,32 +235,12 @@ select {
     }
 
     .btn {
-        padding: 8px 10px;
-        font-size: 12px;
+        padding: 5px 7px; /* Adjusted for smaller screens */
+        font-size: 10px;
     }
 
     .pagination .page-link {
-        padding: 6px 10px;
-        font-size: 12px;
+        padding: 4px 7px;
+        font-size: 10px;
     }
-    
-/* Widen Set 1, Set 2, Set 3, and Stage Columns */
-.table th:nth-child(6),
-.table td:nth-child(6) { /* Stage Column */
-    width: 250px;
-}
-
-.table th:nth-child(9),
-.table td:nth-child(9), /* Set 1 Column */
-.table th:nth-child(10),
-.table td:nth-child(10), /* Set 2 Column */
-.table th:nth-child(11),
-.table td:nth-child(11) { /* Set 3 Column */
-    width: 180px; /* Adjust as needed */
-}
-
-/* Ensure input fields inside score columns are wider */
-.table input[type="number"] {
-    width: 60px; /* Adjust for better visibility */
-    text-align: center;
 }
