@@ -95,6 +95,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}/delete', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
         Route::post('/{id}/restore', [DoublesMatchController::class, 'restore'])->name('matches.doubles.restore');
         Route::delete('/{id}/force-delete', [DoublesMatchController::class, 'forceDelete'])->name('matches.doubles.forceDelete');
+
+ 
+Route::delete('/matches/doubles/delete/{id}', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
+Route::put('/matches/doubles/update/{id}', [DoublesMatchController::class, 'updateMatch'])->name('matches.doubles.update');
+
+
+
+
     });
 
     // ✅ **Results**
@@ -114,4 +122,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
     });
+
+    
 });

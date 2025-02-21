@@ -275,7 +275,6 @@ class DoublesMatchController extends Controller
         'matches', 'tournaments', 'players', 'filterTournament', 'filterCategory', 'filterPlayer', 'filterDate', 'filterStage', 'filterResults'
     ));
 }
-
 public function indexWithEdit(Request $request)
 {
     // Fetch all tournaments and players
@@ -292,7 +291,12 @@ public function indexWithEdit(Request $request)
 
     // Query matches
     $matchesQuery = Matches::with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2'])
-        ->whereNull('deleted_at');
+        ->whereNull('deleted_at')
+        ->whereHas('category', function ($query) {
+            $query->where('name', 'LIKE', '%BD%')
+                  ->orWhere('name', 'LIKE', '%GD%')
+                  ->orWhere('name', 'LIKE', '%XD%');
+        });
 
     // Apply filters
     if ($filterTournament !== 'all') {
@@ -322,7 +326,7 @@ public function indexWithEdit(Request $request)
         $matchesQuery->where('stage', $filterStage);
     }
 
-    // **Fix: Apply Results Filter**
+    // Apply Results Filter
     if ($filterResults !== 'all') {
         $matchesQuery->where(function ($query) use ($filterResults) {
             if ($filterResults === 'Team 1') {
@@ -364,18 +368,6 @@ public function indexWithEdit(Request $request)
 }
 
 
-public function updateMultiple(Request $request)
-{
-    foreach ($request->matches as $matchId => $matchData) {
-        $match = Matches::find($matchId);
-        if ($match) {
-            $match->update($matchData);
-        }
-    }
-
-    return redirect()->back()->with('success', 'Matches updated successfully!');
-}
-
 public function update(Request $request, $id)
 {
     // Find the match, or return error if not found
@@ -416,5 +408,42 @@ public function softDelete($id)
     return redirect()->route('matches.doubles.edit')->with('success', 'Match soft deleted successfully!');
 }
 
+public function updateMatch(Request $request, $id)
+{
+    $match = Matches::find($id);
+
+    if (!$match) {
+        return response()->json(['success' => false, 'message' => 'Match not found.'], 404);
+    }
+
+    // Validate input
+    $validatedData = $request->validate([
+        'stage' => 'nullable|string',
+        'match_date' => 'nullable|date',
+        'match_time' => 'nullable|string',
+        'set1_team1_points' => 'nullable|integer',
+        'set1_team2_points' => 'nullable|integer',
+        'set2_team1_points' => 'nullable|integer',
+        'set2_team2_points' => 'nullable|integer',
+        'set3_team1_points' => 'nullable|integer',
+        'set3_team2_points' => 'nullable|integer',
+    ]);
+
+    // Update fields
+    $match->update($validatedData);
+
+    // Recalculate winner
+    $team1_sets = ($match->set1_team1_points > $match->set1_team2_points) +
+                  ($match->set2_team1_points > $match->set2_team2_points) +
+                  ($match->set3_team1_points > $match->set3_team2_points);
+    $team2_sets = ($match->set1_team2_points > $match->set1_team1_points) +
+                  ($match->set2_team2_points > $match->set2_team1_points) +
+                  ($match->set3_team2_points > $match->set3_team1_points);
+
+    $match->winner = $team1_sets > $team2_sets ? 'Team 1' : ($team2_sets > $team1_sets ? 'Team 2' : 'Draw');
+    $match->save();
+
+    return response()->json(['success' => true, 'winner' => $match->winner]);
+}
 
 }

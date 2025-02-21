@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Edit Doubles Matches (BD, GD, XD)</h1>
+    <h1 class="text-center">Edit Doubles Matches (BD, GD, XD)</h1>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -56,39 +56,28 @@
                 <option value="Finals" {{ request('filter_stage') == 'Finals' ? 'selected' : '' }}>Finals</option>
             </select>
 
-            <!-- Results Filter -->
-            <label for="filter_results">Results:</label>
-            <select name="filter_results" id="filter_results" class="form-control w-auto">
-                <option value="all" {{ request('filter_results', 'all') == 'all' ? 'selected' : '' }}>All</option>
-                <option value="Team 1" {{ request('filter_results') == 'Team 1' ? 'selected' : '' }}>Team 1 Won</option>
-                <option value="Team 2" {{ request('filter_results') == 'Team 2' ? 'selected' : '' }}>Team 2 Won</option>
-                <option value="Draw" {{ request('filter_results') == 'Draw' ? 'selected' : '' }}>Draw</option>
-            </select>
-
             <button type="submit" class="btn btn-primary">Apply Filters</button>
         </div>
     </form>
 
-    <form method="POST" action="{{ route('matches.doubles.updateMultiple') }}">
-        @csrf
-        @method('PUT')
-
-        <table class="table table-bordered">
-            <thead>
+    <!-- Responsive Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
                 <tr>
                     <th>ID</th>
                     <th>Tournament</th>
                     <th>Category</th>
                     <th>Team 1</th>
                     <th>Team 2</th>
-                    <th>Match Stage</th>
+                    <th>Stage</th>
                     <th>Match Date</th>
                     <th>Match Time</th>
-                    <th>Set 1 (T1 - T2)</th>
-                    <th>Set 2 (T1 - T2)</th>
-                    <th>Set 3 (T1 - T2)</th>
+                    <th>Set 1</th>
+                    <th>Set 2</th>
+                    <th>Set 3</th>
                     <th>Winner</th>
-                    <th>Actions</th>
+                    <th style="width: 180px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -99,41 +88,105 @@
                     <td>{{ $match->category->name ?? 'N/A' }}</td>
                     <td>{{ $match->team1Player1->name ?? 'N/A' }} & {{ $match->team1Player2->name ?? 'N/A' }}</td>
                     <td>{{ $match->team2Player1->name ?? 'N/A' }} & {{ $match->team2Player2->name ?? 'N/A' }}</td>
-                    <td>{{ $match->stage }}</td>
-                    <td>{{ $match->match_date }}</td>
-                    <td>{{ $match->match_time }}</td>
-                    <td>{{ $match->set1_team1_points }} - {{ $match->set1_team2_points }}</td>
-                    <td>{{ $match->set2_team1_points }} - {{ $match->set2_team2_points }}</td>
-                    <td>{{ $match->set3_team1_points }} - {{ $match->set3_team2_points }}</td>
-                    <td>
-                        @php
-                            $team1_sets = ($match->set1_team1_points > $match->set1_team2_points) + ($match->set2_team1_points > $match->set2_team2_points) + ($match->set3_team1_points > $match->set3_team2_points);
-                            $team2_sets = ($match->set1_team2_points > $match->set1_team1_points) + ($match->set2_team2_points > $match->set2_team1_points) + ($match->set3_team2_points > $match->set3_team1_points);
-                        @endphp
-                        {{ $team1_sets > $team2_sets ? 'Team 1' : ($team2_sets > $team1_sets ? 'Team 2' : 'Draw') }}
+                    
+                    <!-- Editable Fields -->
+                    <td><input type="text" class="editable form-control" data-id="{{ $match->id }}" data-field="stage" value="{{ $match->stage }}"></td>
+                    <td><input type="date" class="editable form-control" data-id="{{ $match->id }}" data-field="match_date" value="{{ $match->match_date }}"></td>
+                    <td><input type="time" class="editable form-control" data-id="{{ $match->id }}" data-field="match_time" value="{{ $match->match_time }}"></td>
+
+                    <td><input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set1_team1_points" value="{{ $match->set1_team1_points }}"> - 
+                        <input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set1_team2_points" value="{{ $match->set1_team2_points }}">
                     </td>
-                    <td>
-                        <form method="POST" action="{{ route('matches.doubles.update', $match->id) }}">
-                            @csrf
-                            @method('PUT')
-                            <button type="submit" class="btn btn-sm btn-warning">Update</button>
-                        </form>
-                        <form method="POST" action="{{ route('matches.doubles.delete', $match->id) }}">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
-                        </form>
+                    
+                    <td><input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set2_team1_points" value="{{ $match->set2_team1_points }}"> - 
+                        <input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set2_team2_points" value="{{ $match->set2_team2_points }}">
+                    </td>
+
+                    <td><input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set3_team1_points" value="{{ $match->set3_team1_points }}"> - 
+                        <input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set3_team2_points" value="{{ $match->set3_team2_points }}">
+                    </td>
+
+                    <td id="winner-{{ $match->id }}">{{ $match->winner ?? 'TBD' }}</td>
+                    
+                    <!-- Actions -->
+                    <td class="text-center">
+                        <button class="btn btn-success btn-sm update-match" data-id="{{ $match->id }}">Update</button>
+                        <button class="btn btn-danger btn-sm delete-match" data-id="{{ $match->id }}">Delete</button>
                     </td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
+    </div>
 
-        <div class="d-flex justify-content-center">
-            {{ $matches->withQueryString()->links() }}
-        </div>
-
-        <button type="submit" class="btn btn-success mt-3">Update All Matches</button>
-    </form>
+    <div class="d-flex justify-content-center">
+        {{ $matches->withQueryString()->links() }}
+    </div>
 </div>
+
+<style>
+/* Make the table fit the screen */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Adjust input field size */
+.small-input {
+    width: 50px;
+    text-align: center;
+}
+
+/* Button spacing */
+.btn-sm {
+    margin: 3px;
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Handle Update Button Click
+    document.querySelectorAll(".update-match").forEach((button) => {
+        button.addEventListener("click", function() {
+            let matchId = this.getAttribute("data-id");
+
+            // Select the row of the current match
+            let row = this.closest("tr");
+
+            // Extract values from input fields in the row
+            let formData = {
+                stage: row.querySelector(`[data-field="stage"]`).value,
+                match_date: row.querySelector(`[data-field="match_date"]`).value,
+                match_time: row.querySelector(`[data-field="match_time"]`).value,
+                set1_team1_points: row.querySelector(`[data-field="set1_team1_points"]`).value || null,
+                set1_team2_points: row.querySelector(`[data-field="set1_team2_points"]`).value || null,
+                set2_team1_points: row.querySelector(`[data-field="set2_team1_points"]`).value || null,
+                set2_team2_points: row.querySelector(`[data-field="set2_team2_points"]`).value || null,
+                set3_team1_points: row.querySelector(`[data-field="set3_team1_points"]`).value || null,
+                set3_team2_points: row.querySelector(`[data-field="set3_team2_points"]`).value || null
+            };
+
+            fetch(`/matches/doubles/update/${matchId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Match updated successfully!");
+                    document.getElementById(`winner-${matchId}`).innerText = data.winner ?? "TBD";
+                } else {
+                    alert("Failed to update match.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    });
+});
+
+
+</script>
+
 @endsection
