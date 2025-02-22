@@ -12,47 +12,36 @@
                 <th>Email</th>
                 <th>Mobile No</th>
                 <th>Role</th>
-                <th>Actions</th>
+                <th>Moderator Of</th> <!-- ✅ Added Moderator Column -->
             </tr>
         </thead>
         <tbody>
             @foreach ($users as $user)
                 <tr>
                     <td>{{ $user->id }}</td>
+                    <td>{{ $user->username }}</td>
+                    <td>{{ $user->email }}</td>
+                    <td>{{ $user->mobile_no }}</td>
+                    <td>{{ ucfirst($user->role) }}</td>
                     <td>
-                        <form method="POST" action="{{ route('users.update', $user->id) }}">
-                            @csrf
-                            @method('PUT')
-                            <input type="text" name="username" value="{{ $user->username }}" required>
-                    </td>
-                    <td><input type="email" name="email" value="{{ $user->email }}" required></td>
-                    <td><input type="text" name="mobile_no" value="{{ $user->mobile_no }}"></td>
-                    <td>
-                        <select name="role">
-                            <option value="visitor" {{ $user->role === 'visitor' ? 'selected' : '' }}>Visitor</option>
-                            <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
-                            <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
-                        </select>
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-success btn-sm">Update</button>
-                        </form> <!-- ✅ Properly closed form -->
-
-                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm">Edit</a>
-
-                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                        </form>
+                        @if ($user->moderatedTournaments->isNotEmpty())
+                            <ul>
+                                @foreach ($user->moderatedTournaments as $tournament)
+                                    <li>{{ $tournament->name }} ({{ $tournament->year }})</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <span class="text-muted">Not a moderator</span>
+                        @endif
                     </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
 
-    <!-- ✅ Button to Create a New User -->
-    <a href="{{ route('users.create') }}" class="btn btn-success mt-3">Create New User</a>
-
+    <!-- ✅ Centered Pagination -->
+    <div class="d-flex justify-content-center">
+        {{ $users->appends(request()->query())->links('vendor.pagination.default') }}
+    </div>
 </div>
 @endsection

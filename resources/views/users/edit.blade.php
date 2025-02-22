@@ -4,119 +4,58 @@
 <div class="container">
     <h2>Manage Users</h2>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <table class="table table-bordered">
+    <table class="table">
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Username</th>
                 <th>Email</th>
-                <th>Role</th>
+                <th>Mobile No</th>
+                <th style="width: 200px;">Role</th> <!-- ✅ Increased Role Column Width -->
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($users as $user)
                 <tr>
-                    <td contenteditable="true" 
-                        data-id="{{ $user->id }}" 
-                        data-field="username"
-                        class="editable">{{ $user->username }}</td>
-
-                    <td contenteditable="true" 
-                        data-id="{{ $user->id }}" 
-                        data-field="email"
-                        class="editable">{{ $user->email }}</td>
-
+                    <td>{{ $user->id }}</td>
                     <td>
-                        <select class="role-select" data-id="{{ $user->id }}">
-                            <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="user" {{ $user->role == 'user' ? 'selected' : '' }}>User</option>
-                            <option value="visitor" {{ $user->role == 'visitor' ? 'selected' : '' }}>Visitor</option>
+                        <form method="POST" action="{{ route('users.update', $user->id) }}">
+                            @csrf
+                            @method('PUT')
+                            <input type="text" name="username" value="{{ $user->username }}" required>
+                    </td>
+                    <td><input type="email" name="email" value="{{ $user->email }}" required></td>
+                    <td><input type="text" name="mobile_no" value="{{ $user->mobile_no }}"></td>
+                    <td style="width: 200px;"> <!-- ✅ Increased Width Here -->
+                        <select name="role" class="form-control">
+                            <option value="visitor" {{ $user->role === 'visitor' ? 'selected' : '' }}>Visitor</option>
+                            <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
+                            <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>
                     </td>
-
                     <td>
-                        <button class="btn btn-danger delete-user" data-id="{{ $user->id }}">Delete</button>
+                        <button type="submit" class="btn btn-success btn-sm">Update</button>
+                        </form> <!-- ✅ Properly closed form -->
+
+                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
                     </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
+
+    <!-- ✅ Centered Pagination -->
+    <div class="d-flex justify-content-center">
+        {{ $users->appends(request()->query())->links('vendor.pagination.default') }}
+    </div>
+
+    <!-- ✅ Button to Create a New User -->
+    <a href="{{ route('users.create') }}" class="btn btn-success mt-3">Create New User</a>
+
 </div>
-
-<!-- ✅ JavaScript for Inline Editing & Deleting -->
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Inline editing for username & email
-    document.querySelectorAll(".editable").forEach((element) => {
-        element.addEventListener("blur", function() {
-            let userId = this.getAttribute("data-id");
-            let field = this.getAttribute("data-field");
-            let value = this.innerText.trim();
-
-            updateUser(userId, field, value);
-        });
-    });
-
-    // Role selection change event
-    document.querySelectorAll(".role-select").forEach((element) => {
-        element.addEventListener("change", function() {
-            let userId = this.getAttribute("data-id");
-            let value = this.value;
-            updateUser(userId, "role", value);
-        });
-    });
-
-    // Function to send AJAX request for updating users
-    function updateUser(userId, field, value) {
-        fetch(`/admin/edit_users/${userId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({ [field]: value })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log("User updated successfully");
-            } else {
-                alert("Failed to update user");
-            }
-        })
-        .catch(error => console.error("Error:", error));
-    }
-
-    // Delete user
-    document.querySelectorAll(".delete-user").forEach((button) => {
-        button.addEventListener("click", function() {
-            let userId = this.getAttribute("data-id");
-
-            if (confirm("Are you sure you want to delete this user?")) {
-                fetch(`/admin/edit_users/${userId}`, {
-                    method: "DELETE",
-                    headers: {
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("User deleted successfully");
-                        location.reload();
-                    } else {
-                        alert("Failed to delete user");
-                    }
-                })
-                .catch(error => console.error("Error:", error));
-            }
-        });
-    });
-});
-</script>
-
 @endsection

@@ -11,18 +11,24 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
     // ✅ Show Users List Based on Role
+    
     public function index()
-    {
-        $authUser = Auth::user();
+{
+    $authUser = Auth::user();
 
-        if ($authUser->isAdmin()) {
-            $users = User::orderBy('created_at', 'desc')->get();
-        } else {
-            $users = User::where('created_by', $authUser->id)->orderBy('created_at', 'desc')->get();
-        }
-
-        return view('users.index', compact('users'));
+    if ($authUser->isAdmin()) {
+        $users = User::with('moderatedTournaments')->orderBy('id', 'asc')->paginate(10);
+    } else {
+        $users = User::with('moderatedTournaments')
+            ->where('created_by', $authUser->id)
+            ->orderBy('id', 'asc')
+            ->paginate(10);
     }
+
+    return view('users.index', compact('users'));
+}
+
+
 
     // ✅ Show User Creation Form (Role Restricted)
     public function create()
@@ -56,8 +62,6 @@ class UserController extends Controller
             'creator_id' => $loggedInUserId,
             'new_user' => $request->username
         ]);
-
-        Log::info('User Store Request:', $request->all());
 
         $user = User::create([
             'username' => $request->username,
@@ -148,4 +152,15 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
+
+    // ✅ Admin View for Editing Users
+    public function editUsers() {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->route('users.index')->with('error', 'Unauthorized access!');
+        }
+        
+        $users = User::orderBy('id', 'asc')->paginate(5); // ✅ Pagination added
+        return view('users.edit', compact('users'));
+    }
+    
 }

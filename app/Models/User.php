@@ -75,5 +75,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Player::class, 'player_access');
     }
     
-
+    public function moderatedTournaments()
+    {
+        return $this->hasMany(Tournament::class, 'moderated_by');
+    }
+    
+    
 }
