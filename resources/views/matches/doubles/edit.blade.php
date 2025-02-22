@@ -53,22 +53,24 @@
                     <td>{{ $match->team1Player1->name ?? 'N/A' }} & {{ $match->team1Player2->name ?? 'N/A' }}</td>
 
                     <!-- Stage Dropdown -->
-<!-- Stage Dropdown with Correct ENUM Values -->
-<td rowspan="2">
-    <select class="editable form-control" data-id="{{ $match->id }}" data-field="stage">
-        <option value="Pre Quarter Finals" {{ $match->stage == 'Pre Quarter Finals' ? 'selected' : '' }}>Pre Quarter Finals</option>
-        <option value="Quarter Finals" {{ $match->stage == 'Quarter Finals' ? 'selected' : '' }}>Quarter Finals</option>
-        <option value="Semifinals" {{ $match->stage == 'Semifinals' ? 'selected' : '' }}>Semifinals</option>
-        <option value="Finals" {{ $match->stage == 'Finals' ? 'selected' : '' }}>Finals</option>
-    </select>
-</td>
-
+                    <td rowspan="2">
+                        <select class="editable form-control" data-id="{{ $match->id }}" data-field="stage">
+                            <option value="Pre Quarter Finals" {{ $match->stage == 'Pre Quarter Finals' ? 'selected' : '' }}>Pre Quarter Finals</option>
+                            <option value="Quarter Finals" {{ $match->stage == 'Quarter Finals' ? 'selected' : '' }}>Quarter Finals</option>
+                            <option value="Semifinals" {{ $match->stage == 'Semifinals' ? 'selected' : '' }}>Semifinals</option>
+                            <option value="Finals" {{ $match->stage == 'Finals' ? 'selected' : '' }}>Finals</option>
+                        </select>
+                    </td>
 
                     <!-- Match Date & Time -->
-                    <td rowspan="2"><input type="date" class="editable form-control" data-id="{{ $match->id }}" data-field="match_date" value="{{ $match->match_date }}"></td>
-                    <td rowspan="2"><input type="time" class="editable form-control" data-id="{{ $match->id }}" data-field="match_time" value="{{ $match->match_time }}"></td>
+                    <td rowspan="2">
+                        <input type="date" class="editable form-control" data-id="{{ $match->id }}" data-field="match_date" value="{{ $match->match_date }}">
+                    </td>
+                    <td rowspan="2">
+                        <input type="time" class="editable form-control" data-id="{{ $match->id }}" data-field="match_time" value="{{ $match->match_time }}">
+                    </td>
 
-                    <!-- Sets (Team1 | Team2) -->
+                    <!-- Sets (Team1) -->
                     <td>
                         <input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set1_team1_points" value="{{ $match->set1_team1_points }}"> | 
                         <input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set2_team1_points" value="{{ $match->set2_team1_points }}"> | 
@@ -82,12 +84,11 @@
                         <button class="btn btn-danger btn-sm delete-match" data-id="{{ $match->id }}">Delete</button>
                     </td>
                 </tr>
-
                 <tr>
                     <!-- Team 2 Players -->
                     <td>{{ $match->team2Player1->name ?? 'N/A' }} & {{ $match->team2Player2->name ?? 'N/A' }}</td>
 
-                    <!-- Sets (Team1 | Team2) -->
+                    <!-- Sets (Team2) -->
                     <td>
                         <input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set1_team2_points" value="{{ $match->set1_team2_points }}"> | 
                         <input type="number" class="editable form-control small-input" data-id="{{ $match->id }}" data-field="set2_team2_points" value="{{ $match->set2_team2_points }}"> | 
@@ -127,6 +128,7 @@
     text-align: center;
 }
 </style>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     function showFlashMessage(message, type) {
@@ -138,16 +140,25 @@ document.addEventListener("DOMContentLoaded", function() {
         setTimeout(() => { flashMessage.style.display = "none"; }, 3000);
     }
 
-    // ✅ UPDATE MATCH FUNCTION (Debugging Enabled)
+    // UPDATE MATCH FUNCTION
     document.querySelectorAll(".update-match").forEach(button => {
         button.addEventListener("click", async function() {
             let matchId = this.getAttribute("data-id");
-            let row = document.getElementById(`match-${matchId}`);
-
+            // Select the first row (which has the unique id) and its next sibling (second row)
+            let firstRow = document.getElementById(`match-${matchId}`);
+            let secondRow = firstRow.nextElementSibling;
+            
             let formData = {};
-            row.querySelectorAll("input.editable, select.editable").forEach(input => {
+            // Gather inputs from the first row
+            firstRow.querySelectorAll("input.editable, select.editable").forEach(input => {
                 formData[input.getAttribute("data-field")] = input.value;
             });
+            // Gather inputs from the second row (if it exists)
+            if (secondRow) {
+                secondRow.querySelectorAll("input.editable, select.editable").forEach(input => {
+                    formData[input.getAttribute("data-field")] = input.value;
+                });
+            }
 
             let csrfToken = document.querySelector('meta[name="csrf-token"]').content;
             console.log("🔄 Updating Match ID:", matchId, "with data:", formData);
@@ -163,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     body: JSON.stringify(formData)
                 });
 
-                // ⚠️ Check if response is valid JSON
+                // Check if response is valid JSON
                 let data;
                 try {
                     data = await response.json();
@@ -187,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // ✅ DELETE MATCH FUNCTION (Debugging Enabled)
+    // DELETE MATCH FUNCTION
     document.querySelectorAll(".delete-match").forEach(button => {
         button.addEventListener("click", async function() {
             let matchId = this.getAttribute("data-id");
@@ -206,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 });
 
-                // ⚠️ Check if response is valid JSON
+                // Check if response is valid JSON
                 let data;
                 try {
                     data = await response.json();
@@ -219,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 if (data.success) {
                     showFlashMessage("✅ Match deleted successfully!", "success");
-                    document.getElementById(`match-${matchId}`).remove(); // Remove row from table
+                    document.getElementById(`match-${matchId}`).remove(); // Remove the match rows from the table
                 } else {
                     showFlashMessage("❌ Failed to delete match: " + (data.message || "Unknown error"), "error");
                 }
@@ -230,7 +241,5 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
-
-
 </script>
 @endsection

@@ -371,15 +371,13 @@ public function indexWithEdit(Request $request)
 public function update(Request $request, $id)
 {
     try {
-        // Log incoming request
         \Log::info('🔄 Update request received', ['match_id' => $id, 'data' => $request->all()]);
-
         $match = Matches::findOrFail($id);
 
-        // ✅ Correct ENUM values
+        // Allowed ENUM values for stage
         $allowedStages = ['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals'];
 
-        // Validate input
+        // Validate the input data
         $validatedData = $request->validate([
             'stage' => ['nullable', 'string', function ($attribute, $value, $fail) use ($allowedStages) {
                 if (!in_array($value, $allowedStages, true)) {
@@ -396,13 +394,32 @@ public function update(Request $request, $id)
             'set3_team2_points' => 'nullable|integer',
         ]);
 
-        // Log validated data
         \Log::info('✅ Validated Data:', $validatedData);
 
-        // Update match fields
+        // Update the match using mass assignment (winner is not included)
         $match->update($validatedData);
 
-        return response()->json(['success' => true, 'message' => 'Match updated successfully!']);
+        // Compute the winner locally without saving it
+        $team1_sets = (
+            ($match->set1_team1_points > $match->set1_team2_points ? 1 : 0) +
+            ($match->set2_team1_points > $match->set2_team2_points ? 1 : 0) +
+            (($match->set3_team1_points ?? 0) > ($match->set3_team2_points ?? 0) ? 1 : 0)
+        );
+        $team2_sets = (
+            ($match->set1_team2_points > $match->set1_team1_points ? 1 : 0) +
+            ($match->set2_team2_points > $match->set2_team1_points ? 1 : 0) +
+            (($match->set3_team2_points ?? 0) > ($match->set3_team1_points ?? 0) ? 1 : 0)
+        );
+
+        $computedWinner = $team1_sets > $team2_sets 
+            ? 'Team 1' 
+            : ($team2_sets > $team1_sets ? 'Team 2' : 'Draw');
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Match updated successfully!',
+            'winner' => $computedWinner
+        ]);
     } catch (\Illuminate\Database\QueryException $e) {
         \Log::error('❌ SQL Error:', ['error' => $e->getMessage()]);
         return response()->json(['success' => false, 'message' => 'Database error!', 'error' => $e->getMessage()], 500);
@@ -411,6 +428,7 @@ public function update(Request $request, $id)
         return response()->json(['success' => false, 'message' => 'Update failed!', 'error' => $e->getMessage()], 500);
     }
 }
+
 
 public function softDelete($id)
 {

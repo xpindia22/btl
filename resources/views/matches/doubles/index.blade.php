@@ -70,56 +70,97 @@
     </form>
 
     <!-- Matches Table -->
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Match ID</th>
-                <th>Tournament</th>
-                <th>Category</th>
-                <th>Team 1</th>
-                <th>Team 2</th>
-                <th>Stage</th>
-                <th>Match Date</th>
-                <th>Match Time</th>
-                <th>Set 1 (T1 - T2)</th>
-                <th>Set 2 (T1 - T2)</th>
-                <th>Set 3 (T1 - T2)</th>
-                <th>Winner</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($matches as $match)
-            <tr>
-                <td>{{ $match->id }}</td>
-                <td>{{ $match->tournament->name ?? 'N/A' }}</td>
-                <td>{{ $match->category->name ?? 'N/A' }}</td>
-                <td>{{ $match->team1Player1->name ?? 'N/A' }} & {{ $match->team1Player2->name ?? 'N/A' }}</td>
-                <td>{{ $match->team2Player1->name ?? 'N/A' }} & {{ $match->team2Player2->name ?? 'N/A' }}</td>
-                <td>{{ $match->stage }}</td>
-                <td>{{ $match->match_date }}</td>
-                <td>{{ $match->match_time }}</td>
-                <td>{{ $match->set1_team1_points }} - {{ $match->set1_team2_points }}</td>
-                <td>{{ $match->set2_team1_points }} - {{ $match->set2_team2_points }}</td>
-                <td>
-                    {{ $match->set3_team1_points !== null ? $match->set3_team1_points : 'N/A' }} - 
-                    {{ $match->set3_team2_points !== null ? $match->set3_team2_points : 'N/A' }}
-                </td>
-                <td>
-                    @php
-                        $team1_sets = ($match->set1_team1_points > $match->set1_team2_points) + ($match->set2_team1_points > $match->set2_team2_points) + ($match->set3_team1_points > $match->set3_team2_points);
-                        $team2_sets = ($match->set1_team2_points > $match->set1_team1_points) + ($match->set2_team2_points > $match->set2_team1_points) + ($match->set3_team2_points > $match->set3_team1_points);
-                    @endphp
-                    {{ $team1_sets > $team2_sets ? 'Team 1' : ($team2_sets > $team1_sets ? 'Team 2' : 'Draw') }}
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped mx-auto">
+            <thead class="table-dark">
+                <tr>
+                    <th>Match ID</th>
+                    <th>Tournament</th>
+                    <th>Category</th>
+                    <th>Team 1</th>
+                    <th>Team 2</th>
+                    <th>Stage</th>
+                    <th>Match Date</th>
+                    <th>Match Time</th>
+                    <th>Set 1 (T1 - T2)</th>
+                    <th>Set 2 (T1 - T2)</th>
+                    <th>Set 3 (T1 - T2)</th>
+                    <th>Winner</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($matches as $match)
+                    @if(!$match->category || (stripos($match->category->name, 'BD') === false && stripos($match->category->name, 'GD') === false && stripos($match->category->name, 'XD') === false))
+                        @continue
+                    @endif
+                    <tr>
+                        <td>{{ $match->id }}</td>
+                        <td>{{ $match->tournament->name ?? 'N/A' }}</td>
+                        <td>{{ $match->category->name ?? 'N/A' }}</td>
+                        <td>
+                            {{ $match->team1Player1->name ?? 'N/A' }}<br>
+                            {{ $match->team1Player2->name ?? 'N/A' }}
+                        </td>
+                        <td>
+                            {{ $match->team2Player1->name ?? 'N/A' }}<br>
+                            {{ $match->team2Player2->name ?? 'N/A' }}
+                        </td>
+                        <td>{{ $match->stage }}</td>
+                        <td>{{ $match->match_date }}</td>
+                        <td>{{ $match->match_time }}</td>
+                        <td>{{ $match->set1_team1_points }} - {{ $match->set1_team2_points }}</td>
+                        <td>{{ $match->set2_team1_points }} - {{ $match->set2_team2_points }}</td>
+                        <td>
+                            {{ $match->set3_team1_points !== null ? $match->set3_team1_points : 'N/A' }} - 
+                            {{ $match->set3_team2_points !== null ? $match->set3_team2_points : 'N/A' }}
+                        </td>
+                        <td>
+                            @php
+                                $team1_sets = ($match->set1_team1_points > $match->set1_team2_points) 
+                                    + ($match->set2_team1_points > $match->set2_team2_points) 
+                                    + ($match->set3_team1_points > $match->set3_team2_points);
+                                $team2_sets = ($match->set1_team2_points > $match->set1_team1_points) 
+                                    + ($match->set2_team2_points > $match->set2_team1_points) 
+                                    + ($match->set3_team2_points > $match->set3_team1_points);
+                            @endphp
+                            {{ $team1_sets > $team2_sets ? 'Team 1' : ($team2_sets > $team1_sets ? 'Team 2' : 'Draw') }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
     <!-- Pagination -->
     <div class="d-flex justify-content-center">
         {{ $matches->appends(request()->query())->links() }}
     </div>
-
 </div>
+
+<style>
+    /* Responsive table wrapper */
+    .table-responsive {
+        overflow-x: auto;
+    }
+    /* Center the table */
+    .table {
+        margin: 0 auto;
+    }
+    /* Ensure table cells fit content and wrap player names appropriately */
+    .table th, .table td {
+        vertical-align: middle;
+        text-align: center;
+        white-space: nowrap;
+    }
+    /* Allow the player columns to break into multiple lines */
+    .table td:nth-child(4),
+    .table td:nth-child(5) {
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    /* Adjust font size if needed */
+    .table {
+        font-size: 0.9rem;
+    }
+</style>
 @endsection
