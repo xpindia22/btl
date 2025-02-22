@@ -2,7 +2,8 @@
 
 @section('content')
 <div class="container">
-    <h2>Registered Users</h2>
+    <h2>Registered Users --- <a href="/users/edit">Edit Users</a>
+    </h2>
 
     <table class="table">
         <thead>
