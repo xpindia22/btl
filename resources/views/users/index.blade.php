@@ -13,6 +13,7 @@
                 <th>Mobile No</th>
                 <th>Role</th>
                 <th>Moderator Of</th> <!-- ✅ Added Moderator Column -->
+                <th>Creator Of</th> <!-- ✅ Added Creator Column -->
             </tr>
         </thead>
         <tbody>
@@ -23,6 +24,8 @@
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->mobile_no }}</td>
                     <td>{{ ucfirst($user->role) }}</td>
+                    
+                    <!-- ✅ Display Tournaments where User is a Moderator -->
                     <td>
                         @if ($user->moderatedTournaments->isNotEmpty())
                             <ul>
@@ -32,6 +35,19 @@
                             </ul>
                         @else
                             <span class="text-muted">Not a moderator</span>
+                        @endif
+                    </td>
+
+                    <!-- ✅ Display Tournaments Created by User -->
+                    <td>
+                        @if ($user->createdTournaments->isNotEmpty())
+                            <ul>
+                                @foreach ($user->createdTournaments as $tournament)
+                                    <li>{{ $tournament->name }} ({{ $tournament->year }})</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <span class="text-muted">No tournaments created</span>
                         @endif
                     </td>
                 </tr>

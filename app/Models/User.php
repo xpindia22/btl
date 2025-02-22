@@ -80,5 +80,9 @@ class User extends Authenticatable
         return $this->hasMany(Tournament::class, 'moderated_by');
     }
     
-    
+    public function createdTournaments()
+    {
+        return $this->hasMany(Tournament::class, 'created_by');
+    }
+       
 }

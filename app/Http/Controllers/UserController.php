@@ -13,20 +13,23 @@ class UserController extends Controller
     // ✅ Show Users List Based on Role
     
     public function index()
-{
-    $authUser = Auth::user();
-
-    if ($authUser->isAdmin()) {
-        $users = User::with('moderatedTournaments')->orderBy('id', 'asc')->paginate(10);
-    } else {
-        $users = User::with('moderatedTournaments')
-            ->where('created_by', $authUser->id)
-            ->orderBy('id', 'asc')
-            ->paginate(10);
+    {
+        $authUser = Auth::user();
+    
+        if ($authUser->isAdmin()) {
+            $users = User::with(['moderatedTournaments', 'createdTournaments'])
+                ->orderBy('id', 'asc')
+                ->paginate(10);
+        } else {
+            $users = User::with(['moderatedTournaments', 'createdTournaments'])
+                ->where('created_by', $authUser->id)
+                ->orderBy('id', 'asc')
+                ->paginate(10);
+        }
+    
+        return view('users.index', compact('users'));
     }
-
-    return view('users.index', compact('users'));
-}
+    
 
 
 
