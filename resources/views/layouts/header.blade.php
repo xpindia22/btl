@@ -103,8 +103,10 @@
                 <div class="dropdown">
                     <a href="#">Admin Zone</a>
                     <div class="dropdown-content">
-                        <a href="{{ route('admin.edit_users') }}">Edit Tournament Manager</a>
-                        <a href="{{ route('admin.edit_players') }}">Edit Player</a>
+                        <a href="{{ url('users/create') }}">Create User</a>
+                        <a href="{{ url('tournaments/manage') }}">Manage Tournaments & Add Moderator</a>
+
+                         <a href="{{ route('admin.edit_players') }}">Edit Player</a>
                          <a href="{{ route('categories.create') }}">Insert Category</a> 
                         <a href="{{ route('admin.add_moderator') }}">Add Moderator</a>
                         <a href="{{ route('tournaments.create') }}">Insert Tournament</a>
@@ -112,7 +114,6 @@
                 </div>
             @endif
 
-            <!-- Dropdown: Singles Matches -->
             <!-- Dropdown: Singles Matches -->
 <div class="dropdown">
     <a href="#">Singles Matches</a>

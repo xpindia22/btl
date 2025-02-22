@@ -26,7 +26,7 @@
 <body>
     <!-- Include the Header -->
     @include('layouts.header')
-
+    @yield('styles')
     <div id="app">
         <main class="py-4">
             @yield('content')

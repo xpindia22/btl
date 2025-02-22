@@ -141,7 +141,9 @@
         </table>
     </div>
 </div>
-
+<div class="d-flex justify-content-center">
+    {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
+</div>
 <style>
 /* Flash message styling */
 #flash-message {

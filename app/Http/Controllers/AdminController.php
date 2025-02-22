@@ -33,17 +33,18 @@ class AdminController extends Controller
      */
     public function editUsers()
     {
-        $users = User::all(); // ✅ Fetch all users from the database
-        return view('admin.edit_users', compact('users')); // ✅ Pass users to the view
+        $users = User::all(); // Fetch all users from the database
+        return view('admin.edit_users', compact('users')); // Pass users to the view
     }
 
     /**
-     * Edit User Page (Admin Only)
+     * Edit Single User Page (Admin Only)
      */
     public function editUser($id)
     {
         $user = User::findOrFail($id);
-        return view('admin.edit_users', compact('user')); // ✅ Ensure correct view
+        // Use a separate view (admin.edit_user) so that the view expects a single user variable.
+        return view('admin.edit_user', compact('user'));
     }
 
     /**
