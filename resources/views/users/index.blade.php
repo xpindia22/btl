@@ -55,4 +55,7 @@
     <a href="{{ route('users.create') }}" class="btn btn-success mt-3">Create New User</a>
 
 </div>
+
 @endsection
+
+ 
