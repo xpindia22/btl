@@ -1,6 +1,8 @@
 <?php 
 
 namespace App\Http\Controllers;
+use App\Models\Tournament;
+
 
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,18 +13,27 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
     // ✅ Show Users List Based on Role
+    
     public function index()
     {
         $authUser = Auth::user();
-
+    
         if ($authUser->isAdmin()) {
-            $users = User::orderBy('created_at', 'desc')->get();
+            $users = User::with(['moderatedTournaments', 'createdTournaments'])
+                ->orderBy('id', 'asc')
+                ->paginate(10);
         } else {
-            $users = User::where('created_by', $authUser->id)->orderBy('created_at', 'desc')->get();
+            $users = User::with(['moderatedTournaments', 'createdTournaments'])
+                ->where('created_by', $authUser->id)
+                ->orderBy('id', 'asc')
+                ->paginate(10);
         }
-
+    
         return view('users.index', compact('users'));
     }
+    
+
+
 
     // ✅ Show User Creation Form (Role Restricted)
     public function create()
@@ -56,8 +67,6 @@ class UserController extends Controller
             'creator_id' => $loggedInUserId,
             'new_user' => $request->username
         ]);
-
-        Log::info('User Store Request:', $request->all());
 
         $user = User::create([
             'username' => $request->username,
@@ -96,39 +105,49 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         $authUser = Auth::user();
-
-        // ✅ Only Admin or Creator Can Update
+    
         if (!$authUser->isAdmin() && $authUser->id !== $user->created_by) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized');
         }
-
+    
         $request->validate([
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'email' => 'required|email|unique:users,email,' . $user->id,
             'mobile_no' => 'nullable|digits:10',
             'role' => 'required|in:admin,user,player,visitor',
         ]);
-
+    
         // ✅ Prevent Non-Admins from Changing Roles
         if (!$authUser->isAdmin() && $request->role !== $user->role) {
             return redirect()->route('users.index')->with('error', 'You cannot change user roles.');
         }
-
+    
         // ✅ Prevent Users from Changing Their Own Role
         if ($authUser->id === $user->id && $request->role !== $user->role) {
             return redirect()->route('users.index')->with('error', 'You cannot update your own role.');
         }
-
+    
+        // ✅ Update User Details
         $user->update([
             'username' => $request->username,
             'email' => $request->email,
             'mobile_no' => $request->mobile_no,
             'role' => $request->role,
         ]);
-
+    
+        // ✅ Update Moderated Tournaments
+        if ($authUser->isAdmin() && $request->has('moderated_tournaments')) {
+            Tournament::whereIn('id', $request->moderated_tournaments)->update(['moderated_by' => $user->id]);
+        }
+    
+        // ✅ Update Created Tournaments
+        if ($authUser->isAdmin() && $request->has('created_tournaments')) {
+            Tournament::whereIn('id', $request->created_tournaments)->update(['created_by' => $user->id]);
+        }
+    
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
-
+    
     // ✅ Delete User (Restricted)
     public function destroy($id)
     {
@@ -148,6 +167,20 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
+
+    // ✅ Admin View for Editing Users
+    public function editUsers() {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->route('users.index')->with('error', 'Unauthorized access!');
+        }
+        
+        $users = User::with(['moderatedTournaments', 'createdTournaments'])->orderBy('id', 'asc')->paginate(10);
+        $tournaments = Tournament::orderBy('year', 'desc')->get(); // ✅ Get all tournaments for dropdown
+    
+        return view('users.edit', compact('users', 'tournaments'));
+    }
+    
+    
 
  
 

@@ -16,8 +16,8 @@ class User extends Authenticatable
         'email',
         'password',
         'mobile_no',
-        'role', // Role as a string
-        'created_by', // User who created this user
+        'role',
+        'created_by',
     ];
 
     protected $hidden = [
@@ -54,26 +54,18 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is a regular user.
+     * Get tournaments the user moderates.
      */
-    public function isUser()
+    public function moderatedTournaments()
     {
-        return strtolower($this->role) === 'user';
+        return $this->hasMany(Tournament::class, 'moderated_by');
     }
 
     /**
-     * Check if user is a player.
+     * Get tournaments the user created.
      */
-    public function isPlayer()
+    public function createdTournaments()
     {
-        return strtolower($this->role) === 'player';
+        return $this->hasMany(Tournament::class, 'created_by');
     }
-
-
-    public function players()
-    {
-        return $this->belongsToMany(Player::class, 'player_access');
-    }
-    
-
 }
