@@ -11,7 +11,9 @@
                 <th>Username</th>
                 <th>Email</th>
                 <th>Mobile No</th>
-                <th style="width: 200px;">Role</th> <!-- ✅ Increased Role Column Width -->
+                <th>Role</th>
+                <th>Moderator</th> <!-- ✅ Editable -->
+                <th>Creator</th> <!-- ✅ Editable -->
                 <th>Actions</th>
             </tr>
         </thead>
@@ -27,13 +29,38 @@
                     </td>
                     <td><input type="email" name="email" value="{{ $user->email }}" required></td>
                     <td><input type="text" name="mobile_no" value="{{ $user->mobile_no }}"></td>
-                    <td style="width: 200px;"> <!-- ✅ Increased Width Here -->
+                    <td>
                         <select name="role" class="form-control">
                             <option value="visitor" {{ $user->role === 'visitor' ? 'selected' : '' }}>Visitor</option>
                             <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
                             <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>
                     </td>
+
+                    <!-- ✅ Editable "Moderator Of" Column -->
+                    <td>
+                        <select name="moderated_tournaments[]" class="form-control" multiple>
+                            @foreach ($tournaments as $tournament)
+                                <option value="{{ $tournament->id }}"
+                                    {{ in_array($tournament->id, $user->moderatedTournaments->pluck('id')->toArray()) ? 'selected' : '' }}>
+                                    {{ $tournament->name }} ({{ $tournament->year }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </td>
+
+                    <!-- ✅ Editable "Creator Of" Column -->
+                    <td>
+                        <select name="created_tournaments[]" class="form-control" multiple>
+                            @foreach ($tournaments as $tournament)
+                                <option value="{{ $tournament->id }}"
+                                    {{ in_array($tournament->id, $user->createdTournaments->pluck('id')->toArray()) ? 'selected' : '' }}>
+                                    {{ $tournament->name }} ({{ $tournament->year }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </td>
+
                     <td>
                         <button type="submit" class="btn btn-success btn-sm">Update</button>
                         </form> <!-- ✅ Properly closed form -->
