@@ -9,19 +9,60 @@
     <!-- Flash Messages -->
     <div id="flash-message" class="alert text-center d-none"></div>
 
-    <!-- Filters Row -->
-    <form method="GET" action="{{ route('matches.doubles.edit') }}" class="mb-3">
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            <label for="filter_tournament">Tournament:</label>
-            <select name="filter_tournament" id="filter_tournament" class="form-control w-auto">
-                <option value="all" {{ request('filter_tournament', 'all') == 'all' ? 'selected' : '' }}>All</option>
-                @foreach($tournaments as $tournament)
-                    <option value="{{ $tournament->id }}" {{ request('filter_tournament') == $tournament->id ? 'selected' : '' }}>
-                        {{ $tournament->name }}
-                    </option>
-                @endforeach
-            </select>
-            <button type="submit" class="btn btn-primary">Apply Filters</button>
+    
+    <!-- Filters Row in One Line -->
+    <form method="GET" action="{{ route('matches.doubles.index') }}" class="mb-3">
+        <div class="d-flex align-items-center flex-nowrap" style="overflow-x: auto;">
+            <div class="form-group mr-3">
+                <label for="filter_tournament" class="mr-1">Tournament:</label>
+                <select name="filter_tournament" id="filter_tournament" class="form-control" style="width: auto; display: inline-block;">
+                    <option value="all" {{ request('filter_tournament', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                    @foreach($tournaments as $tournament)
+                        <option value="{{ $tournament->id }}" {{ request('filter_tournament') == $tournament->id ? 'selected' : '' }}>
+                            {{ $tournament->name }}
+                        </option>
+                    @endforeach
+                </select>
+            
+                <label for="filter_player" class="mr-1">Player:</label>
+                <select name="filter_player" id="filter_player" class="form-control" style="width: auto; display: inline-block;">
+                    <option value="all" {{ request('filter_player', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                    @foreach($players as $player)
+                        <option value="{{ $player->id }}" {{ request('filter_player') == $player->id ? 'selected' : '' }}>
+                            {{ $player->name }}
+                        </option>
+                    @endforeach
+                </select>
+            
+                <label for="filter_category" class="mr-1">Category:</label>
+                <select name="filter_category" id="filter_category" class="form-control" style="width: auto; display: inline-block;">
+                    <option value="all" {{ request('filter_category', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                    <option value="BD" {{ request('filter_category') == 'BD' ? 'selected' : '' }}>Boys Doubles (BD)</option>
+                    <option value="GD" {{ request('filter_category') == 'GD' ? 'selected' : '' }}>Girls Doubles (GD)</option>
+                    <option value="XD" {{ request('filter_category') == 'XD' ? 'selected' : '' }}>Mixed Doubles (XD)</option>
+                </select>
+                <label for="filter_date" class="mr-1">Date:</label>
+                <input type="date" name="filter_date" id="filter_date" class="form-control" style="width: auto; display: inline-block;" placeholder="dd-mm-yyyy" value="{{ request('filter_date') }}">
+            
+                <label for="filter_stage" class="mr-1">Stage:</label>
+                <select name="filter_stage" id="filter_stage" class="form-control" style="width: auto; display: inline-block;">
+                    <option value="all" {{ request('filter_stage', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                    <option value="Pre Quarter Finals" {{ request('filter_stage') == 'Pre Quarter Finals' ? 'selected' : '' }}>Pre Quarter Finals</option>
+                    <option value="Quarter Finals" {{ request('filter_stage') == 'Quarter Finals' ? 'selected' : '' }}>Quarter Finals</option>
+                    <option value="Semifinals" {{ request('filter_stage') == 'Semifinals' ? 'selected' : '' }}>Semifinals</option>
+                    <option value="Finals" {{ request('filter_stage') == 'Finals' ? 'selected' : '' }}>Finals</option>
+                </select>
+            
+                <label for="filter_results" class="mr-1">Results:</label>
+                <select name="filter_results" id="filter_results" class="form-control" style="width: auto; display: inline-block;">
+                    <option value="all" {{ request('filter_results', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                    <option value="Team 1" {{ request('filter_results') == 'Team 1' ? 'selected' : '' }}>Team 1 Won</option>
+                    <option value="Team 2" {{ request('filter_results') == 'Team 2' ? 'selected' : '' }}>Team 2 Won</option>
+                    <option value="Draw" {{ request('filter_results') == 'Draw' ? 'selected' : '' }}>Draw</option>
+                </select>
+            
+                <button type="submit" class="btn btn-primary">Apply Filter</button>
+            </div>
         </div>
     </form>
 
