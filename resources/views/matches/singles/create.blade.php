@@ -41,7 +41,7 @@
 
     @if($lockedTournament)
     {{-- Create Match Form --}}
-    <form method="POST" action="{{ route('matches.singles.store') }}">
+    <form method="POST" action="{{ route('matches.singles.store', ['tournament' => $lockedTournament->id]) }}">
         @csrf
         <input type="hidden" name="tournament_id" value="{{ $lockedTournament->id }}">
 
@@ -77,18 +77,6 @@
         <label for="match_time">Match Time (HH:MM):</label>
         <input type="time" name="match_time" required>
 
-        <label>Set 1:</label>
-        <input type="number" name="set1_player1_points" placeholder="P1 Score" required>
-        <input type="number" name="set1_player2_points" placeholder="P2 Score" required>
-
-        <label>Set 2:</label>
-        <input type="number" name="set2_player1_points" placeholder="P1 Score" required>
-        <input type="number" name="set2_player2_points" placeholder="P2 Score" required>
-
-        <label>Set 3 (if needed):</label>
-        <input type="number" name="set3_player1_points" placeholder="P1 Score">
-        <input type="number" name="set3_player2_points" placeholder="P2 Score">
-
         <button type="submit" class="btn btn-success">Add Match</button>
     </form>
     @endif
@@ -100,14 +88,11 @@ $(document).ready(function() {
         let categoryId = $(this).val();
         if (categoryId) {
             $.ajax({
-                url: "{{ route('matches.filteredPlayers') }}",
+                url: "{{ route('matches.filteredPlayers', ['category_id' => '']) }}" + categoryId,
                 type: "GET",
-                data: { category_id: categoryId },
                 success: function(players) {
                     console.log("Received players:", players);
-                    // Clear old dropdown options
                     $('#player1_id, #player2_id').empty().append('<option value="">Select Player</option>');
-                    // Populate new ones
                     players.forEach(function(player) {
                         let optionText = `${player.name} (Age: ${player.age}, Sex: ${player.sex})`;
                         let optionHtml = `<option value="${player.id}">${optionText}</option>`;
@@ -122,7 +107,4 @@ $(document).ready(function() {
     });
 });
 </script>
-
-
-
 @endsection

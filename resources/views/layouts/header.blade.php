@@ -14,15 +14,12 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('css/styles1.css') }}">
 
     <style>
-        /* Reset margins and padding for the body */
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
             line-height: 1.5;
         }
-
-        /* Header styling */
         .header {
             display: flex;
             justify-content: space-between;
@@ -31,32 +28,23 @@
             padding: 10px 20px;
             border-bottom: 1px solid #ccc;
         }
-
-        /* Welcome message */
         .header .welcome {
             font-size: 14px;
             color: #333;
         }
-
-        /* Links container */
         .header .links {
             display: flex;
             gap: 15px;
             align-items: center;
         }
-
-        /* Individual links */
         .header .links a {
             text-decoration: none;
             color: #333;
             font-size: 14px;
         }
-
-        /* Dropdown styling */
         .dropdown {
             position: relative;
         }
-
         .dropdown-content {
             display: none;
             position: absolute;
@@ -68,7 +56,6 @@
             min-width: 220px;
             border-radius: 4px;
         }
-
         .dropdown-content a {
             color: #333;
             text-decoration: none;
@@ -76,11 +63,9 @@
             padding: 10px 16px;
             border-bottom: 1px solid #ddd;
         }
-
         .dropdown-content a:last-child {
             border-bottom: none;
         }
-
         .dropdown:hover .dropdown-content {
             display: block;
         }
@@ -105,9 +90,8 @@
                     <div class="dropdown-content">
                         <a href="{{ url('users/create') }}">Create User</a>
                         <a href="{{ url('tournaments/manage') }}">Manage Tournaments & Add Moderator</a>
-
-                         <a href="{{ route('admin.edit_players') }}">Edit Player</a>
-                         <a href="{{ route('categories.create') }}">Insert Category</a> 
+                        <a href="{{ route('admin.edit_players') }}">Edit Player</a>
+                        <a href="{{ route('categories.create') }}">Insert Category</a> 
                         <a href="{{ route('admin.add_moderator') }}">Add Moderator</a>
                         <a href="{{ route('tournaments.create') }}">Insert Tournament</a>
                     </div>
@@ -115,20 +99,21 @@
             @endif
 
             <!-- Dropdown: Singles Matches -->
-<div class="dropdown">
-    <a href="#">Singles Matches</a>
-    <div class="dropdown-content">
-        @if (in_array($user_Role, ['admin', 'moderator', 'user']))
-            <a href="{{ route('matches.singles.create') }}">Add Singles</a>
-        @endif
-        <a href="{{ route('matches.singles.index') }}">Singles Results</a>
-        @if (in_array($user_Role, ['admin', 'moderator', 'user']))
-            <!-- Linking to the index where singles matches can be managed -->
-            <a href="{{ route('matches.singles.edit') }}">Manage Singles</a>
-        @endif
-    </div>
-</div>
-
+            <div class="dropdown">
+                <a href="#">Singles Matches</a>
+                <div class="dropdown-content">
+                    @if (in_array($user_Role, ['admin', 'moderator', 'user']))
+                        <a href="{{ route('matches.singles.create') }}">Add Singles</a>
+                    @endif
+                    <a href="{{ route('matches.singles.index') }}">Singles Results</a>
+                    @if (in_array($user_Role, ['admin', 'moderator', 'user']))
+                        <!-- Ensure a match ID is available for editing -->
+                        @if(isset($latestMatch))
+                            <a href="{{ route('matches.singles.edit', ['match' => $latestMatch->id]) }}">Manage Singles</a>
+                        @endif
+                    @endif
+                </div>
+            </div>
 
             <!-- Dropdown: Doubles - BD-GD-XD -->
             <div class="dropdown">
@@ -139,23 +124,25 @@
                     @endif
                     <a href="{{ route('matches.doubles.index') }}">Result Boys Doubles</a>
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <!-- Assuming you have an index route for boys doubles; adjust if needed -->
-                        <a href="{{ route('matches.doubles.edit') }}">Edit Doubles</a>
+                        <!-- Ensure a match ID is available for editing -->
+                        @if(isset($latestDoublesMatch))
+                            <a href="{{ route('matches.doubles.edit', ['match' => $latestDoublesMatch->id]) }}">Edit Doubles</a>
+                        @endif
                     @endif
                 </div>
             </div>
 
-    <div class="dropdown">
-    <a href="#">Match Results</a>
-    <div class="dropdown-content">
-        
-        <a href="{{ route('matches.singles.index') }}">Singles Results</a>
-        @if (in_array($user_Role, ['admin', 'moderator', 'user']))
-            <!-- Linking to the index where singles matches can be managed -->
-            <a href="{{ route('matches.doubles.index') }}">Doubles Results</a>
-        @endif
-    </div>
-</div>
+            <!-- Match Results Dropdown -->
+            <div class="dropdown">
+                <a href="#">Match Results</a>
+                <div class="dropdown-content">
+                    <a href="{{ route('matches.singles.index') }}">Singles Results</a>
+                    @if (in_array($user_Role, ['admin', 'moderator', 'user']))
+                        <a href="{{ route('matches.doubles.index') }}">Doubles Results</a>
+                    @endif
+                </div>
+            </div>
+
             <!-- Logout Form (Hidden) -->
             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                 @csrf

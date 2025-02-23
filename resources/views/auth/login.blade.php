@@ -1,37 +1,43 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh; background-color: #f8f9fa;">
-    <div class="login-box p-4 shadow-lg rounded">
-        <h2 class="text-center mb-4">Login</h2>
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
+<div class="login-wrapper">
+    <div class="login-box">
+        <h3 class="text-center mb-3">Welcome To BTL</h3>
+
+        @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
+
         <form method="POST" action="{{ route('login') }}">
             @csrf
-            <div class="mb-3 d-flex align-items-center">
-                <label class="form-label me-2 mb-0" style="width: 80px;">Email:</label>
-                <input type="email" name="email" class="form-control" required>
+
+            <!-- Email & Password in One Row -->
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="email">Email</label> 
+                    <input type="email" name="email" required autofocus>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label> 
+                    <input type="password" name="password" required>
+                </div>
             </div>
-            <div class="mb-3 d-flex align-items-center">
-                <label class="form-label me-2 mb-0" style="width: 80px;">Password:</label>
-                <input type="password" name="password" class="form-control" required>
+
+            <!-- Remember Me -->
+            <div class="remember-me">
+                <input type="checkbox" name="remember" id="remember">
+                <label for="remember">Remember Me</label>
             </div>
-            <button type="submit" class="btn btn-primary w-100">Login</button>
+
+            <!-- Submit Button -->
+            <button type="submit" class="login-button">Login</button>
+
+            <!-- Register Link -->
+            <div class="register-link">
+                <a href="{{ route('register') }}">Don't have an account? Register</a>
+            </div>
         </form>
     </div>
 </div>
-
-<style>
-    .login-box {
-        width: 400px;
-        background:rgb(253, 253, 253);
-        border-radius: 10px;
-        
-    }
-</style>
 @endsection

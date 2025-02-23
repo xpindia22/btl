@@ -1,0 +1,20 @@
+[90m= [39m[34;4mApp\Models\User[39;24m {#6244
+    [34mid[39m: [35m1[39m,
+    [34musername[39m: "[32muser[39m",
+    [34memail[39m: "[32muser@user.com[39m",
+    [34mrole[39m: "[32muser[39m",
+    [34mcreated_by[39m: [36mnull[39m,
+    [34memail_verified_at[39m: [36mnull[39m,
+    #[33mpassword[39m: "[32m$2y$12$MsyjI5qJ2gNqZcpOnWU4QOhq1N.7HU2GQbTW9SkqwaQAWZZ1jrpi.[39m",
+    [34mtwo_factor_secret[39m: [36mnull[39m,
+    [34mtwo_factor_recovery_codes[39m: [36mnull[39m,
+    [34mtwo_factor_confirmed_at[39m: [36mnull[39m,
+    #[33mremember_token[39m: [36mnull[39m,
+    [34mip_address[39m: [36mnull[39m,
+    [34mcreated_at[39m: "[32m2024-12-29 03:50:28[39m",
+    [34mupdated_at[39m: "[32m2025-02-09 16:12:57[39m",
+    [34mmobile_no[39m: "[32m1111111111[39m",
+    [34mlast_login[39m: [36mnull[39m,
+    [34mprofile_picture[39m: "[32muploads/profiles/1737177818_WhatsApp Image 2025-01-18 at 08.59.27.jpeg[39m",
+  }
+

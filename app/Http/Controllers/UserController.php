@@ -1,9 +1,8 @@
 <?php 
 
 namespace App\Http\Controllers;
+
 use App\Models\Tournament;
-
-
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,11 +12,10 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
     // ✅ Show Users List Based on Role
-    
     public function index()
     {
         $authUser = Auth::user();
-    
+
         if ($authUser->isAdmin()) {
             $users = User::with(['moderatedTournaments', 'createdTournaments'])
                 ->orderBy('id', 'asc')
@@ -28,14 +26,11 @@ class UserController extends Controller
                 ->orderBy('id', 'asc')
                 ->paginate(10);
         }
-    
+
         return view('users.index', compact('users'));
     }
-    
 
-
-
-    // ✅ Show User Creation Form (Role Restricted)
+    // ✅ Show User Creation Form (Restricted)
     public function create()
     {
         $authUser = Auth::user();
@@ -97,37 +92,16 @@ class UserController extends Controller
             ? ['admin', 'user', 'player', 'visitor']
             : ['user', 'player', 'visitor'];
 
-        return view('users.edit', compact('user', 'roles'));
+        $tournaments = Tournament::orderBy('year', 'desc')->get(); // ✅ Fetch tournaments for moderator selection
+
+        return view('users.edit', compact('user', 'roles', 'tournaments'));
     }
 
     // ✅ Update User (Restricted)
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $authUser = Auth::user();
     
-        if (!$authUser->isAdmin() && $authUser->id !== $user->created_by) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized');
-        }
-    
-        $request->validate([
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'mobile_no' => 'nullable|digits:10',
-            'role' => 'required|in:admin,user,player,visitor',
-        ]);
-    
-        // ✅ Prevent Non-Admins from Changing Roles
-        if (!$authUser->isAdmin() && $request->role !== $user->role) {
-            return redirect()->route('users.index')->with('error', 'You cannot change user roles.');
-        }
-    
-        // ✅ Prevent Users from Changing Their Own Role
-        if ($authUser->id === $user->id && $request->role !== $user->role) {
-            return redirect()->route('users.index')->with('error', 'You cannot update your own role.');
-        }
-    
-        // ✅ Update User Details
         $user->update([
             'username' => $request->username,
             'email' => $request->email,
@@ -135,19 +109,36 @@ class UserController extends Controller
             'role' => $request->role,
         ]);
     
-        // ✅ Update Moderated Tournaments
-        if ($authUser->isAdmin() && $request->has('moderated_tournaments')) {
-            Tournament::whereIn('id', $request->moderated_tournaments)->update(['moderated_by' => $user->id]);
+        // ✅ Sync Moderated Tournaments (BelongsToMany)
+        if ($request->has('moderated_tournaments')) {
+            $user->moderatedTournaments()->sync($request->moderated_tournaments);
+        } else {
+            $user->moderatedTournaments()->detach();
         }
     
-        // ✅ Update Created Tournaments
-        if ($authUser->isAdmin() && $request->has('created_tournaments')) {
+        // ✅ Get Default Admin ID
+        $defaultAdminId = User::where('username', 'xxx')->where('role', 'admin')->value('id');
+    
+        // ✅ Update Creator Field
+        if ($request->has('created_tournaments')) {
+            // First, remove the user from all tournaments they previously created
+            Tournament::where('created_by', $user->id)->update(['created_by' => null]);
+    
+            // Now, assign the new tournaments to this user
             Tournament::whereIn('id', $request->created_tournaments)->update(['created_by' => $user->id]);
+        } else {
+            // ✅ If no new creator is assigned, set the default admin as creator
+            Tournament::where('created_by', $user->id)->update(['created_by' => $defaultAdminId]);
         }
+    
+        // ✅ Force refresh the relationship so UI updates instantly
+        $user->load('createdTournaments');
     
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
     
+    
+
     // ✅ Delete User (Restricted)
     public function destroy($id)
     {
@@ -169,19 +160,15 @@ class UserController extends Controller
     }
 
     // ✅ Admin View for Editing Users
-    public function editUsers() {
+    public function editUsers() 
+    {
         if (!auth()->user()->isAdmin()) {
             return redirect()->route('users.index')->with('error', 'Unauthorized access!');
         }
-        
+
         $users = User::with(['moderatedTournaments', 'createdTournaments'])->orderBy('id', 'asc')->paginate(10);
         $tournaments = Tournament::orderBy('year', 'desc')->get(); // ✅ Get all tournaments for dropdown
-    
+
         return view('users.edit', compact('users', 'tournaments'));
     }
-    
-    
-
- 
-
 }

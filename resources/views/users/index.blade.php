@@ -2,8 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h2>Registered Users --- <a href="/users/edit">Edit Users</a>
-    </h2>
+    <h2>Registered Users --- <a href="{{ route('users.edit', ['user' => $users->first()->id ?? null]) }}">Edit Users</a></h2>
 
     <table class="table">
         <thead>
@@ -27,15 +26,27 @@
                     <td>{{ ucfirst($user->role) }}</td>
 
                     <td>
-                        @foreach ($user->moderatedTournaments as $tournament)
-                            <li>{{ $tournament->name }} ({{ $tournament->year }})</li>
-                        @endforeach
+                        @if($user->moderatedTournaments->isNotEmpty())
+                            <ul>
+                                @foreach ($user->moderatedTournaments as $tournament)
+                                    <li>{{ $tournament->name }} ({{ $tournament->year }})</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <span>None</span>
+                        @endif
                     </td>
 
                     <td>
-                        @foreach ($user->createdTournaments as $tournament)
-                            <li>{{ $tournament->name }} ({{ $tournament->year }})</li>
-                        @endforeach
+                        @if($user->createdTournaments->isNotEmpty())
+                            <ul>
+                                @foreach ($user->createdTournaments as $tournament)
+                                    <li>{{ $tournament->name }} ({{ $tournament->year }})</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <span class="text-danger">xxx (admin)</span> <!-- ✅ Shows Default Admin -->
+                        @endif
                     </td>
                 </tr>
             @endforeach
@@ -46,7 +57,4 @@
         {{ $users->links('vendor.pagination.default') }}
     </div>
 </div>
-
 @endsection
-
- 

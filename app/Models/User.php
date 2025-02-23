@@ -30,7 +30,31 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the user who created this user.
+     * 🔥 Role Helper Methods 🔥
+     * Checks if a user has a specific role.
+     */
+    public function isAdmin()
+    {
+        return strtolower($this->role) === 'admin';
+    }
+
+    public function isUser()
+    {
+        return strtolower($this->role) === 'user';
+    }
+
+    public function isPlayer()
+    {
+        return strtolower($this->role) === 'player';
+    }
+
+    public function isVisitor()
+    {
+        return strtolower($this->role) === 'visitor';
+    }
+
+    /**
+     * ✅ Get the user who created this user.
      */
     public function creator()
     {
@@ -38,7 +62,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Get users created by this user.
+     * ✅ Get users created by this user.
      */
     public function createdUsers()
     {
@@ -46,25 +70,16 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is an admin.
-     */
-    public function isAdmin()
-    {
-        return strtolower($this->role) === 'admin';
-    }
-
-    /**
-     * Get tournaments the user moderates (both direct assignment and through the tournament_moderators table).
+     * ✅ Get tournaments where the user is a **moderator**.
      */
     public function moderatedTournaments()
     {
         return $this->belongsToMany(Tournament::class, 'tournament_moderators', 'user_id', 'tournament_id')
                     ->distinct();
     }
-    
 
     /**
-     * Get tournaments the user created.
+     * ✅ Get tournaments where the user is the **creator**.
      */
     public function createdTournaments()
     {
@@ -72,26 +87,31 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if the user can moderate a match.
+     * ✅ Get matches moderated by this user.
+     */
+    public function moderatedMatches()
+    {
+        return $this->hasMany(Matches::class, 'moderated_by');
+    }
+
+    /**
+     * 🔥 Check if the user can **moderate a match**.
      */
     public function canModerateMatch($match)
-{
-    // If user is the assigned match moderator
-    if ($this->id === $match->moderated_by) {
-        return true;
+    {
+        if ($this->id === $match->moderated_by) {
+            return true;
+        }
+
+        if ($this->moderatedTournaments()->where('id', $match->tournament_id)->exists()) {
+            return true;
+        }
+
+        // Allow creators to edit only if no moderator is assigned
+        if ($this->id === $match->created_by && !$match->moderated_by) {
+            return true;
+        }
+
+        return false;
     }
-
-    // If user is a tournament moderator ( created_by or moderated_by in match table will work.)
-    if ($this->moderatedTournaments()->where('id', $match->tournament_id)->exists()) {
-        return true;
-    }
-
-    // OPTIONAL: Allow creators to edit only if no moderator is assigned
-    if ($this->id === $match->created_by && !$match->moderated_by) {
-        return true;
-    }
-
-    return false;
-}
-
 }
