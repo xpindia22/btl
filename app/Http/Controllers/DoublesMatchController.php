@@ -370,65 +370,43 @@ public function indexWithEdit(Request $request)
 
 public function update(Request $request, $id)
 {
-    try {
-        \Log::info('🔄 Update request received', ['match_id' => $id, 'data' => $request->all()]);
-        $match = Matches::findOrFail($id);
+    $match = Matches::findOrFail($id);
 
-        // Allowed ENUM values for stage
-        $allowedStages = ['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals'];
-
-        // Validate the input data
-        $validatedData = $request->validate([
-            'stage' => ['nullable', 'string', function ($attribute, $value, $fail) use ($allowedStages) {
-                if (!in_array($value, $allowedStages, true)) {
-                    $fail("Invalid ENUM value for stage: $value");
-                }
-            }],
-            'match_date' => 'nullable|date',
-            'match_time' => 'nullable|string',
-            'set1_team1_points' => 'nullable|integer',
-            'set1_team2_points' => 'nullable|integer',
-            'set2_team1_points' => 'nullable|integer',
-            'set2_team2_points' => 'nullable|integer',
-            'set3_team1_points' => 'nullable|integer',
-            'set3_team2_points' => 'nullable|integer',
-        ]);
-
-        \Log::info('✅ Validated Data:', $validatedData);
-
-        // Update the match using mass assignment (winner is not included)
-        $match->update($validatedData);
-
-        // Compute the winner locally without saving it
-        $team1_sets = (
-            ($match->set1_team1_points > $match->set1_team2_points ? 1 : 0) +
-            ($match->set2_team1_points > $match->set2_team2_points ? 1 : 0) +
-            (($match->set3_team1_points ?? 0) > ($match->set3_team2_points ?? 0) ? 1 : 0)
-        );
-        $team2_sets = (
-            ($match->set1_team2_points > $match->set1_team1_points ? 1 : 0) +
-            ($match->set2_team2_points > $match->set2_team1_points ? 1 : 0) +
-            (($match->set3_team2_points ?? 0) > ($match->set3_team1_points ?? 0) ? 1 : 0)
-        );
-
-        $computedWinner = $team1_sets > $team2_sets 
-            ? 'Team 1' 
-            : ($team2_sets > $team1_sets ? 'Team 2' : 'Draw');
-
-        return response()->json([
-            'success' => true, 
-            'message' => 'Match updated successfully!',
-            'winner' => $computedWinner
-        ]);
-    } catch (\Illuminate\Database\QueryException $e) {
-        \Log::error('❌ SQL Error:', ['error' => $e->getMessage()]);
-        return response()->json(['success' => false, 'message' => 'Database error!', 'error' => $e->getMessage()], 500);
-    } catch (\Exception $e) {
-        \Log::error('❌ General Update Error:', ['error' => $e->getMessage()]);
-        return response()->json(['success' => false, 'message' => 'Update failed!', 'error' => $e->getMessage()], 500);
+    // Check if user can edit this match
+    if (!Auth::user()->canModerateMatch($match)) {
+        abort(403, 'You do not have permission to update this match.');
     }
+
+    $request->validate([
+        'stage' => 'required|string',
+        'match_date' => 'required|date',
+        'match_time' => 'required|string',
+        'set1_player1_points' => 'nullable|integer',
+        'set1_player2_points' => 'nullable|integer',
+        'set2_player1_points' => 'nullable|integer',
+        'set2_player2_points' => 'nullable|integer',
+        'set3_player1_points' => 'nullable|integer',
+        'set3_player2_points' => 'nullable|integer',
+    ]);
+
+    $match->update($request->all());
+
+    return redirect()->route('matches.index')->with('success', 'Match updated successfully.');
 }
 
+public function delete($id)
+{
+    $match = Matches::findOrFail($id);
+
+    // Check if user can delete this match
+    if (!Auth::user()->canModerateMatch($match)) {
+        abort(403, 'You do not have permission to delete this match.');
+    }
+
+    $match->delete();
+
+    return redirect()->route('matches.index')->with('success', 'Match deleted successfully.');
+}
 
 public function softDelete($id)
 {
@@ -482,5 +460,11 @@ public function updateMatch(Request $request, $id)
     return response()->json(['success' => true, 'winner' => $match->winner]);
 }
 
+private function canModerateMatch($match)
+{
+    $user = Auth::user();
+    return $user->id === $match->moderated_by || 
+           $user->moderatedTournaments()->where('id', $match->tournament_id)->exists();
+}
 
 }

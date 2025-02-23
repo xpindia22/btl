@@ -54,12 +54,14 @@ class User extends Authenticatable
     }
 
     /**
-     * Get tournaments the user moderates.
+     * Get tournaments the user moderates (both direct assignment and through the tournament_moderators table).
      */
     public function moderatedTournaments()
     {
-        return $this->hasMany(Tournament::class, 'moderated_by');
+        return $this->belongsToMany(Tournament::class, 'tournament_moderators', 'user_id', 'tournament_id')
+                    ->distinct();
     }
+    
 
     /**
      * Get tournaments the user created.
@@ -68,4 +70,28 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tournament::class, 'created_by');
     }
+
+    /**
+     * Check if the user can moderate a match.
+     */
+    public function canModerateMatch($match)
+{
+    // If user is the assigned match moderator
+    if ($this->id === $match->moderated_by) {
+        return true;
+    }
+
+    // If user is a tournament moderator ( created_by or moderated_by in match table will work.)
+    if ($this->moderatedTournaments()->where('id', $match->tournament_id)->exists()) {
+        return true;
+    }
+
+    // OPTIONAL: Allow creators to edit only if no moderator is assigned
+    if ($this->id === $match->created_by && !$match->moderated_by) {
+        return true;
+    }
+
+    return false;
+}
+
 }

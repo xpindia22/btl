@@ -374,40 +374,70 @@ public function indexSinglesWithEdit(Request $request)
      * Update a single match (inline edit in the table).
      */
     public function updateSingle(Request $request, $id)
-    {
+{
+    try {
+        \Log::info('🔄 Update request received', ['match_id' => $id, 'data' => $request->all()]);
         $match = Matches::findOrFail($id);
 
-        // (Optional) permission checks
-        $user = Auth::user();
-        if (!$user->is_admin && $match->created_by != $user->id) {
-            if (!$match->tournament || !$match->tournament->moderators()->where('user_id', $user->id)->exists()) {
-                abort(403, 'You do not have permission to update this match.');
-            }
+        // Permission check: Ensure the user can moderate this match
+        if (!Auth::user()->canModerateMatch($match)) {
+            abort(403, 'You do not have permission to update this match.');
         }
 
-        // Validate fields
-        $request->validate([
-            'stage'                 => 'required|string',
-            'set1_player1_points'   => 'nullable|integer',
-            'set1_player2_points'   => 'nullable|integer',
-            'set2_player1_points'   => 'nullable|integer',
-            'set2_player2_points'   => 'nullable|integer',
-            'set3_player1_points'   => 'nullable|integer',
-            'set3_player2_points'   => 'nullable|integer',
+        // Allowed ENUM values for stage
+        $allowedStages = ['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals'];
+
+        // Validate the input data
+        $validatedData = $request->validate([
+            'stage' => ['nullable', 'string', function ($attribute, $value, $fail) use ($allowedStages) {
+                if (!in_array($value, $allowedStages, true)) {
+                    $fail("Invalid ENUM value for stage: $value");
+                }
+            }],
+            'match_date' => 'nullable|date',
+            'match_time' => 'nullable|string',
+            'set1_player1_points' => 'nullable|integer',
+            'set1_player2_points' => 'nullable|integer',
+            'set2_player1_points' => 'nullable|integer',
+            'set2_player2_points' => 'nullable|integer',
+            'set3_player1_points' => 'nullable|integer',
+            'set3_player2_points' => 'nullable|integer',
         ]);
 
-        // Update match
-        $match->stage                 = $request->input('stage');
-        $match->set1_player1_points   = $request->input('set1_player1_points') ?? 0;
-        $match->set1_player2_points   = $request->input('set1_player2_points') ?? 0;
-        $match->set2_player1_points   = $request->input('set2_player1_points') ?? 0;
-        $match->set2_player2_points   = $request->input('set2_player2_points') ?? 0;
-        $match->set3_player1_points   = $request->input('set3_player1_points') ?? 0;
-        $match->set3_player2_points   = $request->input('set3_player2_points') ?? 0;
-        $match->save();
+        \Log::info('✅ Validated Data:', $validatedData);
 
-        return redirect()->route('matches.singles.edit')->with('success', 'Match updated successfully.');
+        // Update the match using mass assignment (winner is not included)
+        $match->update($validatedData);
+
+        // Compute the winner locally without saving it
+        $player1_sets = (
+            ($match->set1_player1_points > $match->set1_player2_points ? 1 : 0) +
+            ($match->set2_player1_points > $match->set2_player2_points ? 1 : 0) +
+            (($match->set3_player1_points ?? 0) > ($match->set3_player2_points ?? 0) ? 1 : 0)
+        );
+        $player2_sets = (
+            ($match->set1_player2_points > $match->set1_player1_points ? 1 : 0) +
+            ($match->set2_player2_points > $match->set2_player1_points ? 1 : 0) +
+            (($match->set3_player2_points ?? 0) > ($match->set3_player1_points ?? 0) ? 1 : 0)
+        );
+
+        $computedWinner = $player1_sets > $player2_sets 
+            ? 'Player 1' 
+            : ($player2_sets > $player1_sets ? 'Player 2' : 'Draw');
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Match updated successfully!',
+            'winner' => $computedWinner
+        ]);
+    } catch (\Illuminate\Database\QueryException $e) {
+        \Log::error('❌ SQL Error:', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'message' => 'Database error!', 'error' => $e->getMessage()], 500);
+    } catch (\Exception $e) {
+        \Log::error('❌ General Update Error:', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'message' => 'Update failed!', 'error' => $e->getMessage()], 500);
     }
+}
 
     /**
      * Delete a single match (inline in the table).
@@ -483,4 +513,11 @@ public function indexSinglesWithEdit(Request $request)
         return response()->json($players);
     }
     
+    private function canModerateMatch($match)
+{
+    $user = Auth::user();
+    return $user->id === $match->moderated_by || 
+           $user->moderatedTournaments()->where('id', $match->tournament_id)->exists();
+}
+
 }

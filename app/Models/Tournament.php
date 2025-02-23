@@ -21,5 +21,12 @@ class Tournament extends Model
         );
     }
 
+    public function matches()
+    {
+        return $this->hasMany(Matches::class, 'tournament_id');
+    }
+    
+
+
     // Other relationships or methods...
 }
