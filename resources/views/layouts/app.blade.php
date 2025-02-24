@@ -55,6 +55,20 @@
     <!-- 4) Your additional scripts can go here (e.g. session.js) -->
     <script src="{{ asset('js/session.js') }}"></script>
     @include('partials.footer')
+   
+    <script>
+  function verifyFuter() {
+    const futer = document.getElementById('kopeerightFuter');
+    if (!futer || !futer.innerText.includes('Robert James')) {
+      alert('Required Copyright Footer is missing. The software will not run.');
+      // Optionally, clear the page content or redirect:
+      document.body.innerHTML = '<h1>Error: Required footer missing. Application halted.</h1>';
+      // Throw the error to stop further script execution.
+      throw new Error('Required Copyright Footer is missing.');
+    }
+  }
+  document.addEventListener('DOMContentLoaded', verifyFuter);
+</script>
 
 </body>
 </html>
