@@ -27,6 +27,7 @@
     <!-- Include the Header -->
     @include('layouts.header')
     @yield('styles')
+
     <div id="app">
         <main class="py-4">
             @yield('content')
@@ -53,6 +54,7 @@
 
     <!-- 4) Your additional scripts can go here (e.g. session.js) -->
     <script src="{{ asset('js/session.js') }}"></script>
+    @include('partials.footer')
 
 </body>
 </html>
