@@ -98,45 +98,48 @@ class UserController extends Controller
     }
 
     // ✅ Update User (Restricted)
-    public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-    
-        $user->update([
-            'username' => $request->username,
-            'email' => $request->email,
-            'mobile_no' => $request->mobile_no,
-            'role' => $request->role,
-        ]);
-    
-        // ✅ Sync Moderated Tournaments (BelongsToMany)
-        if ($request->has('moderated_tournaments')) {
-            $user->moderatedTournaments()->sync($request->moderated_tournaments);
-        } else {
-            $user->moderatedTournaments()->detach();
-        }
-    
-        // ✅ Get Default Admin ID
-        $defaultAdminId = User::where('username', 'xxx')->where('role', 'admin')->value('id');
-    
-        // ✅ Update Creator Field
-        if ($request->has('created_tournaments')) {
-            // First, remove the user from all tournaments they previously created
-            Tournament::where('created_by', $user->id)->update(['created_by' => null]);
-    
-            // Now, assign the new tournaments to this user
-            Tournament::whereIn('id', $request->created_tournaments)->update(['created_by' => $user->id]);
-        } else {
-            // ✅ If no new creator is assigned, set the default admin as creator
-            Tournament::where('created_by', $user->id)->update(['created_by' => $defaultAdminId]);
-        }
-    
-        // ✅ Force refresh the relationship so UI updates instantly
-        $user->load('createdTournaments');
-    
-        return redirect()->route('users.index')->with('success', 'User updated successfully.');
-    }
-    
+   // ✅ Update User (Restricted)
+   public function update(Request $request, $id)
+   {
+       $user = User::findOrFail($id);
+   
+       $user->update([
+           'username' => $request->username,
+           'email' => $request->email,
+           'mobile_no' => $request->mobile_no,
+           'role' => $request->role,
+       ]);
+   
+       // ✅ Sync Moderated Tournaments (BelongsToMany)
+       if ($request->has('moderated_tournaments')) {
+           $user->moderatedTournaments()->sync($request->moderated_tournaments);
+       } else {
+           $user->moderatedTournaments()->detach();
+       }
+   
+       // ✅ Get Default Admin ID
+       $defaultAdminId = User::where('username', 'xxx')->where('role', 'admin')->value('id');
+   
+       // ✅ Update Creator Field using the checkboxes submitted from the form
+       $selected = $request->input('created_tournaments', []);
+
+       // For tournaments that previously had this user as creator but are now unchecked,
+       // reassign them to the default admin.
+       Tournament::where('created_by', $user->id)
+           ->whereNotIn('id', $selected)
+           ->update(['created_by' => $defaultAdminId]);
+
+       // For tournaments that are checked, assign this user as the creator.
+       if (!empty($selected)) {
+           Tournament::whereIn('id', $selected)
+               ->update(['created_by' => $user->id]);
+       }
+   
+       // ✅ Force refresh the relationship so UI updates instantly
+       $user->load('createdTournaments');
+   
+       return redirect()->route('users.index')->with('success', 'User updated successfully.');
+   }
     
 
     // ✅ Delete User (Restricted)
