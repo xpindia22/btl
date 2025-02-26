@@ -1,112 +1,113 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Models;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Matches;
-use App\Models\Tournament;
-use App\Models\Category;
-use App\Models\Player;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class MatchController extends Controller
+class Matches extends Model
 {
-    public function __construct()
+    use HasFactory, SoftDeletes;
+
+    protected $table = 'matches';
+
+    protected $fillable = [
+        'tournament_id',
+        'category_id',
+        'match_date',
+        'match_time',
+        'stage',
+        'player1_id',
+        'player2_id',
+        'team1_player1_id',
+        'team1_player2_id',
+        'team2_player1_id',
+        'team2_player2_id',
+        'set1_player1_points',
+        'set1_player2_points',
+        'set2_player1_points',
+        'set2_player2_points',
+        'set3_player1_points',
+        'set3_player2_points',
+        'set1_team1_points',
+        'set1_team2_points',
+        'set2_team1_points',
+        'set2_team2_points',
+        'set3_team1_points',
+        'set3_team2_points',
+        'created_by',
+        'moderated_by',
+        'created_at',
+        'updated_at',
+    ];
+    
+
+    public $timestamps = true;
+
+    // Relationships
+    public function tournament()
     {
-        $this->middleware('auth');
+        return $this->belongsTo(Tournament::class);
     }
 
-    // Index Singles Matches
-    public function indexSingles()
+    public function category()
     {
-        $matches = Matches::where('match_type', 'singles')->get();
-        return view('matches.singles.index', compact('matches'));
+        return $this->belongsTo(Category::class);
     }
 
-    // Index Doubles Matches
-    public function indexDoubles()
+    public function player1()
     {
-        $matches = Matches::where('match_type', 'doubles')->get();
-        return view('matches.doubles.index', compact('matches'));
+        return $this->belongsTo(Player::class, 'player1_id');
     }
 
-    // Lock/unlock singles tournaments
-    public function lockSinglesTournament(Request $request)
+    public function player2()
     {
-        $validated = $request->validate([
-            'tournament_id' => 'required|exists:tournaments,id'
-        ]);
-
-        session(['locked_singles_tournament_id' => $validated['tournament_id']]);
-        return redirect()->back()->with('success', 'Singles tournament locked successfully.');
+        return $this->belongsTo(Player::class, 'player2_id');
     }
 
-    public function unlockSinglesTournament()
+    public function team1Player1()
     {
-        session()->forget('locked_singles_tournament_id');
-        return redirect()->back()->with('success', 'Singles tournament unlocked successfully.');
+        return $this->belongsTo(Player::class, 'team1_player1_id');
     }
 
-    // Lock/unlock doubles tournaments
-    public function lockDoublesTournament(Request $request)
+    public function team1Player2()
     {
-        $validated = $request->validate([
-            'tournament_id' => 'required|exists:tournaments,id'
-        ]);
-
-        session(['locked_doubles_tournament_id' => $validated['tournament_id']]);
-        return redirect()->back()->with('success', 'Doubles tournament locked successfully.');
+        return $this->belongsTo(Player::class, 'team1_player2_id');
     }
 
-    public function unlockDoublesTournament()
+    public function team2Player1()
     {
-        session()->forget('locked_doubles_tournament_id');
-        return redirect()->back()->with('success', 'Doubles tournament unlocked successfully.');
+        return $this->belongsTo(Player::class, 'team2_player1_id');
     }
 
-    // Fetch players for singles category
-    public function filteredPlayersSingles(Request $request)
+    public function team2Player2()
     {
-        $category = Category::find($request->category_id);
-
-        if (!$category) {
-            return response()->json([]);
-        }
-
-        $ageLimit = $category->age_limit;
-        $sex = $category->type === 'BS' ? 'Male' : 'Female';
-
-        $players = Player::where('sex', $sex)
-                          ->where('age', '<=', $ageLimit)
-                          ->select('id', 'name', 'age', 'sex')
-                          ->get();
-
-        return response()->json($players);
+        return $this->belongsTo(Player::class, 'team2_player2_id');
     }
 
-    // Fetch players for doubles category
-    public function filteredPlayersDoubles(Request $request)
+    // Get match details
+    public function getSinglesPlayersAttribute()
     {
-        $category = Category::find($request->category_id);
+        return "{$this->player1->name} vs {$this->player2->name}";
+    }
 
-        if (!$category) {
-            return response()->json([]);
-        }
+    public function getDoublesPlayersAttribute()
+    {
+        return "{$this->team1Player1->name} & {$this->team1Player2->name} vs {$this->team2Player1->name} & {$this->team2Player2->name}";
+    }
 
-        $ageLimit = $category->age_limit;
-        $sex = in_array($category->type, ['BD', 'GD']) ? 'Male' : 'Female';
+    // Query Scopes
+    public function scopeSingles($query)
+    {
+        return $query->whereNotNull('player1_id')->whereNotNull('player2_id');
+    }
 
-        $players = Player::where('age', '<=', $ageLimit)
-                          ->where(function ($query) use ($category) {
-                              if ($category->type === 'XD') {
-                                  $query->whereIn('sex', ['Male', 'Female']);
-                              } else {
-                                  $query->where('sex', $category->type === 'BD' ? 'Male' : 'Female');
-                              }
-                          })
-                          ->select('id', 'name', 'age', 'sex')
-                          ->get();
-
-        return response()->json($players);
+    public function scopeDoubles($query)
+    {
+        return $query->whereNotNull('team1_player1_id')
+                     ->whereNotNull('team1_player2_id')
+                     ->whereNotNull('team2_player1_id')
+                     ->whereNotNull('team2_player2_id');
     }
 }

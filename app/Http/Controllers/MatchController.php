@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Matches;
+use App\Models\Matches as MatchModel;
 use App\Models\Tournament;
 use App\Models\Category;
 use App\Models\Player;
@@ -33,104 +33,78 @@ class MatchController extends Controller
         return redirect()->back()->with('success', 'Singles tournament unlocked successfully.');
     }
 
-    // Lock/unlock doubles tournaments
-    public function lockDoublesTournament(Request $request)
-    {
-        $validated = $request->validate([
-            'tournament_id' => 'required|exists:tournaments,id'
-        ]);
-
-        session(['locked_doubles_tournament_id' => $validated['tournament_id']]);
-        return redirect()->back()->with('success', 'Doubles tournament locked successfully.');
-    }
-
-    public function unlockDoublesTournament()
-    {
-        session()->forget('locked_doubles_tournament_id');
-        return redirect()->back()->with('success', 'Doubles tournament unlocked successfully.');
-    }
-
     // Display form to create a Singles Match
     public function createSingles()
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    // Fetch tournaments created by the user or where the user is a moderator
-    $tournaments = Tournament::where('created_by', $user->id)
-        ->orWhereHas('moderators', fn($q) => $q->where('user_id', $user->id))
-        ->get();
+        // Fetch tournaments created by the user or where the user is a moderator
+        $tournaments = Tournament::where('created_by', $user->id)
+            ->orWhereHas('moderators', fn($q) => $q->where('user_id', $user->id))
+            ->get();
 
-    // Fetch locked tournament ID from session
-    $lockedTournamentId = session('locked_singles_tournament_id');
-    $lockedTournament = $lockedTournamentId ? Tournament::find($lockedTournamentId) : null;
+        // Fetch locked tournament ID from session
+        $lockedTournamentId = session('locked_singles_tournament_id');
+        $lockedTournament = $lockedTournamentId ? Tournament::find($lockedTournamentId) : null;
 
-    // Fetch only Singles categories (BS, GS) using LIKE
-    $categories = Category::where('name', 'LIKE', '%BS%')
-        ->orWhere('name', 'LIKE', '%GS%')
-        ->get();
+        // Fetch only Singles categories
+        $categories = Category::where('name', 'LIKE', '%BS%')
+            ->orWhere('name', 'LIKE', '%GS%')
+            ->get();
 
-    return view('matches.singles.create', compact('tournaments', 'lockedTournament', 'categories'));
-}
-
+        return view('matches.singles.create', compact('tournaments', 'lockedTournament', 'categories'));
+    }
 
     // Fetch players for singles category
     public function filteredPlayersSingles(Request $request)
     {
         \Log::info("🔍 API called: filteredPlayersSingles", ['category_id' => $request->category_id]);
-    
+
         $category = Category::find($request->category_id);
-    
+
         if (!$category) {
             return response()->json([]);
         }
-    
-        $categoryName = strtoupper($category->name); // Ensure uppercase for consistency
-        $sex = $category->sex; // Use sex directly
+
+        $categoryName = strtoupper($category->name);
+        $sex = $category->sex;
         $minAge = 0;
         $maxAge = 100;
-    
-        // Match patterns for Under (U15, U17), Senior (Senior 40 Plus), and Open categories
+
         if (preg_match('/^U(\d+)(BS|GS)$/', $categoryName, $matches)) {
-            $maxAge = (int) $matches[1]; // Extract age from 'U15BS' or 'U19GS'
+            $maxAge = (int) $matches[1];
         } elseif (preg_match('/^SENIOR (\d+) PLUS (BS|GS)$/', $categoryName, $matches)) {
-            $minAge = (int) $matches[1]; // Extract minimum age from 'Senior 40 Plus BS'
+            $minAge = (int) $matches[1];
         } elseif (stripos($categoryName, 'OPEN') !== false) {
-            // Open category - no age filter, only sex
         } else {
             \Log::error("❌ Unrecognized Category Format", ['category' => $category]);
             return response()->json([]);
         }
-    
-        // Fetch players based on extracted age limits and valid UID
+
+        // Fetch players
         $players = Player::where('sex', $sex)
                          ->whereBetween('age', [$minAge, $maxAge])
                          ->whereNotNull('uid')
                          ->where('uid', '!=', '')
                          ->select('id', 'uid', 'name', 'age', 'sex')
                          ->get();
-    
+
         \Log::info("✅ Players Retrieved", ['players' => $players]);
-    
+
         return response()->json($players);
     }
-    
-    
-    
 
-    // Edit Singles Match
-    public function editSingles($id)
-    {
-        $match = Matches::where('match_type', 'singles')->findOrFail($id);
-        return view('matches.singles.edit', compact('match'));
-    }
-
-    // Update Singles Match
-    public function updateSingles(Request $request, $id)
+    // Store Singles Match
+    public function storeSingles(Request $request)
     {
         $validated = $request->validate([
-            'stage'         => 'required|string',
-            'match_date'    => 'required|date',
-            'match_time'    => 'required',
+            'tournament_id' => 'required|exists:tournaments,id',
+            'category_id' => 'required|exists:categories,id',
+            'match_date' => 'required|date',
+            'match_time' => 'required',
+            'player1_id' => 'required|exists:players,id',
+            'player2_id' => 'required|exists:players,id|different:player1_id',
+            'stage' => 'required|string',
             'set1_player1_points' => 'nullable|integer',
             'set1_player2_points' => 'nullable|integer',
             'set2_player1_points' => 'nullable|integer',
@@ -138,19 +112,46 @@ class MatchController extends Controller
             'set3_player1_points' => 'nullable|integer',
             'set3_player2_points' => 'nullable|integer',
         ]);
+    
+        // Insert match data into database
+        MatchModel::create([
+            'tournament_id' => $validated['tournament_id'],
+            'category_id' => $validated['category_id'],
+            'match_date' => $validated['match_date'],
+            'match_time' => $validated['match_time'],
+            'player1_id' => $validated['player1_id'],
+            'player2_id' => $validated['player2_id'],
+            'stage' => $validated['stage'],
+            'set1_player1_points' => $validated['set1_player1_points'] ?? 0,
+            'set1_player2_points' => $validated['set1_player2_points'] ?? 0,
+            'set2_player1_points' => $validated['set2_player1_points'] ?? 0,
+            'set2_player2_points' => $validated['set2_player2_points'] ?? 0,
+            'set3_player1_points' => $validated['set3_player1_points'] ?? 0,
+            'set3_player2_points' => $validated['set3_player2_points'] ?? 0,
+            'created_by' => Auth::id(),
+        ]);
+    
+        return redirect()->route('matches.singles.index')->with('success', 'Singles match created successfully.');
+    }
+    
 
-        $match = Matches::where('match_type', 'singles')->findOrFail($id);
-        $match->update($validated);
+    // Display all Singles Matches
+    public function indexSingles()
+    {
+        $matches = MatchModel::singles()
+                             ->with(['tournament', 'category', 'player1', 'player2'])
+                             ->get();
 
-        return redirect()->route('matches.singles.index')->with('success', 'Singles match updated successfully.');
+        return view('matches.singles.index', compact('matches'));
     }
 
-    // Delete Singles Match
-    public function deleteSingles($id)
+    // Display all Doubles Matches
+    public function indexDoubles()
     {
-        $match = Matches::where('match_type', 'singles')->findOrFail($id);
-        $match->delete();
+        $matches = MatchModel::doubles()
+                             ->with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2'])
+                             ->get();
 
-        return redirect()->route('matches.singles.index')->with('success', 'Singles match deleted successfully.');
+        return view('matches.doubles.index', compact('matches'));
     }
 }

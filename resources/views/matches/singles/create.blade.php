@@ -41,7 +41,7 @@
 
     @if(isset($lockedTournament))
     {{-- Create Match Form --}}
-    <form method="POST" action="{{ route('matches.singles.store', ['tournament' => $lockedTournament->id]) }}">
+    <form method="POST" action="{{ route('matches.singles.store') }}">
         @csrf
         <input type="hidden" name="tournament_id" value="{{ $lockedTournament->id }}">
 
@@ -71,30 +71,30 @@
             <option value="Finals">Finals</option>
         </select>
 
-        <label for="date">Match Date:</label>
-        <input type="date" name="date" required>
+        <label for="match_date">Match Date:</label>
+        <input type="date" name="match_date" required>
 
         <label for="match_time">Match Time (HH:MM):</label>
         <input type="time" name="match_time" required>
 
         {{-- Set Scores --}}
-        <label for="set1_player1">Set 1 Score (Player 1):</label>
-        <input type="number" name="set1_player1" required>
+        <label for="set1_player1_points">Set 1 Score (Player 1):</label>
+        <input type="number" name="set1_player1_points" min="0" value="0" required>
 
-        <label for="set1_player2">Set 1 Score (Player 2):</label>
-        <input type="number" name="set1_player2" required>
+        <label for="set1_player2_points">Set 1 Score (Player 2):</label>
+        <input type="number" name="set1_player2_points" min="0" value="0" required>
 
-        <label for="set2_player1">Set 2 Score (Player 1):</label>
-        <input type="number" name="set2_player1" required>
+        <label for="set2_player1_points">Set 2 Score (Player 1):</label>
+        <input type="number" name="set2_player1_points" min="0" value="0" required>
 
-        <label for="set2_player2">Set 2 Score (Player 2):</label>
-        <input type="number" name="set2_player2" required>
+        <label for="set2_player2_points">Set 2 Score (Player 2):</label>
+        <input type="number" name="set2_player2_points" min="0" value="0" required>
 
-        <label for="set3_player1">Set 3 Score (Player 1):</label>
-        <input type="number" name="set3_player1">
+        <label for="set3_player1_points">Set 3 Score (Player 1):</label>
+        <input type="number" name="set3_player1_points" min="0" value="0">
 
-        <label for="set3_player2">Set 3 Score (Player 2):</label>
-        <input type="number" name="set3_player2">
+        <label for="set3_player2_points">Set 3 Score (Player 2):</label>
+        <input type="number" name="set3_player2_points" min="0" value="0">
 
         <button type="submit" class="btn btn-success">Add Match</button>
     </form>
@@ -123,11 +123,13 @@ $(document).ready(function() {
                         });
                     } else {
                         console.warn("⚠ No players found.");
+                        alert("No players available for this category.");
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error("❌ AJAX Error:", error);
                     console.error("❌ Response:", xhr.responseText);
+                    alert("Error fetching players. Please try again.");
                 }
             });
         } else {
@@ -135,8 +137,5 @@ $(document).ready(function() {
         }
     });
 });
-
 </script>
-
-
 @endsection
