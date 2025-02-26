@@ -84,20 +84,25 @@ class MatchController extends Controller
             return response()->json([]);
         }
     
-        // Extract numeric age values from the 'age_group' string
-        preg_match_all('/\d+/', $category->age_group, $matches);
-        $ageLimits = $matches[0];
+        $categoryName = strtoupper($category->name); // Ensure uppercase for consistency
+        $sex = $category->sex; // Use sex directly
+        $minAge = 0;
+        $maxAge = 100;
     
-        if (count($ageLimits) < 1) {
-            \Log::error("❌ Invalid Age Group", ['category' => $category]);
+        // Match patterns for Under (U15, U17), Senior (Senior 40 Plus), and Open categories
+        if (preg_match('/^U(\d+)(BS|GS)$/', $categoryName, $matches)) {
+            $maxAge = (int) $matches[1]; // Extract age from 'U15BS' or 'U19GS'
+        } elseif (preg_match('/^SENIOR (\d+) PLUS (BS|GS)$/', $categoryName, $matches)) {
+            $minAge = (int) $matches[1]; // Extract minimum age from 'Senior 40 Plus BS'
+        } elseif (stripos($categoryName, 'OPEN') !== false) {
+            // Open category - no age filter, only sex
+        } else {
+            \Log::error("❌ Unrecognized Category Format", ['category' => $category]);
             return response()->json([]);
         }
     
-        $minAge = isset($ageLimits[0]) ? (int) $ageLimits[0] : 0;
-        $maxAge = isset($ageLimits[1]) ? (int) $ageLimits[1] : 100;
-    
-        // Fetch players based on extracted age range and valid UID
-        $players = Player::where('sex', $category->sex)
+        // Fetch players based on extracted age limits and valid UID
+        $players = Player::where('sex', $sex)
                          ->whereBetween('age', [$minAge, $maxAge])
                          ->whereNotNull('uid')
                          ->where('uid', '!=', '')
@@ -108,6 +113,7 @@ class MatchController extends Controller
     
         return response()->json($players);
     }
+    
     
     
 
