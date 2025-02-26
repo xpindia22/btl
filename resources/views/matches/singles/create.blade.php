@@ -23,23 +23,23 @@
     <form method="POST" action="{{ route('matches.singles.lockTournament') }}">
         @csrf
         <label for="tournament_id">Select Tournament:</label>
-        <select name="tournament_id" {{ $lockedTournament ? 'disabled' : '' }} required>
+        <select name="tournament_id" required>
             <option value="">Select Tournament</option>
             @foreach($tournaments as $t)
-                <option value="{{ $t->id }}" {{ $lockedTournament && $lockedTournament->id == $t->id ? 'selected' : '' }}>
+                <option value="{{ $t->id }}" {{ isset($lockedTournament) && $lockedTournament->id == $t->id ? 'selected' : '' }}>
                     {{ $t->name }}
                 </option>
             @endforeach
         </select>
 
-        @if($lockedTournament)
+        @if(isset($lockedTournament))
             <button type="submit" formaction="{{ route('matches.singles.unlockTournament') }}" class="btn btn-danger">Unlock Tournament</button>
         @else
             <button type="submit" class="btn btn-primary">Lock Tournament</button>
         @endif
     </form>
 
-    @if($lockedTournament)
+    @if(isset($lockedTournament))
     {{-- Create Match Form --}}
     <form method="POST" action="{{ route('matches.singles.store', ['tournament' => $lockedTournament->id]) }}">
         @csrf
@@ -77,6 +77,25 @@
         <label for="match_time">Match Time (HH:MM):</label>
         <input type="time" name="match_time" required>
 
+        {{-- Set Scores --}}
+        <label for="set1_player1">Set 1 Score (Player 1):</label>
+        <input type="number" name="set1_player1" required>
+
+        <label for="set1_player2">Set 1 Score (Player 2):</label>
+        <input type="number" name="set1_player2" required>
+
+        <label for="set2_player1">Set 2 Score (Player 1):</label>
+        <input type="number" name="set2_player1" required>
+
+        <label for="set2_player2">Set 2 Score (Player 2):</label>
+        <input type="number" name="set2_player2" required>
+
+        <label for="set3_player1">Set 3 Score (Player 1):</label>
+        <input type="number" name="set3_player1">
+
+        <label for="set3_player2">Set 3 Score (Player 2):</label>
+        <input type="number" name="set3_player2">
+
         <button type="submit" class="btn btn-success">Add Match</button>
     </form>
     @endif
@@ -88,17 +107,27 @@ $(document).ready(function() {
         let categoryId = $(this).val();
         if (categoryId) {
             $.ajax({
-                url: "{{ route('matches.filteredPlayers', ['category_id' => '']) }}" + categoryId,
+                url: "{{ route('matches.singles.filteredPlayers') }}",
                 type: "GET",
+                data: { category_id: categoryId },
                 success: function(players) {
-                    console.log("Received players:", players);
+                    console.log("✅ Players received:", players);
                     $('#player1_id, #player2_id').empty().append('<option value="">Select Player</option>');
-                    players.forEach(function(player) {
-                        let optionText = `${player.name} (Age: ${player.age}, Sex: ${player.sex})`;
-                        let optionHtml = `<option value="${player.id}">${optionText}</option>`;
-                        $('#player1_id').append(optionHtml);
-                        $('#player2_id').append(optionHtml);
-                    });
+
+                    if (players.length > 0) {
+                        players.forEach(function(player) {
+                            let optionText = `${player.name} (Age: ${player.age}, Sex: ${player.sex})`;
+                            let optionHtml = `<option value="${player.id}">${optionText}</option>`;
+                            $('#player1_id').append(optionHtml);
+                            $('#player2_id').append(optionHtml);
+                        });
+                    } else {
+                        console.warn("⚠ No players found.");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("❌ AJAX Error:", error);
+                    console.error("❌ Response:", xhr.responseText);
                 }
             });
         } else {
@@ -106,5 +135,8 @@ $(document).ready(function() {
         }
     });
 });
+
 </script>
+
+
 @endsection

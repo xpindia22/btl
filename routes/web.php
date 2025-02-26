@@ -69,23 +69,37 @@ Route::middleware(['auth'])->group(function () {
     // Filtering Players for Matches
     Route::get('/matches/filtered-players', [MatchController::class, 'filteredPlayers'])->name('matches.filteredPlayers');
 
-    // Singles Matches
-    Route::get('/matches/singles/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
-    Route::get('/matches/singles', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
-    Route::get('/matches/singles/{match}/edit', [MatchController::class, 'editSingles'])->name('matches.singles.edit');
+  // Singles Matches Routes
+  Route::prefix('matches/singles')->group(function () {
+    Route::get('/', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
+    Route::get('/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
+    Route::post('/store', [MatchController::class, 'storeSingles'])->name('matches.singles.store');
+    Route::post('/lock-tournament', [MatchController::class, 'lockSinglesTournament'])->name('matches.singles.lockTournament');
+    Route::post('/unlock-tournament', [MatchController::class, 'unlockSinglesTournament'])->name('matches.singles.unlockTournament');
+    Route::get('/filtered-players', [MatchController::class, 'filteredPlayersSingles'])->name('matches.singles.filteredPlayers');
+    Route::get('/{match}/edit', [MatchController::class, 'editSingles'])->name('matches.singles.edit');
+    Route::put('/{match}/update', [MatchController::class, 'updateSingles'])->name('matches.singles.update');
+    Route::delete('/{match}/delete', [MatchController::class, 'deleteSingles'])->name('matches.singles.delete');
+});
 
-    // Doubles Matches
-    Route::get('/matches/doubles/create', [MatchController::class, 'createDoubles'])->name('matches.doubles.create');
-    Route::get('/matches/doubles', [MatchController::class, 'indexDoubles'])->name('matches.doubles.index');
-    Route::get('/matches/doubles/{match}/edit', [MatchController::class, 'editDoubles'])->name('matches.doubles.edit');
+// Doubles Matches Routes (BD, GD, XD)
+ // Doubles Matches Routes (BD, GD, XD)
+ Route::prefix('matches/doubles')->group(function () {
+    Route::get('/', [MatchController::class, 'indexDoubles'])->name('matches.doubles.index');
+    Route::get('/create', [MatchController::class, 'createDoubles'])->name('matches.doubles.create');
+    Route::post('/store', [MatchController::class, 'storeDoubles'])->name('matches.doubles.store');
+    Route::post('/lock-tournament', [MatchController::class, 'lockDoublesTournament'])->name('matches.doubles.lockTournament');
+    Route::post('/unlock-tournament', [MatchController::class, 'unlockDoublesTournament'])->name('matches.doubles.unlockTournament');
+    Route::get('/filtered-players', [MatchController::class, 'filteredPlayersDoubles'])->name('matches.doubles.filteredPlayers');
+});
 
-    // Results
-    Route::prefix('results')->group(function () {
-        Route::get('/', [ResultsController::class, 'index'])->name('results.index');
-        Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');
-        Route::get('/doubles', [ResultsController::class, 'doubles'])->name('results.doubles');
-        Route::get('/mixed-doubles', [ResultsController::class, 'mixedDoubles'])->name('results.mixed_doubles');
-    });
+// Results Management
+Route::prefix('results')->group(function () {
+    Route::get('/', [ResultsController::class, 'index'])->name('results.index');
+    Route::get('/singles', [ResultsController::class, 'singles'])->name('results.singles');
+    Route::get('/doubles', [ResultsController::class, 'doubles'])->name('results.doubles');
+    Route::get('/mixed-doubles', [ResultsController::class, 'mixedDoubles'])->name('results.mixed_doubles');
+});
 
     // Categories Management
     Route::resource('categories', CategoryController::class)->except(['show']);

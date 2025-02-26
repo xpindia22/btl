@@ -24,21 +24,21 @@
         <label for="tournament_id">Select Championship:</label>
         <select name="tournament_id" id="tournament_id" {{ $lockedTournament ? 'disabled' : '' }} required>
             <option value="">Select Championship</option>
-            @foreach($championships as $champ)
-                <option value="{{ $champ->id }}" {{ $lockedTournament && $lockedTournament->id == $champ->id ? 'selected' : '' }}>
-                    {{ $champ->name }}
+            @foreach($tournaments as $tournament)
+                <option value="{{ $tournament->id }}" {{ isset($lockedTournament) && $lockedTournament->id == $tournament->id ? 'selected' : '' }}>
+                    {{ $tournament->name }}
                 </option>
             @endforeach
         </select>
 
-        @if($lockedTournament)
+        @if(isset($lockedTournament))
             <button type="submit" formaction="{{ route('matches.doubles.unlockTournament') }}" class="btn btn-danger">Unlock Championship</button>
         @else
             <button type="submit" class="btn btn-primary">Lock Championship</button>
         @endif
     </form>
 
-    @if($lockedTournament)
+    @if(isset($lockedTournament))
     <form id="doublesForm" method="POST" action="{{ route('matches.doubles.store', ['tournament' => $lockedTournament->id]) }}">
         @csrf
 

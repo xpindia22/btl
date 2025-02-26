@@ -1,95 +1,112 @@
 <?php
 
-namespace App\Models;
+namespace App\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Matches;
+use App\Models\Tournament;
+use App\Models\Category;
+use App\Models\Player;
 
-class Matches extends Model
+class MatchController extends Controller
 {
-    use HasFactory, SoftDeletes;
-
-    protected $fillable = [
-        'tournament_id', 'category_id', 'stage', 'match_date', 'match_time',
-        'player1_id', 'player2_id',  // Singles players
-        'team1_player1_id', 'team1_player2_id', 'team2_player1_id', 'team2_player2_id', // Doubles players
-        'set1_team1_points', 'set1_team2_points',
-        'set2_team1_points', 'set2_team2_points',
-        'set3_team1_points', 'set3_team2_points',
-        'winner', 'created_by', 'moderated_by'
-    ];
-
-    /**
-     * Get the tournament associated with the match.
-     */
-    public function tournament()
+    public function __construct()
     {
-        return $this->belongsTo(Tournament::class);
+        $this->middleware('auth');
     }
 
-    /**
-     * Get the category of the match.
-     */
-    public function category()
+    // Index Singles Matches
+    public function indexSingles()
     {
-        return $this->belongsTo(Category::class);
+        $matches = Matches::where('match_type', 'singles')->get();
+        return view('matches.singles.index', compact('matches'));
     }
 
-    // --- Relationships for Singles Players ---
-    public function player1()
+    // Index Doubles Matches
+    public function indexDoubles()
     {
-        return $this->belongsTo(Player::class, 'player1_id');
+        $matches = Matches::where('match_type', 'doubles')->get();
+        return view('matches.doubles.index', compact('matches'));
     }
 
-    public function player2()
+    // Lock/unlock singles tournaments
+    public function lockSinglesTournament(Request $request)
     {
-        return $this->belongsTo(Player::class, 'player2_id');
+        $validated = $request->validate([
+            'tournament_id' => 'required|exists:tournaments,id'
+        ]);
+
+        session(['locked_singles_tournament_id' => $validated['tournament_id']]);
+        return redirect()->back()->with('success', 'Singles tournament locked successfully.');
     }
 
-    // --- Relationships for Doubles Players ---
-    public function team1Player1()
+    public function unlockSinglesTournament()
     {
-        return $this->belongsTo(Player::class, 'team1_player1_id');
+        session()->forget('locked_singles_tournament_id');
+        return redirect()->back()->with('success', 'Singles tournament unlocked successfully.');
     }
 
-    public function team1Player2()
+    // Lock/unlock doubles tournaments
+    public function lockDoublesTournament(Request $request)
     {
-        return $this->belongsTo(Player::class, 'team1_player2_id');
+        $validated = $request->validate([
+            'tournament_id' => 'required|exists:tournaments,id'
+        ]);
+
+        session(['locked_doubles_tournament_id' => $validated['tournament_id']]);
+        return redirect()->back()->with('success', 'Doubles tournament locked successfully.');
     }
 
-    public function team2Player1()
+    public function unlockDoublesTournament()
     {
-        return $this->belongsTo(Player::class, 'team2_player1_id');
+        session()->forget('locked_doubles_tournament_id');
+        return redirect()->back()->with('success', 'Doubles tournament unlocked successfully.');
     }
 
-    public function team2Player2()
+    // Fetch players for singles category
+    public function filteredPlayersSingles(Request $request)
     {
-        return $this->belongsTo(Player::class, 'team2_player2_id');
+        $category = Category::find($request->category_id);
+
+        if (!$category) {
+            return response()->json([]);
+        }
+
+        $ageLimit = $category->age_limit;
+        $sex = $category->type === 'BS' ? 'Male' : 'Female';
+
+        $players = Player::where('sex', $sex)
+                          ->where('age', '<=', $ageLimit)
+                          ->select('id', 'name', 'age', 'sex')
+                          ->get();
+
+        return response()->json($players);
     }
 
-    /**
-     * Get the user who created the match.
-     */
-    public function creator()
+    // Fetch players for doubles category
+    public function filteredPlayersDoubles(Request $request)
     {
-        return $this->belongsTo(User::class, 'created_by');
-    }
+        $category = Category::find($request->category_id);
 
-    /**
-     * Get the user who moderates the match.
-     */
-    public function moderator()
-    {
-        return $this->belongsTo(User::class, 'moderated_by');
-    }
+        if (!$category) {
+            return response()->json([]);
+        }
 
-    /**
-     * Check if a user can moderate this match.
-     */
-    public function canBeModeratedBy($user)
-    {
-        return $user->id === $this->moderated_by || 
-               $user->moderatedTournaments()->where('id', $this->tournament_id)->exists();
+        $ageLimit = $category->age_limit;
+        $sex = in_array($category->type, ['BD', 'GD']) ? 'Male' : 'Female';
+
+        $players = Player::where('age', '<=', $ageLimit)
+                          ->where(function ($query) use ($category) {
+                              if ($category->type === 'XD') {
+                                  $query->whereIn('sex', ['Male', 'Female']);
+                              } else {
+                                  $query->where('sex', $category->type === 'BD' ? 'Male' : 'Female');
+                              }
+                          })
+                          ->select('id', 'name', 'age', 'sex')
+                          ->get();
+
+        return response()->json($players);
     }
 }
