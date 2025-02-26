@@ -80,6 +80,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/{match}/edit', [MatchController::class, 'editSingles'])->name('matches.singles.edit');
     Route::put('/{match}/update', [MatchController::class, 'updateSingles'])->name('matches.singles.update');
     Route::delete('/{match}/delete', [MatchController::class, 'deleteSingles'])->name('matches.singles.delete');
+
+    Route::get('matches/singles/edit/{id}', [MatchController::class, 'editSingles'])->name('matches.singles.edit');
+Route::post('matches/singles/update/{id}', [MatchController::class, 'updateSingles'])->name('matches.singles.update');
+
 });
 
 // Doubles Matches Routes (BD, GD, XD)
@@ -91,6 +95,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/lock-tournament', [MatchController::class, 'lockDoublesTournament'])->name('matches.doubles.lockTournament');
     Route::post('/unlock-tournament', [MatchController::class, 'unlockDoublesTournament'])->name('matches.doubles.unlockTournament');
     Route::get('/filtered-players', [MatchController::class, 'filteredPlayersDoubles'])->name('matches.doubles.filteredPlayers');
+    Route::get('matches/doubles/edit/{id}', [MatchController::class, 'editDoubles'])->name('matches.doubles.edit');
+Route::post('matches/doubles/update/{id}', [MatchController::class, 'updateDoubles'])->name('matches.doubles.update');
+
 });
 
 // Results Management
