@@ -147,6 +147,50 @@ class MatchController extends Controller
         return response()->json($players);
     }
 
+
+    // store singles
+    public function storeSingles(Request $request)
+    {
+        $validated = $request->validate([
+            'tournament_id' => 'required|exists:tournaments,id',
+            'category_id' => 'required|exists:categories,id',
+            'match_date' => 'required|date',
+            'match_time' => 'required',
+            'player1_id' => 'required|exists:players,id',
+            'player2_id' => 'required|exists:players,id|different:player1_id',
+            'stage' => 'required|string',
+            'set1_player1_points' => 'nullable|integer',
+            'set1_player2_points' => 'nullable|integer',
+            'set2_player1_points' => 'nullable|integer',
+            'set2_player2_points' => 'nullable|integer',
+            'set3_player1_points' => 'nullable|integer',
+            'set3_player2_points' => 'nullable|integer',
+        ]);
+    
+        // Create the match
+        MatchModel::create([
+            'tournament_id' => $validated['tournament_id'],
+            'category_id' => $validated['category_id'],
+            'match_date' => $validated['match_date'],
+            'match_time' => $validated['match_time'],
+            'player1_id' => $validated['player1_id'],
+            'player2_id' => $validated['player2_id'],
+            'stage' => $validated['stage'],
+            'set1_player1_points' => $validated['set1_player1_points'] ?? null,
+            'set1_player2_points' => $validated['set1_player2_points'] ?? null,
+            'set2_player1_points' => $validated['set2_player1_points'] ?? null,
+            'set2_player2_points' => $validated['set2_player2_points'] ?? null,
+            'set3_player1_points' => $validated['set3_player1_points'] ?? null,
+            'set3_player2_points' => $validated['set3_player2_points'] ?? null,
+            'created_by' => Auth::id(),
+        ]);
+    
+        return redirect()->route('matches.singles.index')->with('success', 'Singles match created successfully.');
+    }
+    
+
+
+
     // Store Doubles Match
     public function storeDoubles(Request $request)
     {

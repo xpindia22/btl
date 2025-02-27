@@ -74,6 +74,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
     Route::get('/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
     Route::post('/store', [MatchController::class, 'storeSingles'])->name('matches.singles.store');
+    Route::post('/matches/singles', [MatchController::class, 'storeSingles']);
+
     Route::post('/lock-tournament', [MatchController::class, 'lockSinglesTournament'])->name('matches.singles.lockTournament');
     Route::post('/unlock-tournament', [MatchController::class, 'unlockSinglesTournament'])->name('matches.singles.unlockTournament');
     Route::get('/filtered-players', [MatchController::class, 'filteredPlayersSingles'])->name('matches.singles.filteredPlayers');
