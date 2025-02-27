@@ -229,13 +229,34 @@ class MatchController extends Controller
         return view('matches.singles.index', compact('matches'));
     }
 
-    // Display all Doubles Matches
-    public function indexDoubles()
+    // Display all Doubles Matchespublic function indexDoubles(Request $request)
+    public function indexDoubles(Request $request)
     {
-        $matches = MatchModel::doubles()->with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2'])->get();
-        return view('matches.doubles.index', compact('matches'));
+        // Example tournaments for filters, etc.
+        $tournaments = Tournament::all();
+    
+        $query = MatchModel::doubles()->with([
+            'tournament', 'category',
+            'team1Player1', 'team1Player2',
+            'team2Player1', 'team2Player2'
+        ]);
+    
+        // Only categories with BD, GD, or XD in the name
+        $query->whereHas('category', function($q) {
+            $q->where('name', 'LIKE', '%BD%')
+              ->orWhere('name', 'LIKE', '%GD%')
+              ->orWhere('name', 'LIKE', '%XD%');
+        });
+    
+        // Optional: additional filters or pagination
+        // e.g. filter by request('filter_tournament') if needed
+    
+        // Paginate so we can do appends() in the view
+        $matches = $query->paginate(10);
+    
+        return view('matches.doubles.index', compact('matches', 'tournaments'));
     }
-
+    
 
        // ======================= EDIT & UPDATE MATCHES ========================= //
 

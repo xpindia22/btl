@@ -2,189 +2,128 @@
 
 @section('content')
 <div class="container">
-    <h1 class="text-center">Doubles Matches (BD, GD, XD)</h1>
+    <h1 class="text-center">Doubles Matches (Read Only)</h1>
 
     @if(session('success'))
-        <div class="alert alert-success text-center">{{ session('success') }}</div>
+        <div class="alert alert-success text-center">
+            {{ session('success') }}
+        </div>
     @endif
 
-    <!-- Filters Row -->
-    <form method="GET" action="{{ route('matches.doubles.index') }}" class="mb-3">
-        <div class="d-flex flex-wrap gap-2">
-            <label for="filter_tournament">Tournament:</label>
-            <select name="filter_tournament" id="filter_tournament" class="form-control w-auto" onchange="this.form.submit()">
-                <option value="all" {{ request('filter_tournament', 'all') == 'all' ? 'selected' : '' }}>All</option>
-                @foreach($tournaments as $tournament)
-                    <option value="{{ $tournament->id }}" {{ request('filter_tournament') == $tournament->id ? 'selected' : '' }}>
-                        {{ $tournament->name }}
-                    </option>
-                @endforeach
-            </select>
-
-            <label for="filter_category">Category:</label>
-            <select name="filter_category" id="filter_category" class="form-control w-auto" onchange="this.form.submit()">
-                <option value="all" {{ request('filter_category', 'all') == 'all' ? 'selected' : '' }}>All</option>
-                <option value="BD" {{ request('filter_category') == 'BD' ? 'selected' : '' }}>Boys Doubles (BD)</option>
-                <option value="GD" {{ request('filter_category') == 'GD' ? 'selected' : '' }}>Girls Doubles (GD)</option>
-                <option value="XD" {{ request('filter_category') == 'XD' ? 'selected' : '' }}>Mixed Doubles (XD)</option>
-            </select>
-        </div>
-    </form>
-
-    <!-- Matches Table -->
     <div class="table-responsive">
-        <table class="table table-bordered table-striped text-center">
-            <thead class="table-dark">
+        <table class="table table-bordered text-center">
+            <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Tournament</th>
-                    <th>Category</th>
-                    <th>Team 1</th>
-                    <th>Team 2</th>
-                    <th>Stage</th>
-                    <th>Match Date</th>
-                    <th>Match Time</th>
-                    <th>Winner</th>
-                    <th>Actions</th>
+                    <!-- We'll have 2 rows for sets, so let's merge some headers via rowSpan -->
+                    <th rowspan="2">ID</th>
+                    <th rowspan="2">Tournament</th>
+                    <th rowspan="2">Category</th>
+                    
+                    <!-- This will label each team row -->
+                    <th>Team</th>
+                    
+                    <!-- We'll have Set1, Set2, Set3 columns for each row (Team1 & Team2) -->
+                    <th colspan="3">Set Scores</th>
+                    
+                    <th rowspan="2">Date</th>
+                    <th rowspan="2">Time</th>
+                    <th rowspan="2">Winner</th>
+                </tr>
+                <tr>
+                    <!-- Second row of headers: "Team" is already in the row above 
+                         Now we specify which sets each row will show -->
+                    <th>Team</th>
+                    <th>Set 1</th>
+                    <th>Set 2</th>
+                    <th>Set 3</th>
                 </tr>
             </thead>
+
             <tbody>
-                @foreach($matches as $match)
-                    <tr id="match-{{ $match->id }}">
-                        <td>{{ $match->id }}</td>
-                        <td>{{ optional($match->tournament)->name ?? 'N/A' }}</td>
-                        <td>{{ optional($match->category)->name ?? 'N/A' }}</td>
-                        <td>
-                            {{ optional($match->team1Player1)->name ?? 'N/A' }} & 
-                            {{ optional($match->team1Player2)->name ?? 'N/A' }}
-                        </td>
-                        <td>
-                            {{ optional($match->team2Player1)->name ?? 'N/A' }} & 
-                            {{ optional($match->team2Player2)->name ?? 'N/A' }}
-                        </td>
-                        <td>{{ $match->stage ?? 'N/A' }}</td>
-                        <td>{{ $match->match_date ?? 'N/A' }}</td>
-                        <td>{{ $match->match_time ?? 'N/A' }}</td>
-                        <td id="winner-{{ $match->id }}">{{ $match->winner ?? 'TBD' }}</td>
-                        <td>
-                            <button class="btn btn-success btn-sm update-match" data-id="{{ $match->id }}">Edit</button>
-                            <button class="btn btn-danger btn-sm delete-match" data-id="{{ $match->id }}">Delete</button>
-                        </td>
-                    </tr>
-                @endforeach
+            @forelse($matches as $match)
+                @php
+                    // Auto-calculate winner (2 out of 3 sets)
+                    $team1SetsWon = 0;
+                    $team2SetsWon = 0;
+
+                    // Set 1
+                    if(($match->set1_team1_points ?? 0) > ($match->set1_team2_points ?? 0)) {
+                        $team1SetsWon++;
+                    } elseif(($match->set1_team1_points ?? 0) < ($match->set1_team2_points ?? 0)) {
+                        $team2SetsWon++;
+                    }
+
+                    // Set 2
+                    if(($match->set2_team1_points ?? 0) > ($match->set2_team2_points ?? 0)) {
+                        $team1SetsWon++;
+                    } elseif(($match->set2_team1_points ?? 0) < ($match->set2_team2_points ?? 0)) {
+                        $team2SetsWon++;
+                    }
+
+                    // Set 3 (only if both are not null)
+                    if(!is_null($match->set3_team1_points) && !is_null($match->set3_team2_points)) {
+                        if($match->set3_team1_points > $match->set3_team2_points) {
+                            $team1SetsWon++;
+                        } elseif($match->set3_team1_points < $match->set3_team2_points) {
+                            $team2SetsWon++;
+                        }
+                    }
+
+                    // Determine winner
+                    $winner = 'TBD';
+                    if($team1SetsWon > $team2SetsWon) {
+                        $winner = optional($match->team1Player1)->name . ' & ' .
+                                  optional($match->team1Player2)->name;
+                    } elseif($team2SetsWon > $team1SetsWon) {
+                        $winner = optional($match->team2Player1)->name . ' & ' .
+                                  optional($match->team2Player2)->name;
+                    }
+                @endphp
+
+                <!-- FIRST ROW: Team 1 -->
+                <tr>
+                    <!-- We need rowSpan=2 so we can display T1 & T2 side by side in 2 rows. -->
+                    <td rowspan="2">{{ $match->id }}</td>
+                    <td rowspan="2">{{ optional($match->tournament)->name ?? 'N/A' }}</td>
+                    <td rowspan="2">{{ optional($match->category)->name ?? 'N/A' }}</td>
+
+                    <!-- Team 1 name(s) -->
+                    <td>
+                        {{ optional($match->team1Player1)->name ?? 'N/A' }} &
+                        {{ optional($match->team1Player2)->name ?? 'N/A' }}
+                    </td>
+
+                    <!-- Set 1/2/3 for Team 1 -->
+                    <td>{{ $match->set1_team1_points ?? 0 }}</td>
+                    <td>{{ $match->set2_team1_points ?? 0 }}</td>
+                    <td>{{ $match->set3_team1_points ?? 0 }}</td>
+
+                    <!-- rowSpan for date/time/winner so they appear in middle for both teams -->
+                    <td rowspan="2">{{ $match->match_date ?? 'N/A' }}</td>
+                    <td rowspan="2">
+                        <!-- MATCH TIME from the DB column -->
+                        {{ $match->match_time ?? 'N/A' }}
+                    </td>
+                    <td rowspan="2">{{ $winner }}</td>
+                </tr>
+
+                <!-- SECOND ROW: Team 2 -->
+                <tr>
+                    <td>
+                        {{ optional($match->team2Player1)->name ?? 'N/A' }} &
+                        {{ optional($match->team2Player2)->name ?? 'N/A' }}
+                    </td>
+                    <td>{{ $match->set1_team2_points ?? 0 }}</td>
+                    <td>{{ $match->set2_team2_points ?? 0 }}</td>
+                    <td>{{ $match->set3_team2_points ?? 0 }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="10">No matches found.</td>
+                </tr>
+            @endforelse
             </tbody>
         </table>
     </div>
 </div>
-<div class="d-flex justify-content-center">
-    {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
-</div>
-
-<!-- Modal for Editing Doubles Match -->
-<div class="modal fade" id="editMatchModal" tabindex="-1" aria-labelledby="editMatchModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editMatchModalLabel">Edit Doubles Match</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="editMatchForm">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" id="edit_match_id">
-
-                    <label for="edit_stage">Stage:</label>
-                    <select id="edit_stage" class="form-control">
-                        <option value="Pre Quarter Finals">Pre Quarter Finals</option>
-                        <option value="Quarter Finals">Quarter Finals</option>
-                        <option value="Semifinals">Semifinals</option>
-                        <option value="Finals">Finals</option>
-                    </select>
-
-                    <label for="edit_match_date">Match Date:</label>
-                    <input type="date" id="edit_match_date" class="form-control" required>
-
-                    <label for="edit_match_time">Match Time:</label>
-                    <input type="time" id="edit_match_time" class="form-control" required>
-
-                    <button type="submit" class="btn btn-primary mt-3">Update Match</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-$(document).ready(function() {
-    // Open Edit Modal with Data
-    $('.update-match').click(function() {
-        let matchId = $(this).data('id');
-        
-        $.ajax({
-            url: `/matches/doubles/${matchId}/edit`,
-            type: 'GET',
-            success: function(match) {
-                $('#edit_match_id').val(match.id);
-                $('#edit_stage').val(match.stage);
-                $('#edit_match_date').val(match.match_date);
-                $('#edit_match_time').val(match.match_time);
-                $('#editMatchModal').modal('show');
-            },
-            error: function(xhr) {
-                console.error("Error fetching match:", xhr.responseText);
-            }
-        });
-    });
-
-    // Submit Updated Data
-    $('#editMatchForm').submit(function(event) {
-        event.preventDefault();
-
-        let matchId = $('#edit_match_id').val();
-        let formData = {
-            _token: "{{ csrf_token() }}",
-            _method: "PUT",
-            stage: $('#edit_stage').val(),
-            match_date: $('#edit_match_date').val(),
-            match_time: $('#edit_match_time').val()
-        };
-
-        $.ajax({
-            url: `/matches/doubles/${matchId}`,
-            type: 'POST',
-            data: formData,
-            success: function(response) {
-                alert('Match Updated Successfully!');
-                location.reload();
-            },
-            error: function(xhr) {
-                console.error("Update Error:", xhr.responseText);
-            }
-        });
-    });
-
-    // Delete Match
-    $('.delete-match').click(function() {
-        let matchId = $(this).data('id');
-        if (confirm('Are you sure you want to delete this match?')) {
-            $.ajax({
-                url: `/matches/doubles/${matchId}`,
-                type: 'DELETE',
-                data: { _token: "{{ csrf_token() }}" },
-                success: function(response) {
-                    alert('Match Deleted Successfully!');
-                    location.reload();
-                },
-                error: function(xhr) {
-                    console.error("Delete Error:", xhr.responseText);
-                }
-            });
-        }
-    });
-});
-</script>
-
 @endsection
