@@ -93,7 +93,9 @@ Route::prefix('matches/singles')->group(function () {
  Route::prefix('matches/doubles')->group(function () {
     Route::get('/', [MatchController::class, 'indexDoubles'])->name('matches.doubles.index');
     Route::get('/create', [MatchController::class, 'createDoubles'])->name('matches.doubles.create');
+    // Route::post('/store', [MatchController::class, 'storeDoubles'])->name('matches.doubles.store');
     Route::post('/store', [MatchController::class, 'storeDoubles'])->name('matches.doubles.store');
+
     Route::post('/lock-tournament', [MatchController::class, 'lockDoublesTournament'])->name('matches.doubles.lockTournament');
     Route::post('/unlock-tournament', [MatchController::class, 'unlockDoublesTournament'])->name('matches.doubles.unlockTournament');
     Route::get('/filtered-players', [MatchController::class, 'filteredPlayersDoubles'])->name('matches.doubles.filteredPlayers');
