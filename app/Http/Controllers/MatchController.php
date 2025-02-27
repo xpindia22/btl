@@ -240,40 +240,44 @@ class MatchController extends Controller
        // ======================= EDIT & UPDATE MATCHES ========================= //
 
     // Edit Singles Match
-    public function editSingles($id)
-    {
-        $match = MatchModel::singles()->findOrFail($id);
-        $tournaments = Tournament::all();
-        $categories = Category::where('name', 'LIKE', '%BS%')->orWhere('name', 'LIKE', '%GS%')->get();
-        $players = Player::all();
+    public function editSingles()
+{
+    $matches = MatchModel::singles()->with(['tournament', 'category', 'player1', 'player2'])->get();
+    return view('matches.singles.edit', compact('matches'));
+}
 
-        return view('matches.singles.edit', compact('match', 'tournaments', 'categories', 'players'));
-    }
+    
+    
 
     // Update Singles Match
     public function updateSingles(Request $request, $id)
     {
         $validated = $request->validate([
-            'tournament_id' => 'required|exists:tournaments,id',
-            'category_id' => 'required|exists:categories,id',
-            'match_date' => 'required|date',
-            'match_time' => 'required',
-            'player1_id' => 'required|exists:players,id',
-            'player2_id' => 'required|exists:players,id|different:player1_id',
-            'stage' => 'required|string',
+            'stage' => 'nullable|string',
+            'match_date' => 'nullable|date',
+            'match_time' => 'nullable',
             'set1_player1_points' => 'nullable|integer',
             'set1_player2_points' => 'nullable|integer',
             'set2_player1_points' => 'nullable|integer',
             'set2_player2_points' => 'nullable|integer',
             'set3_player1_points' => 'nullable|integer',
             'set3_player2_points' => 'nullable|integer',
+    
+            // We no longer require them:
+            'tournament_id' => 'nullable|exists:tournaments,id',
+            'category_id'   => 'nullable|exists:categories,id',
+            'player1_id'    => 'nullable|exists:players,id',
+            'player2_id'    => 'nullable|exists:players,id|different:player1_id',
         ]);
-
+    
         $match = MatchModel::singles()->findOrFail($id);
+        // Only update the fields actually passed in
         $match->update($validated);
-
-        return redirect()->route('matches.singles.index')->with('success', 'Singles match updated successfully.');
+    
+        return response()->json(['message' => 'Match updated successfully.']);
     }
+    
+
 
     // Edit Doubles Match
     public function editDoubles($id)
