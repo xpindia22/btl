@@ -231,32 +231,104 @@ class MatchController extends Controller
 
     // Display all Doubles Matchespublic function indexDoubles(Request $request)
     public function indexDoubles(Request $request)
-    {
-        // Example tournaments for filters, etc.
-        $tournaments = Tournament::all();
-    
-        $query = MatchModel::doubles()->with([
+{
+    // Fetch tournaments (for the filter dropdown)
+    $tournaments = Tournament::all();
+
+    // Base query: only doubles, plus relationships for teams
+    $query = MatchModel::doubles()
+        ->with([
             'tournament', 'category',
             'team1Player1', 'team1Player2',
             'team2Player1', 'team2Player2'
         ]);
-    
-        // Only categories with BD, GD, or XD in the name
-        $query->whereHas('category', function($q) {
-            $q->where('name', 'LIKE', '%BD%')
-              ->orWhere('name', 'LIKE', '%GD%')
-              ->orWhere('name', 'LIKE', '%XD%');
-        });
-    
-        // Optional: additional filters or pagination
-        // e.g. filter by request('filter_tournament') if needed
-    
-        // Paginate so we can do appends() in the view
-        $matches = $query->paginate(10);
-    
-        return view('matches.doubles.index', compact('matches', 'tournaments'));
+
+    // **Ensure categories contain BD, GD, or XD** 
+    $query->whereHas('category', function($q) {
+        $q->where('name', 'LIKE', '%BD%')
+          ->orWhere('name', 'LIKE', '%GD%')
+          ->orWhere('name', 'LIKE', '%XD%');
+    });
+
+    /*
+     |--------------------------------------------------------------------------
+     | OPTIONAL FILTERS
+     |--------------------------------------------------------------------------
+     | If the user picks from a single-row filter (Tournament, Category, Team1, Team2, Stage, Date, Winner)
+     | Adjust these conditions for partial matching vs exact. 
+     | The code below is an example approach.
+     */
+
+    // 1. Tournament Filter
+    if ($request->has('filter_tournament') && $request->filter_tournament != 'all') {
+        $query->where('tournament_id', $request->filter_tournament);
     }
-    
+
+    // 2. Category Filter
+    if ($request->has('filter_category') && $request->filter_category != 'all') {
+        $filterCat = $request->filter_category; 
+        // We'll override the default BD/GD/XD, in case user wants narrower filter:
+        $query->whereHas('category', function($q) use ($filterCat) {
+            $q->where('name','LIKE',"%{$filterCat}%");
+        });
+    }
+
+    // 3. Team1 Filter
+    if ($request->has('filter_team1') && $request->filter_team1) {
+        $team1Name = $request->filter_team1;
+        // Check player1 or player2 in Team1
+        $query->where(function($q) use ($team1Name) {
+            $q->whereHas('team1Player1', function($subQ) use ($team1Name){
+                $subQ->where('name','LIKE',"%{$team1Name}%");
+            })
+            ->orWhereHas('team1Player2', function($subQ) use ($team1Name){
+                $subQ->where('name','LIKE',"%{$team1Name}%");
+            });
+        });
+    }
+
+    // 4. Team2 Filter
+    if ($request->has('filter_team2') && $request->filter_team2) {
+        $team2Name = $request->filter_team2;
+        $query->where(function($q) use ($team2Name) {
+            $q->whereHas('team2Player1', function($subQ) use ($team2Name){
+                $subQ->where('name','LIKE',"%{$team2Name}%");
+            })
+            ->orWhereHas('team2Player2', function($subQ) use ($team2Name){
+                $subQ->where('name','LIKE',"%{$team2Name}%");
+            });
+        });
+    }
+
+    // 5. Stage Filter
+    if ($request->has('filter_stage') && $request->filter_stage != 'all') {
+        $query->where('stage', $request->filter_stage);
+    }
+
+    // 6. Match Date Filter
+    if ($request->has('filter_match_date') && $request->filter_match_date) {
+        $query->where('match_date', $request->filter_match_date);
+    }
+
+    // 7. Winner Filter
+    // If you store a 'winner' column, do something like:
+    if ($request->has('filter_winner') && $request->filter_winner) {
+        $winnerFilter = $request->filter_winner;
+        // If storing winner in a DB column: 
+        // $query->where('winner','LIKE',"%{$winnerFilter}%");
+        //
+        // If you DO NOT store 'winner' in the table, you can either:
+        //   - compute in code after retrieving all results (less efficient),
+        //   - or add a dedicated winner column that you update after each match finishes.
+    }
+
+    // 8. Paginate results
+    $matches = $query->paginate(10);
+
+    // Return the view with the data
+    return view('matches.doubles.index', compact('matches','tournaments'));
+}
+
 
        // ======================= EDIT & UPDATE MATCHES ========================= //
 

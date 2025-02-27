@@ -2,163 +2,238 @@
 
 @section('content')
 <div class="container">
-    <h1 class="text-center">Doubles Matches (Read Only)</h1>
+    <h1>Insert Doubles Match</h1>
 
     @if(session('success'))
-        <div class="alert alert-success text-center">{{ session('success') }}</div>
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <!-- Filters (Optional) -->
-    <form method="GET" action="{{ route('matches.doubles.index') }}" class="d-flex flex-wrap align-items-center gap-2 mb-3">
-
-{{-- Tournament --}}
-<label for="filter_tournament" class="mb-0 mr-2">Tournament:</label>
-<select name="filter_tournament" id="filter_tournament" class="form-control w-auto">
-    <option value="all" {{ request('filter_tournament','all')=='all' ? 'selected' : '' }}>All</option>
-    @foreach($tournaments as $t)
-        <option value="{{ $t->id }}" {{ request('filter_tournament') == $t->id ? 'selected' : '' }}>
-            {{ $t->name }}
-        </option>
-    @endforeach
-</select>
-
-{{-- Category --}}
-<label for="filter_category" class="mb-0 mr-2">Category:</label>
-<select name="filter_category" id="filter_category" class="form-control w-auto">
-    <option value="all" {{ request('filter_category','all')=='all' ? 'selected' : '' }}>All</option>
-    <option value="BD" {{ request('filter_category')=='BD' ? 'selected' : '' }}>BD</option>
-    <option value="GD" {{ request('filter_category')=='GD' ? 'selected' : '' }}>GD</option>
-    <option value="XD" {{ request('filter_category')=='XD' ? 'selected' : '' }}>XD</option>
-</select>
-
-{{-- Team 1 --}}
-<label for="filter_team1" class="mb-0 mr-2">Team 1:</label>
-<input type="text" name="filter_team1" id="filter_team1" class="form-control w-auto"
-       value="{{ request('filter_team1') }}" placeholder="Team 1 name">
-
-{{-- Team 2 --}}
-<label for="filter_team2" class="mb-0 mr-2">Team 2:</label>
-<input type="text" name="filter_team2" id="filter_team2" class="form-control w-auto"
-       value="{{ request('filter_team2') }}" placeholder="Team 2 name">
-
-{{-- Stage --}}
-<label for="filter_stage" class="mb-0 mr-2">Stage:</label>
-<select name="filter_stage" id="filter_stage" class="form-control w-auto">
-    <option value="all" {{ request('filter_stage','all')=='all' ? 'selected' : '' }}>All</option>
-    @foreach(['Pre Quarter Finals','Quarter Finals','Semifinals','Finals','Preliminary'] as $stage)
-        <option value="{{ $stage }}" {{ request('filter_stage') == $stage ? 'selected' : '' }}>
-            {{ $stage }}
-        </option>
-    @endforeach
-</select>
-
-{{-- Match Date --}}
-<label for="filter_match_date" class="mb-0 mr-2">Match Date:</label>
-<input type="date" name="filter_match_date" id="filter_match_date"
-       class="form-control w-auto"
-       value="{{ request('filter_match_date') }}">
-
-{{-- Winner --}}
-<label for="filter_winner" class="mb-0 mr-2">Winner:</label>
-<input type="text" name="filter_winner" id="filter_winner" class="form-control w-auto"
-       value="{{ request('filter_winner') }}" placeholder="Winner name">
-
-<button type="submit" class="btn btn-primary ml-2">Search</button>
-</form>
-
-
-    <!-- Read-Only Table -->
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped text-center">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Tournament</th>
-                    <th>Category</th>
-                    <th>Team 1</th>
-                    <th>Team 2</th>
-                    <th>Stage</th>
-                    <th>Set 1 (T1 - T2)</th>
-                    <th>Set 2 (T1 - T2)</th>
-                    <th>Set 3 (T1 - T2)</th>
-                    <th>Match Date</th>
-                    <th>Match Time</th>
-                    <th>Winner</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($matches as $match)
-                    @php
-                        // Calculate sets won by each team
-                        $team1SetsWon = 0;
-                        $team2SetsWon = 0;
-
-                        // Set 1
-                        if (($match->set1_team1_points ?? 0) > ($match->set1_team2_points ?? 0)) {
-                            $team1SetsWon++;
-                        } elseif (($match->set1_team1_points ?? 0) < ($match->set1_team2_points ?? 0)) {
-                            $team2SetsWon++;
-                        }
-
-                        // Set 2
-                        if (($match->set2_team1_points ?? 0) > ($match->set2_team2_points ?? 0)) {
-                            $team1SetsWon++;
-                        } elseif (($match->set2_team1_points ?? 0) < ($match->set2_team2_points ?? 0)) {
-                            $team2SetsWon++;
-                        }
-
-                        // Set 3 (only if both sets exist)
-                        if (!is_null($match->set3_team1_points) && !is_null($match->set3_team2_points)) {
-                            if (($match->set3_team1_points ?? 0) > ($match->set3_team2_points ?? 0)) {
-                                $team1SetsWon++;
-                            } elseif (($match->set3_team1_points ?? 0) < ($match->set3_team2_points ?? 0)) {
-                                $team2SetsWon++;
-                            }
-                        }
-
-                        // Determine winner
-                        $winner = 'TBD';
-                        if ($team1SetsWon > $team2SetsWon) {
-                            $winner = optional($match->team1Player1)->name . ' & ' . optional($match->team1Player2)->name;
-                        } elseif ($team2SetsWon > $team1SetsWon) {
-                            $winner = optional($match->team2Player1)->name . ' & ' . optional($match->team2Player2)->name;
-                        }
-                    @endphp
-
-                    <tr>
-                        <td>{{ $match->id }}</td>
-                        <td>{{ optional($match->tournament)->name ?? 'N/A' }}</td>
-                        <td>{{ optional($match->category)->name ?? 'N/A' }}</td>
-                        <td>
-                            {{ optional($match->team1Player1)->name ?? 'N/A' }} &
-                            {{ optional($match->team1Player2)->name ?? 'N/A' }}
-                        </td>
-                        <td>
-                            {{ optional($match->team2Player1)->name ?? 'N/A' }} &
-                            {{ optional($match->team2Player2)->name ?? 'N/A' }}
-                        </td>
-                        <td>{{ $match->stage ?? 'N/A' }}</td>
-                        
-                        <!-- Set 1, 2, 3 -->
-                        <td>{{ $match->set1_team1_points ?? 0 }} - {{ $match->set1_team2_points ?? 0 }}</td>
-                        <td>{{ $match->set2_team1_points ?? 0 }} - {{ $match->set2_team2_points ?? 0 }}</td>
-                        <td>{{ $match->set3_team1_points ?? 0 }} - {{ $match->set3_team2_points ?? 0 }}</td>
-
-                        <!-- Date & Time -->
-                        <td>{{ $match->match_date ?? 'N/A' }}</td>
-                        <td>{{ $match->match_time ?? 'N/A' }}</td>
-
-                        <!-- Auto-calculated winner -->
-                        <td>{{ $winner }}</td>
-                    </tr>
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <strong>Whoops!</strong> Please fix the following errors:
+            <ul>
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
                 @endforeach
-            </tbody>
-        </table>
-    </div>
+            </ul>
+        </div>
+    @endif
 
-    <!-- Pagination -->
-    <div class="d-flex justify-content-center">
-        {{ $matches->appends(request()->query())->links() }}
-    </div>
+    {{-- Tournament Lock/Unlock --}}
+    <form method="POST" action="{{ route('matches.doubles.lockTournament') }}">
+        @csrf
+        <label for="tournament_id">Select Tournament:</label>
+        <select name="tournament_id" required>
+            <option value="">Select Tournament</option>
+            @foreach($tournaments as $t)
+                <option value="{{ $t->id }}" {{ isset($lockedTournament) && $lockedTournament->id == $t->id ? 'selected' : '' }}>
+                    {{ $t->name }}
+                </option>
+            @endforeach
+        </select>
+
+        @if(isset($lockedTournament))
+            <button type="submit" formaction="{{ route('matches.doubles.unlockTournament') }}" class="btn btn-danger">Unlock Tournament</button>
+        @else
+            <button type="submit" class="btn btn-primary">Lock Tournament</button>
+        @endif
+    </form>
+
+    @if(isset($lockedTournament))
+    {{-- Create Doubles Match Form --}}
+    <form method="POST" action="{{ route('matches.doubles.store') }}">
+        @csrf
+        <input type="hidden" name="tournament_id" value="{{ $lockedTournament->id }}">
+
+        {{-- Category Dropdown – each option gets a data-type attribute based on its name --}}
+        <label for="category_id">Category:</label>
+        <select name="category_id" id="category_id" required>
+            <option value="">Select Category</option>
+            @foreach($categories as $cat)
+                <option value="{{ $cat->id }}"
+                    data-type="{{ (stripos($cat->name, 'XD') !== false) ? 'XD' : ((stripos($cat->name, 'BD') !== false) ? 'BD' : ((stripos($cat->name, 'GD') !== false) ? 'GD' : '')) }}">
+                    {{ $cat->name }}
+                </option>
+            @endforeach
+        </select>
+
+        {{-- Section for non-XD categories (BD / GD) --}}
+        <div id="non_xd_players" style="display:none; margin-top:15px;">
+            <label for="player1_id">Team 1 - Player 1:</label>
+            <select name="team1Player1" id="player1_id" required>
+                <option value="">Select Player</option>
+            </select>
+
+            <label for="player2_id">Team 1 - Player 2:</label>
+            <select name="team1Player2" id="player2_id" required>
+                <option value="">Select Player</option>
+            </select>
+
+            <label for="player3_id">Team 2 - Player 1:</label>
+            <select name="team2Player1" id="player3_id" required>
+                <option value="">Select Player</option>
+            </select>
+
+            <label for="player4_id">Team 2 - Player 2:</label>
+            <select name="team2Player2" id="player4_id" required>
+                <option value="">Select Player</option>
+            </select>
+        </div>
+
+        {{-- Section for XD category --}}
+        <div id="xd_players" style="display:none; margin-top:15px;">
+            <label for="team1_boy">Team 1 - Boy:</label>
+            <select name="team1Boy" id="team1_boy" required>
+                <option value="">Select Boy</option>
+            </select>
+
+            <label for="team1_girl">Team 1 - Girl:</label>
+            <select name="team1Girl" id="team1_girl" required>
+                <option value="">Select Girl</option>
+            </select>
+
+            <label for="team2_boy">Team 2 - Boy:</label>
+            <select name="team2Boy" id="team2_boy" required>
+                <option value="">Select Boy</option>
+            </select>
+
+            <label for="team2_girl">Team 2 - Girl:</label>
+            <select name="team2Girl" id="team2_girl" required>
+                <option value="">Select Girl</option>
+            </select>
+        </div>
+
+        <label for="stage">Stage:</label>
+        <select name="stage" required>
+            <option value="Pre Quarter Finals">Pre Quarter Finals</option>
+            <option value="Quarter Finals">Quarter Finals</option>
+            <option value="Semifinals">Semifinals</option>
+            <option value="Finals">Finals</option>
+        </select>
+
+        <label for="match_date">Match Date:</label>
+        <input type="date" name="match_date" required>
+
+        <label for="match_time">Match Time:</label>
+        <input type="time" name="match_time" required>
+
+        {{-- Set Scores for Team 1 --}}
+        <label for="set1_team1_points">Set 1 - Team 1 Points:</label>
+        <input type="number" name="set1_team1_points" min="0" value="0" required>
+
+        <label for="set2_team1_points">Set 2 - Team 1 Points:</label>
+        <input type="number" name="set2_team1_points" min="0" value="0" required>
+
+        <label for="set3_team1_points">Set 3 - Team 1 Points (Optional):</label>
+        <input type="number" name="set3_team1_points" min="0" value="0">
+
+        {{-- Set Scores for Team 2 --}}
+        <label for="set1_team2_points">Set 1 - Team 2 Points:</label>
+        <input type="number" name="set1_team2_points" min="0" value="0" required>
+
+        <label for="set2_team2_points">Set 2 - Team 2 Points:</label>
+        <input type="number" name="set2_team2_points" min="0" value="0" required>
+
+        <label for="set3_team2_points">Set 3 - Team 2 Points (Optional):</label>
+        <input type="number" name="set3_team2_points" min="0" value="0">
+
+        <button type="submit" class="btn btn-success">Add Match</button>
+    </form>
+    @endif
 </div>
+
+<!-- Include jQuery (or use your preferred method) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#category_id').change(function() {
+        var categoryId = $(this).val();
+        var categoryType = $('#category_id option:selected').data('type');
+        console.log("Selected category:", categoryId, "Type:", categoryType);
+
+        // Hide both sections initially
+        $('#non_xd_players').hide();
+        $('#xd_players').hide();
+
+        if (categoryId) {
+            $.ajax({
+                url: "{{ route('matches.doubles.filteredPlayers') }}",
+                type: "GET",
+                dataType: 'json', // expecting JSON response
+                data: { category_id: categoryId },
+                success: function(players) {
+                    console.log("Players received:", players);
+                    
+                    if (!Array.isArray(players)) {
+                        console.error("Response is not an array:", players);
+                        return;
+                    }
+                    
+                    if (categoryType === 'XD') {
+    console.log("Processing XD category.");
+    // Filter players by checking for "M" (or "MALE") and "F" (or "FEMALE")
+    let malePlayers = players.filter(function(player) {
+        let sex = player.sex ? player.sex.toString().toUpperCase() : '';
+        return sex === 'M' || sex === 'MALE';
+    });
+    let femalePlayers = players.filter(function(player) {
+        let sex = player.sex ? player.sex.toString().toUpperCase() : '';
+        return sex === 'F' || sex === 'FEMALE';
+    });
+    console.log("Male players:", malePlayers);
+    console.log("Female players:", femalePlayers);
+    
+    // Populate Team 1 - Boy dropdown
+    $('#team1_boy').empty().append('<option value="">Select Boy</option>');
+    malePlayers.forEach(function(player) {
+        $('#team1_boy').append(
+            `<option value="${player.id}">${player.name} (Age: ${player.age})</option>`
+        );
+    });
+    
+    // Populate Team 2 - Boy dropdown
+    $('#team2_boy').empty().append('<option value="">Select Boy</option>');
+    malePlayers.forEach(function(player) {
+        $('#team2_boy').append(
+            `<option value="${player.id}">${player.name} (Age: ${player.age})</option>`
+        );
+    });
+    
+    // Populate Team 1 - Girl dropdown
+    $('#team1_girl').empty().append('<option value="">Select Girl</option>');
+    femalePlayers.forEach(function(player) {
+        $('#team1_girl').append(
+            `<option value="${player.id}">${player.name} (Age: ${player.age})</option>`
+        );
+    });
+    
+    // Populate Team 2 - Girl dropdown
+    $('#team2_girl').empty().append('<option value="">Select Girl</option>');
+    femalePlayers.forEach(function(player) {
+        $('#team2_girl').append(
+            `<option value="${player.id}">${player.name} (Age: ${player.age})</option>`
+        );
+    });
+    $('#xd_players').show();
+}
+
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                    console.error("Response:", xhr.responseText);
+                    alert("Error fetching players. Please try again.");
+                }
+            });
+        } else {
+            // Clear dropdowns if no category is selected
+            $('#player1_id, #player2_id, #player3_id, #player4_id').html('<option value="">Select Player</option>');
+            $('#team1_boy, #team2_boy').html('<option value="">Select Boy</option>');
+            $('#team1_girl, #team2_girl').html('<option value="">Select Girl</option>');
+        }
+    });
+});
+</script>
+
+
+
 @endsection

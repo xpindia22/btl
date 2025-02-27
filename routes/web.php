@@ -99,6 +99,10 @@ Route::prefix('matches/singles')->group(function () {
     Route::get('/filtered-players', [MatchController::class, 'filteredPlayersDoubles'])->name('matches.doubles.filteredPlayers');
     Route::get('matches/doubles/edit/{id}', [MatchController::class, 'editDoubles'])->name('matches.doubles.edit');
 Route::post('matches/doubles/update/{id}', [MatchController::class, 'updateDoubles'])->name('matches.doubles.update');
+Route::prefix('matches/doubles')->group(function () {
+    
+    // ...other routes
+});
 
 });
 
