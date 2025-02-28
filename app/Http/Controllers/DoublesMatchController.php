@@ -24,32 +24,32 @@ class DoublesMatchController extends Controller
     {
         $user = Auth::user();
 
-        // Get available championships (tournaments)
+        // Get all tournaments (for the dropdown, presumably).
         $championships = Tournament::all();
 
-        // Get tournaments accessible by the user (for locking)
+        // Check if a tournament is "locked" in session.
         $lockedTournamentId = session('locked_tournament');
         $lockedTournament   = $lockedTournamentId ? Tournament::find($lockedTournamentId) : null;
 
-        // Get only doubles categories (BD, GD, XD) for the locked tournament.
+        // Only show doubles categories (BD, GD, XD) for the locked tournament.
         $categories = [];
         if ($lockedTournamentId) {
             $categories = Category::whereHas('tournaments', function ($q) use ($lockedTournamentId) {
-                $q->where('tournament_id', $lockedTournamentId);
-            })
-            ->where(function ($query) {
-                $query->where('name', 'LIKE', '%BD%')
-                      ->orWhere('name', 'LIKE', '%GD%')
-                      ->orWhere('name', 'LIKE', '%XD%');
-            })
-            ->get();
+                    $q->where('tournament_id', $lockedTournamentId);
+                })
+                ->where(function ($query) {
+                    $query->where('name', 'LIKE', '%BD%')
+                          ->orWhere('name', 'LIKE', '%GD%')
+                          ->orWhere('name', 'LIKE', '%XD%');
+                })
+                ->get();
         }
 
         return view('matches.doubles.create', compact('championships', 'lockedTournament', 'categories'));
     }
 
     // ----------------------------------------
-    // 2) Store Doubles Match
+    // 2) Store a New Doubles Match
     // ----------------------------------------
     public function storeDoubles(Request $request)
     {
@@ -60,8 +60,10 @@ class DoublesMatchController extends Controller
             return redirect()->back()->withErrors('You must lock a tournament before adding a match.');
         }
 
-        Log::info('Tournament locked: ' . session('locked_tournament'));
+        $lockedTournamentId = session('locked_tournament');
+        Log::info('Tournament locked: ' . $lockedTournamentId);
 
+        // Validate category
         $category = Category::find($request->input('category_id'));
         if (!$category) {
             Log::error('Category not found. ID: ' . $request->input('category_id'));
@@ -70,9 +72,11 @@ class DoublesMatchController extends Controller
 
         Log::info('Category selected: ' . $category->name);
 
+        // Determine if it's mixed doubles
         $catName = strtoupper($category->name);
         $isMixed = (strpos($catName, 'XD') !== false) || (strpos($catName, 'MIXED') !== false);
 
+        // Validation rules
         $rules = [
             'category_id'         => 'required|exists:categories,id',
             'stage'               => 'required|string',
@@ -110,19 +114,20 @@ class DoublesMatchController extends Controller
 
         try {
             $match = new Matches();
-            $match->tournament_id = session('locked_tournament');
-            $match->category_id = $validated['category_id'];
-            $match->stage = $validated['stage'];
-            $match->match_date = $validated['date'];
-            $match->match_time = $validated['match_time'];
-            $match->set1_team1_points = $validated['set1_team1_points'];
-            $match->set1_team2_points = $validated['set1_team2_points'];
-            $match->set2_team1_points = $validated['set2_team1_points'];
-            $match->set2_team2_points = $validated['set2_team2_points'];
-            $match->set3_team1_points = $validated['set3_team1_points'] ?? null;
-            $match->set3_team2_points = $validated['set3_team2_points'] ?? null;
-            $match->created_by = Auth::id();
+            $match->tournament_id       = $lockedTournamentId;
+            $match->category_id         = $validated['category_id'];
+            $match->stage               = $validated['stage'];
+            $match->match_date          = $validated['date'];
+            $match->match_time          = $validated['match_time'];
+            $match->set1_team1_points   = $validated['set1_team1_points'];
+            $match->set1_team2_points   = $validated['set1_team2_points'];
+            $match->set2_team1_points   = $validated['set2_team1_points'];
+            $match->set2_team2_points   = $validated['set2_team2_points'];
+            $match->set3_team1_points   = $validated['set3_team1_points'] ?? null;
+            $match->set3_team2_points   = $validated['set3_team2_points'] ?? null;
+            $match->created_by          = Auth::id();
 
+            // Assign players depending on if it's Mixed Doubles or not
             if ($isMixed) {
                 $match->team1_player1_id = $validated['team1_male'];
                 $match->team1_player2_id = $validated['team1_female'];
@@ -160,11 +165,13 @@ class DoublesMatchController extends Controller
         $playersQuery = Player::query();
         $catName = strtoupper($category->name);
 
+        // If BD, only male players. If GD, only female players.
         if (strpos($catName, 'BD') !== false) {
             $playersQuery->where('sex', 'M');
         } elseif (strpos($catName, 'GD') !== false) {
             $playersQuery->where('sex', 'F');
         }
+        // If XD or something else, you can allow all sexes.
 
         return response()->json($playersQuery->select('id', 'name', 'age', 'sex')->get());
     }
@@ -188,283 +195,234 @@ class DoublesMatchController extends Controller
         return redirect()->back()->with('success', 'Championship unlocked.');
     }
 
-
+    // ----------------------------------------
+    // 6) Index (Read-Only)
+    // ----------------------------------------
     public function index(Request $request)
-{
-    // Fetch all tournaments and players
-    $tournaments = Tournament::all();
-    $players = Player::all();
+    {
+        $tournaments = Tournament::all();
+        $players = Player::all();
 
-    // Get selected filters
-    $filterTournament = $request->input('filter_tournament', 'all');
-    $filterCategory = $request->input('filter_category', 'all');
-    $filterPlayer = $request->input('filter_player', 'all');
-    $filterDate = $request->input('filter_date', '');
-    $filterStage = $request->input('filter_stage', 'all');
-    $filterResults = $request->input('filter_results', 'all');
+        // Filters
+        $filterTournament = $request->input('filter_tournament', 'all');
+        $filterCategory   = $request->input('filter_category', 'all');
+        $filterPlayer     = $request->input('filter_player', 'all');
+        $filterDate       = $request->input('filter_date', '');
+        $filterStage      = $request->input('filter_stage', 'all');
+        $filterResults    = $request->input('filter_results', 'all');
 
-    // Query matches
-    $matchesQuery = Matches::with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2'])
-        ->whereNull('deleted_at');
+        $matchesQuery = Matches::with([
+            'tournament', 'category',
+            'team1Player1', 'team1Player2', 
+            'team2Player1', 'team2Player2'
+        ])->whereNull('deleted_at');
 
-    // Apply filters
-    if ($filterTournament !== 'all') {
-        $matchesQuery->where('tournament_id', $filterTournament);
+        // Apply filters
+        if ($filterTournament !== 'all') {
+            $matchesQuery->where('tournament_id', $filterTournament);
+        }
+
+        if ($filterCategory !== 'all') {
+            $matchesQuery->whereHas('category', function ($query) use ($filterCategory) {
+                $query->where('name', 'LIKE', "%{$filterCategory}%");
+            });
+        }
+
+        if ($filterPlayer !== 'all') {
+            $matchesQuery->where(function ($query) use ($filterPlayer) {
+                $query->where('team1_player1_id', $filterPlayer)
+                      ->orWhere('team1_player2_id', $filterPlayer)
+                      ->orWhere('team2_player1_id', $filterPlayer)
+                      ->orWhere('team2_player2_id', $filterPlayer);
+            });
+        }
+
+        if (!empty($filterDate)) {
+            $matchesQuery->whereDate('match_date', $filterDate);
+        }
+
+        if ($filterStage !== 'all') {
+            $matchesQuery->where('stage', $filterStage);
+        }
+
+        // Results filter
+        if ($filterResults !== 'all') {
+            $matchesQuery->where(function ($query) use ($filterResults) {
+                if ($filterResults === 'Team 1') {
+                    // Team 1 more sets than Team 2
+                    $query->whereRaw("
+                        (set1_team1_points > set1_team2_points) +
+                        (set2_team1_points > set2_team2_points) +
+                        (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
+                        >
+                        (set1_team2_points > set1_team1_points) +
+                        (set2_team2_points > set2_team1_points) +
+                        (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
+                    ");
+                } elseif ($filterResults === 'Team 2') {
+                    // Team 2 more sets than Team 1
+                    $query->whereRaw("
+                        (set1_team2_points > set1_team1_points) +
+                        (set2_team2_points > set2_team1_points) +
+                        (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
+                        >
+                        (set1_team1_points > set1_team2_points) +
+                        (set2_team1_points > set2_team2_points) +
+                        (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
+                    ");
+                } elseif ($filterResults === 'Draw') {
+                    // All sets equal
+                    $query->whereRaw("
+                        (set1_team1_points = set1_team2_points) +
+                        (set2_team1_points = set2_team2_points) +
+                        (IFNULL(set3_team1_points, 0) = IFNULL(set3_team2_points, 0)) = 3
+                    ");
+                }
+            });
+        }
+
+        // Fetch results
+        $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
+
+        return view('matches.doubles.index', compact(
+            'matches', 'tournaments', 'players',
+            'filterTournament', 'filterCategory', 'filterPlayer',
+            'filterDate', 'filterStage', 'filterResults'
+        ));
     }
 
-    if ($filterCategory !== 'all') {
-        $matchesQuery->whereHas('category', function ($query) use ($filterCategory) {
-            $query->where('name', 'LIKE', "%{$filterCategory}%");
-        });
+    // ----------------------------------------
+    // 7) indexWithEdit (Inline Edit View)
+    // ----------------------------------------
+    public function indexWithEdit(Request $request)
+    {
+        $tournaments = Tournament::all();
+        $players = Player::all();
+
+        $filterTournament = $request->input('filter_tournament', 'all');
+        $filterCategory   = $request->input('filter_category', 'all');
+        $filterPlayer     = $request->input('filter_player', 'all');
+        $filterDate       = $request->input('filter_date', '');
+        $filterStage      = $request->input('filter_stage', 'all');
+        $filterResults    = $request->input('filter_results', 'all');
+
+        $matchesQuery = Matches::with([
+            'tournament', 'category',
+            'team1Player1', 'team1Player2',
+            'team2Player1', 'team2Player2'
+        ])->whereNull('deleted_at');
+
+        // Apply filters
+        if ($filterTournament !== 'all') {
+            $matchesQuery->where('tournament_id', $filterTournament);
+        }
+
+        if ($filterCategory !== 'all') {
+            $matchesQuery->whereHas('category', function ($query) use ($filterCategory) {
+                $query->where('name', 'LIKE', "%{$filterCategory}%");
+            });
+        }
+
+        if ($filterPlayer !== 'all') {
+            $matchesQuery->where(function ($query) use ($filterPlayer) {
+                $query->where('team1_player1_id', $filterPlayer)
+                      ->orWhere('team1_player2_id', $filterPlayer)
+                      ->orWhere('team2_player1_id', $filterPlayer)
+                      ->orWhere('team2_player2_id', $filterPlayer);
+            });
+        }
+
+        if (!empty($filterDate)) {
+            $matchesQuery->whereDate('match_date', $filterDate);
+        }
+
+        if ($filterStage !== 'all') {
+            $matchesQuery->where('stage', $filterStage);
+        }
+
+        if ($filterResults !== 'all') {
+            $matchesQuery->where(function ($query) use ($filterResults) {
+                if ($filterResults === 'Team 1') {
+                    $query->whereRaw("
+                        (set1_team1_points > set1_team2_points) +
+                        (set2_team1_points > set2_team2_points) +
+                        (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
+                        >
+                        (set1_team2_points > set1_team1_points) +
+                        (set2_team2_points > set2_team1_points) +
+                        (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
+                    ");
+                } elseif ($filterResults === 'Team 2') {
+                    $query->whereRaw("
+                        (set1_team2_points > set1_team1_points) +
+                        (set2_team2_points > set2_team1_points) +
+                        (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
+                        >
+                        (set1_team1_points > set1_team2_points) +
+                        (set2_team1_points > set2_team2_points) +
+                        (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
+                    ");
+                } elseif ($filterResults === 'Draw') {
+                    $query->whereRaw("
+                        (set1_team1_points = set1_team2_points) +
+                        (set2_team1_points = set2_team2_points) +
+                        (IFNULL(set3_team1_points, 0) = IFNULL(set3_team2_points, 0)) = 3
+                    ");
+                }
+            });
+        }
+
+        $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
+
+        return view('matches.doubles.edit', compact(
+            'matches', 'tournaments', 'players',
+            'filterTournament', 'filterCategory', 'filterPlayer',
+            'filterDate', 'filterStage', 'filterResults'
+        ));
     }
 
-    if ($filterPlayer !== 'all') {
-        $matchesQuery->where(function ($query) use ($filterPlayer) {
-            $query->where('team1_player1_id', $filterPlayer)
-                  ->orWhere('team1_player2_id', $filterPlayer)
-                  ->orWhere('team2_player1_id', $filterPlayer)
-                  ->orWhere('team2_player2_id', $filterPlayer);
-        });
+    // ----------------------------------------
+    // 8) Update (PUT)
+    // ----------------------------------------
+    public function update(Request $request, $id)
+    {
+        $match = Matches::findOrFail($id);
+
+        // Validate
+        $validated = $request->validate([
+            'match_date' => 'required|date',
+            'match_time' => 'required',
+            'stage'      => 'required|string',
+            'set1_team1_points' => 'nullable|integer',
+            'set1_team2_points' => 'nullable|integer',
+            'set2_team1_points' => 'nullable|integer',
+            'set2_team2_points' => 'nullable|integer',
+            'set3_team1_points' => 'nullable|integer',
+            'set3_team2_points' => 'nullable|integer',
+        ]);
+
+        // Update
+        $match->update($validated);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Match updated successfully!');
     }
 
-    if (!empty($filterDate)) {
-        $matchesQuery->whereDate('match_date', $filterDate);
+    // ----------------------------------------
+    // 9) Soft Delete (DELETE)
+    // ----------------------------------------
+    public function softDelete($id)
+    {
+        $match = Matches::find($id);
+        if (!$match) {
+            return redirect()->back()->withErrors('Match not found.');
+        }
+
+        $match->delete(); // Soft delete the match
+
+        return redirect()
+            ->route('matches.doubles.edit')
+            ->with('success', 'Match soft deleted successfully!');
     }
-
-    if ($filterStage !== 'all') {
-        $matchesQuery->where('stage', $filterStage);
-    }
-
-    // **Fix: Apply Results Filter**
-    if ($filterResults !== 'all') {
-        $matchesQuery->where(function ($query) use ($filterResults) {
-            if ($filterResults === 'Team 1') {
-                $query->whereRaw("
-                    (set1_team1_points > set1_team2_points) +
-                    (set2_team1_points > set2_team2_points) +
-                    (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
-                    >
-                    (set1_team2_points > set1_team1_points) +
-                    (set2_team2_points > set2_team1_points) +
-                    (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
-                ");
-            } elseif ($filterResults === 'Team 2') {
-                $query->whereRaw("
-                    (set1_team2_points > set1_team1_points) +
-                    (set2_team2_points > set2_team1_points) +
-                    (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
-                    >
-                    (set1_team1_points > set1_team2_points) +
-                    (set2_team1_points > set2_team2_points) +
-                    (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
-                ");
-            } elseif ($filterResults === 'Draw') {
-                $query->whereRaw("
-                    (set1_team1_points = set1_team2_points) +
-                    (set2_team1_points = set2_team2_points) +
-                    (IFNULL(set3_team1_points, 0) = IFNULL(set3_team2_points, 0)) = 3
-                ");
-            }
-        });
-    }
-
-    // Fetch matches with pagination
-    $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
-
-    return view('matches.doubles.index', compact(
-        'matches', 'tournaments', 'players', 'filterTournament', 'filterCategory', 'filterPlayer', 'filterDate', 'filterStage', 'filterResults'
-    ));
-}
-public function indexWithEdit(Request $request)
-{
-    // Fetch all tournaments and players
-    $tournaments = Tournament::all();
-    $players = Player::all();
-
-    // Get selected filters
-    $filterTournament = $request->input('filter_tournament', 'all');
-    $filterCategory = $request->input('filter_category', 'all');
-    $filterPlayer = $request->input('filter_player', 'all');
-    $filterDate = $request->input('filter_date', '');
-    $filterStage = $request->input('filter_stage', 'all');
-    $filterResults = $request->input('filter_results', 'all');
-
-    // Query matches
-    $matchesQuery = Matches::with(['tournament', 'category', 'team1Player1', 'team1Player2', 'team2Player1', 'team2Player2'])
-        ->whereNull('deleted_at')
-        ->whereHas('category', function ($query) {
-            $query->where('name', 'LIKE', '%BD%')
-                  ->orWhere('name', 'LIKE', '%GD%')
-                  ->orWhere('name', 'LIKE', '%XD%');
-        });
-
-    // Apply filters
-    if ($filterTournament !== 'all') {
-        $matchesQuery->where('tournament_id', $filterTournament);
-    }
-
-    if ($filterCategory !== 'all') {
-        $matchesQuery->whereHas('category', function ($query) use ($filterCategory) {
-            $query->where('name', 'LIKE', "%{$filterCategory}%");
-        });
-    }
-
-    if ($filterPlayer !== 'all') {
-        $matchesQuery->where(function ($query) use ($filterPlayer) {
-            $query->where('team1_player1_id', $filterPlayer)
-                  ->orWhere('team1_player2_id', $filterPlayer)
-                  ->orWhere('team2_player1_id', $filterPlayer)
-                  ->orWhere('team2_player2_id', $filterPlayer);
-        });
-    }
-
-    if (!empty($filterDate)) {
-        $matchesQuery->whereDate('match_date', $filterDate);
-    }
-
-    if ($filterStage !== 'all') {
-        $matchesQuery->where('stage', $filterStage);
-    }
-
-    // Apply Results Filter
-    if ($filterResults !== 'all') {
-        $matchesQuery->where(function ($query) use ($filterResults) {
-            if ($filterResults === 'Team 1') {
-                $query->whereRaw("
-                    (set1_team1_points > set1_team2_points) +
-                    (set2_team1_points > set2_team2_points) +
-                    (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
-                    >
-                    (set1_team2_points > set1_team1_points) +
-                    (set2_team2_points > set2_team1_points) +
-                    (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
-                ");
-            } elseif ($filterResults === 'Team 2') {
-                $query->whereRaw("
-                    (set1_team2_points > set1_team1_points) +
-                    (set2_team2_points > set2_team1_points) +
-                    (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
-                    >
-                    (set1_team1_points > set1_team2_points) +
-                    (set2_team1_points > set2_team2_points) +
-                    (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
-                ");
-            } elseif ($filterResults === 'Draw') {
-                $query->whereRaw("
-                    (set1_team1_points = set1_team2_points) +
-                    (set2_team1_points = set2_team2_points) +
-                    (IFNULL(set3_team1_points, 0) = IFNULL(set3_team2_points, 0)) = 3
-                ");
-            }
-        });
-    }
-
-    // Fetch matches with pagination
-    $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
-
-    return view('matches.doubles.edit', compact(
-        'matches', 'tournaments', 'players', 'filterTournament', 'filterCategory', 'filterPlayer', 'filterDate', 'filterStage', 'filterResults'
-    ));
-}
-
-
-public function update(Request $request, $id)
-{
-    $match = Matches::findOrFail($id);
-
-    // Check if user can edit this match
-    if (!Auth::user()->canModerateMatch($match)) {
-        abort(403, 'You do not have permission to update this match.');
-    }
-
-    $request->validate([
-        'stage' => 'required|string',
-        'match_date' => 'required|date',
-        'match_time' => 'required|string',
-        'set1_player1_points' => 'nullable|integer',
-        'set1_player2_points' => 'nullable|integer',
-        'set2_player1_points' => 'nullable|integer',
-        'set2_player2_points' => 'nullable|integer',
-        'set3_player1_points' => 'nullable|integer',
-        'set3_player2_points' => 'nullable|integer',
-    ]);
-
-    $match->update($request->all());
-
-    return redirect()->route('matches.index')->with('success', 'Match updated successfully.');
-}
-
-public function delete($id)
-{
-    $match = Matches::findOrFail($id);
-
-    // Check if user can delete this match
-    if (!Auth::user()->canModerateMatch($match)) {
-        abort(403, 'You do not have permission to delete this match.');
-    }
-
-    $match->delete();
-
-    return redirect()->route('matches.index')->with('success', 'Match deleted successfully.');
-}
-
-public function softDelete($id)
-{
-    $match = Matches::find($id);
-
-    if (!$match) {
-        return response()->json(['success' => false, 'message' => 'Match not found.'], 404);
-    }
-
-    $match->delete(); // Soft delete the match
-
-    return response()->json(['success' => true, 'message' => 'Match soft deleted successfully.']);
-}
-
-
-public function updateMatch(Request $request, $id)
-{
-    $match = Matches::find($id);
-
-    if (!$match) {
-        return response()->json(['success' => false, 'message' => 'Match not found.'], 404);
-    }
-
-    // Validate input
-    $validatedData = $request->validate([
-        'stage' => 'nullable|string',
-        'match_date' => 'nullable|date',
-        'match_time' => 'nullable|string',
-        'set1_team1_points' => 'nullable|integer',
-        'set1_team2_points' => 'nullable|integer',
-        'set2_team1_points' => 'nullable|integer',
-        'set2_team2_points' => 'nullable|integer',
-        'set3_team1_points' => 'nullable|integer',
-        'set3_team2_points' => 'nullable|integer',
-    ]);
-
-    // Update match fields
-    $match->update($validatedData);
-
-    // Recalculate winner
-    $team1_sets = ($match->set1_team1_points > $match->set1_team2_points) +
-                  ($match->set2_team1_points > $match->set2_team2_points) +
-                  ($match->set3_team1_points > $match->set3_team2_points);
-    $team2_sets = ($match->set1_team2_points > $match->set1_team1_points) +
-                  ($match->set2_team2_points > $match->set2_team1_points) +
-                  ($match->set3_team2_points > $match->set3_team1_points);
-
-    $match->winner = $team1_sets > $team2_sets ? 'Team 1' : ($team2_sets > $team1_sets ? 'Team 2' : 'Draw');
-    $match->save();
-
-    return response()->json(['success' => true, 'winner' => $match->winner]);
-}
-
-private function canModerateMatch($match)
-{
-    $user = Auth::user();
-    return $user->id === $match->moderated_by || 
-           $user->moderatedTournaments()->where('id', $match->tournament_id)->exists();
-}
-
 }
