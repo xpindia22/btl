@@ -1,129 +1,126 @@
+doubles index
 @extends('layouts.app')
 
 @section('content')
 <div class="container">
-    <h1 class="text-center">Doubles Matches (Read Only)</h1>
+    <h1>Doubles Matches (BD, GD, XD)</h1>
 
     @if(session('success'))
-        <div class="alert alert-success text-center">
-            {{ session('success') }}
-        </div>
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <div class="table-responsive">
-        <table class="table table-bordered text-center">
-            <thead>
-                <tr>
-                    <!-- We'll have 2 rows for sets, so let's merge some headers via rowSpan -->
-                    <th rowspan="2">ID</th>
-                    <th rowspan="2">Tournament</th>
-                    <th rowspan="2">Category</th>
-                    
-                    <!-- This will label each team row -->
-                    <th>Team</th>
-                    
-                    <!-- We'll have Set1, Set2, Set3 columns for each row (Team1 & Team2) -->
-                    <th colspan="3">Set Scores</th>
-                    
-                    <th rowspan="2">Date</th>
-                    <th rowspan="2">Time</th>
-                    <th rowspan="2">Winner</th>
-                </tr>
-                <tr>
-                    <!-- Second row of headers: "Team" is already in the row above 
-                         Now we specify which sets each row will show -->
-                    <th>Team</th>
-                    <th>Set 1</th>
-                    <th>Set 2</th>
-                    <th>Set 3</th>
-                </tr>
-            </thead>
+    <!-- Filters Row -->
+    <form method="GET" action="{{ route('matches.doubles.index') }}" class="mb-3">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Tournament Filter -->
+            <label for="filter_tournament">Tournament:</label>
+            <select name="filter_tournament" id="filter_tournament" class="form-control w-auto">
+                <option value="all" {{ request('filter_tournament', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                @foreach($tournaments as $tournament)
+                    <option value="{{ $tournament->id }}" {{ request('filter_tournament') == $tournament->id ? 'selected' : '' }}>
+                        {{ $tournament->name }}
+                    </option>
+                @endforeach
+            </select>
 
-            <tbody>
-            @forelse($matches as $match)
-                @php
-                    // Auto-calculate winner (2 out of 3 sets)
-                    $team1SetsWon = 0;
-                    $team2SetsWon = 0;
+            <!-- Player Filter -->
+            <label for="filter_player">Player:</label>
+            <select name="filter_player" id="filter_player" class="form-control w-auto">
+                <option value="all" {{ request('filter_player', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                @foreach($players as $player)
+                    <option value="{{ $player->id }}" {{ request('filter_player') == $player->id ? 'selected' : '' }}>
+                        {{ $player->name }}
+                    </option>
+                @endforeach
+            </select>
 
-                    // Set 1
-                    if(($match->set1_team1_points ?? 0) > ($match->set1_team2_points ?? 0)) {
-                        $team1SetsWon++;
-                    } elseif(($match->set1_team1_points ?? 0) < ($match->set1_team2_points ?? 0)) {
-                        $team2SetsWon++;
-                    }
+            <!-- Category Filter -->
+            <label for="filter_category">Category:</label>
+            <select name="filter_category" id="filter_category" class="form-control w-auto">
+                <option value="all" {{ request('filter_category', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                <option value="BD" {{ request('filter_category') == 'BD' ? 'selected' : '' }}>Boys Doubles (BD)</option>
+                <option value="GD" {{ request('filter_category') == 'GD' ? 'selected' : '' }}>Girls Doubles (GD)</option>
+                <option value="XD" {{ request('filter_category') == 'XD' ? 'selected' : '' }}>Mixed Doubles (XD)</option>
+            </select>
 
-                    // Set 2
-                    if(($match->set2_team1_points ?? 0) > ($match->set2_team2_points ?? 0)) {
-                        $team1SetsWon++;
-                    } elseif(($match->set2_team1_points ?? 0) < ($match->set2_team2_points ?? 0)) {
-                        $team2SetsWon++;
-                    }
+            <!-- Date Filter -->
+            <label for="filter_date">Date:</label>
+            <input type="date" name="filter_date" id="filter_date" class="form-control w-auto" value="{{ request('filter_date') }}">
 
-                    // Set 3 (only if both are not null)
-                    if(!is_null($match->set3_team1_points) && !is_null($match->set3_team2_points)) {
-                        if($match->set3_team1_points > $match->set3_team2_points) {
-                            $team1SetsWon++;
-                        } elseif($match->set3_team1_points < $match->set3_team2_points) {
-                            $team2SetsWon++;
-                        }
-                    }
+            <!-- Stage Filter -->
+            <label for="filter_stage">Stage:</label>
+            <select name="filter_stage" id="filter_stage" class="form-control w-auto">
+                <option value="all" {{ request('filter_stage', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                <option value="Pre Quarter Finals" {{ request('filter_stage') == 'Pre Quarter Finals' ? 'selected' : '' }}>Pre Quarter Finals</option>
+                <option value="Quarter Finals" {{ request('filter_stage') == 'Quarter Finals' ? 'selected' : '' }}>Quarter Finals</option>
+                <option value="Semifinals" {{ request('filter_stage') == 'Semifinals' ? 'selected' : '' }}>Semifinals</option>
+                <option value="Finals" {{ request('filter_stage') == 'Finals' ? 'selected' : '' }}>Finals</option>
+            </select>
 
-                    // Determine winner
-                    $winner = 'TBD';
-                    if($team1SetsWon > $team2SetsWon) {
-                        $winner = optional($match->team1Player1)->name . ' & ' .
-                                  optional($match->team1Player2)->name;
-                    } elseif($team2SetsWon > $team1SetsWon) {
-                        $winner = optional($match->team2Player1)->name . ' & ' .
-                                  optional($match->team2Player2)->name;
-                    }
-                @endphp
+            <!-- Results Filter -->
+            <label for="filter_results">Results:</label>
+            <select name="filter_results" id="filter_results" class="form-control w-auto">
+                <option value="all" {{ request('filter_results', 'all') == 'all' ? 'selected' : '' }}>All</option>
+                <option value="Team 1" {{ request('filter_results') == 'Team 1' ? 'selected' : '' }}>Team 1 Won</option>
+                <option value="Team 2" {{ request('filter_results') == 'Team 2' ? 'selected' : '' }}>Team 2 Won</option>
+                <option value="Draw" {{ request('filter_results') == 'Draw' ? 'selected' : '' }}>Draw</option>
+            </select>
 
-                <!-- FIRST ROW: Team 1 -->
-                <tr>
-                    <!-- We need rowSpan=2 so we can display T1 & T2 side by side in 2 rows. -->
-                    <td rowspan="2">{{ $match->id }}</td>
-                    <td rowspan="2">{{ optional($match->tournament)->name ?? 'N/A' }}</td>
-                    <td rowspan="2">{{ optional($match->category)->name ?? 'N/A' }}</td>
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+        </div>
+    </form>
 
-                    <!-- Team 1 name(s) -->
-                    <td>
-                        {{ optional($match->team1Player1)->name ?? 'N/A' }} &
-                        {{ optional($match->team1Player2)->name ?? 'N/A' }}
-                    </td>
+    <!-- Matches Table -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Match ID</th>
+                <th>Tournament</th>
+                <th>Category</th>
+                <th>Team 1</th>
+                <th>Team 2</th>
+                <th>Stage</th>
+                <th>Match Date</th>
+                <th>Match Time</th>
+                <th>Set 1 (T1 - T2)</th>
+                <th>Set 2 (T1 - T2)</th>
+                <th>Set 3 (T1 - T2)</th>
+                <th>Winner</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($matches as $match)
+            <tr>
+                <td>{{ $match->id }}</td>
+                <td>{{ $match->tournament->name ?? 'N/A' }}</td>
+                <td>{{ $match->category->name ?? 'N/A' }}</td>
+                <td>{{ $match->team1Player1->name ?? 'N/A' }} & {{ $match->team1Player2->name ?? 'N/A' }}</td>
+                <td>{{ $match->team2Player1->name ?? 'N/A' }} & {{ $match->team2Player2->name ?? 'N/A' }}</td>
+                <td>{{ $match->stage }}</td>
+                <td>{{ $match->match_date }}</td>
+                <td>{{ $match->match_time }}</td>
+                <td>{{ $match->set1_team1_points }} - {{ $match->set1_team2_points }}</td>
+                <td>{{ $match->set2_team1_points }} - {{ $match->set2_team2_points }}</td>
+                <td>
+                    {{ $match->set3_team1_points !== null ? $match->set3_team1_points : 'N/A' }} - 
+                    {{ $match->set3_team2_points !== null ? $match->set3_team2_points : 'N/A' }}
+                </td>
+                <td>
+                    @php
+                        $team1_sets = ($match->set1_team1_points > $match->set1_team2_points) + ($match->set2_team1_points > $match->set2_team2_points) + ($match->set3_team1_points > $match->set3_team2_points);
+                        $team2_sets = ($match->set1_team2_points > $match->set1_team1_points) + ($match->set2_team2_points > $match->set2_team1_points) + ($match->set3_team2_points > $match->set3_team1_points);
+                    @endphp
+                    {{ $team1_sets > $team2_sets ? 'Team 1' : ($team2_sets > $team1_sets ? 'Team 2' : 'Draw') }}
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
 
-                    <!-- Set 1/2/3 for Team 1 -->
-                    <td>{{ $match->set1_team1_points ?? 0 }}</td>
-                    <td>{{ $match->set2_team1_points ?? 0 }}</td>
-                    <td>{{ $match->set3_team1_points ?? 0 }}</td>
-
-                    <!-- rowSpan for date/time/winner so they appear in middle for both teams -->
-                    <td rowspan="2">{{ $match->match_date ?? 'N/A' }}</td>
-                    <td rowspan="2">
-                        <!-- MATCH TIME from the DB column -->
-                        {{ $match->match_time ?? 'N/A' }}
-                    </td>
-                    <td rowspan="2">{{ $winner }}</td>
-                </tr>
-
-                <!-- SECOND ROW: Team 2 -->
-                <tr>
-                    <td>
-                        {{ optional($match->team2Player1)->name ?? 'N/A' }} &
-                        {{ optional($match->team2Player2)->name ?? 'N/A' }}
-                    </td>
-                    <td>{{ $match->set1_team2_points ?? 0 }}</td>
-                    <td>{{ $match->set2_team2_points ?? 0 }}</td>
-                    <td>{{ $match->set3_team2_points ?? 0 }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="10">No matches found.</td>
-                </tr>
-            @endforelse
-            </tbody>
-        </table>
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center">
+        {{ $matches->appends(request()->query())->links() }}
     </div>
+
 </div>
 @endsection
