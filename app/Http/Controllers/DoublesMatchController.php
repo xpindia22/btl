@@ -164,17 +164,24 @@ class DoublesMatchController extends Controller
 
         $playersQuery = Player::query();
         $catName = strtoupper($category->name);
+        preg_match('/(\d+)/', $catName, $matches);
+        $ageLimit = isset($matches[1]) ? (int) $matches[1] : null;
 
-        // If BD, only male players. If GD, only female players.
+        if (strpos($catName, 'SENIOR') !== false && $ageLimit) {
+            $playersQuery->where('age', '>=', $ageLimit);
+        } elseif (preg_match('/U(\d+)/', $catName, $matches) && isset($matches[1])) {
+            $playersQuery->where('age', '<', (int)$matches[1]);
+        }
+
         if (strpos($catName, 'BD') !== false) {
             $playersQuery->where('sex', 'M');
         } elseif (strpos($catName, 'GD') !== false) {
             $playersQuery->where('sex', 'F');
         }
-        // If XD or something else, allow all sexes.
 
         return response()->json($playersQuery->select('id', 'name', 'age', 'sex')->get());
     }
+
 
     // ----------------------------------------
     // 4) Lock Tournament
