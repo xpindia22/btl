@@ -189,4 +189,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
+<!-- Pagination -->
+<div class="d-flex justify-content-center">
+    {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
+</div>
 @endsection

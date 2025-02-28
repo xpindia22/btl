@@ -71,4 +71,8 @@
         </tbody>
     </table>
 </div>
+<!-- Pagination -->
+<div class="d-flex justify-content-center">
+    {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
+</div>
 @endsection

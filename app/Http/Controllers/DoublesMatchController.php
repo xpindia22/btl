@@ -171,7 +171,7 @@ class DoublesMatchController extends Controller
         } elseif (strpos($catName, 'GD') !== false) {
             $playersQuery->where('sex', 'F');
         }
-        // If XD or something else, you can allow all sexes.
+        // If XD or something else, allow all sexes.
 
         return response()->json($playersQuery->select('id', 'name', 'age', 'sex')->get());
     }
@@ -196,7 +196,7 @@ class DoublesMatchController extends Controller
     }
 
     // ----------------------------------------
-    // 6) Index (Read-Only)
+    // 6) Index (Read-Only View)
     // ----------------------------------------
     public function index(Request $request)
     {
@@ -217,7 +217,14 @@ class DoublesMatchController extends Controller
             'team2Player1', 'team2Player2'
         ])->whereNull('deleted_at');
 
-        // Apply filters
+        // Restrict to doubles categories (only those containing BD, GD, or XD)
+        $matchesQuery->whereHas('category', function ($query) {
+            $query->where('name', 'LIKE', '%BD%')
+                  ->orWhere('name', 'LIKE', '%GD%')
+                  ->orWhere('name', 'LIKE', '%XD%');
+        });
+
+        // Apply additional filters
         if ($filterTournament !== 'all') {
             $matchesQuery->where('tournament_id', $filterTournament);
         }
@@ -249,7 +256,6 @@ class DoublesMatchController extends Controller
         if ($filterResults !== 'all') {
             $matchesQuery->where(function ($query) use ($filterResults) {
                 if ($filterResults === 'Team 1') {
-                    // Team 1 more sets than Team 2
                     $query->whereRaw("
                         (set1_team1_points > set1_team2_points) +
                         (set2_team1_points > set2_team2_points) +
@@ -260,7 +266,6 @@ class DoublesMatchController extends Controller
                         (IFNULL(set3_team2_points, 0) > IFNULL(set3_team1_points, 0))
                     ");
                 } elseif ($filterResults === 'Team 2') {
-                    // Team 2 more sets than Team 1
                     $query->whereRaw("
                         (set1_team2_points > set1_team1_points) +
                         (set2_team2_points > set2_team1_points) +
@@ -271,7 +276,6 @@ class DoublesMatchController extends Controller
                         (IFNULL(set3_team1_points, 0) > IFNULL(set3_team2_points, 0))
                     ");
                 } elseif ($filterResults === 'Draw') {
-                    // All sets equal
                     $query->whereRaw("
                         (set1_team1_points = set1_team2_points) +
                         (set2_team1_points = set2_team2_points) +
@@ -312,7 +316,14 @@ class DoublesMatchController extends Controller
             'team2Player1', 'team2Player2'
         ])->whereNull('deleted_at');
 
-        // Apply filters
+        // Restrict to doubles categories
+        $matchesQuery->whereHas('category', function ($query) {
+            $query->where('name', 'LIKE', '%BD%')
+                  ->orWhere('name', 'LIKE', '%GD%')
+                  ->orWhere('name', 'LIKE', '%XD%');
+        });
+
+        // Apply additional filters
         if ($filterTournament !== 'all') {
             $matchesQuery->where('tournament_id', $filterTournament);
         }
