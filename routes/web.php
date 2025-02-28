@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MatchController;
+use App\Http\Controllers\DoublesMatchController;
+
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\ResultsController;
@@ -88,25 +90,7 @@ Route::prefix('matches/singles')->group(function () {
     // ✅ Delete Singles Match
     Route::delete('/{match}/delete', [MatchController::class, 'deleteSingles'])->name('matches.singles.delete');
 });
-
- // Doubles Matches Routes (BD, GD, XD)
- Route::prefix('matches/doubles')->group(function () {
-    Route::get('/', [MatchController::class, 'indexDoubles'])->name('matches.doubles.index');
-    Route::get('/create', [MatchController::class, 'createDoubles'])->name('matches.doubles.create');
-    // Route::post('/store', [MatchController::class, 'storeDoubles'])->name('matches.doubles.store');
-    Route::post('/store', [MatchController::class, 'storeDoubles'])->name('matches.doubles.store');
-
-    Route::post('/lock-tournament', [MatchController::class, 'lockDoublesTournament'])->name('matches.doubles.lockTournament');
-    Route::post('/unlock-tournament', [MatchController::class, 'unlockDoublesTournament'])->name('matches.doubles.unlockTournament');
-    Route::get('/filtered-players', [MatchController::class, 'filteredPlayersDoubles'])->name('matches.doubles.filteredPlayers');
-    Route::get('matches/doubles/edit/{id}', [MatchController::class, 'editDoubles'])->name('matches.doubles.edit');
-Route::post('matches/doubles/update/{id}', [MatchController::class, 'updateDoubles'])->name('matches.doubles.update');
-Route::prefix('matches/doubles')->group(function () {
-    
-    // ...other routes
-});
-
-});
+ 
 
 // Results Management
 Route::prefix('results')->group(function () {
@@ -119,3 +103,52 @@ Route::prefix('results')->group(function () {
     // Categories Management
     Route::resource('categories', CategoryController::class)->except(['show']);});
 
+    //doubles old git workign
+     // -------------------------------------------------
+    // DOUBLES ROUTES
+    // ------------------------------------------------
+
+// ...
+
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('matches/doubles')->group(function () {
+        
+        // 1) View all doubles matches (read-only)
+        Route::get('/', [DoublesMatchController::class, 'index'])
+             ->name('matches.doubles.index');
+
+        // 2) View doubles matches with edit/delete
+        Route::get('/edit', [DoublesMatchController::class, 'indexWithEdit'])
+             ->name('matches.doubles.edit');
+
+        // 3) Create a new doubles match
+        Route::get('/create', [DoublesMatchController::class, 'createDoubles'])
+             ->name('matches.doubles.create');
+
+        // 4) Store a new doubles match
+        Route::post('/store', [DoublesMatchController::class, 'storeDoubles'])
+             ->name('matches.doubles.store');
+
+        // 5) Get filtered players based on BD/GD/XD
+        Route::get('/filtered-players', [DoublesMatchController::class, 'getFilteredPlayers'])
+             ->name('matches.doubles.filteredPlayers');
+
+        // 6) Lock/unlock a tournament
+        Route::post('/lock', [DoublesMatchController::class, 'lockTournament'])
+             ->name('matches.doubles.lockTournament');
+        Route::post('/unlock', [DoublesMatchController::class, 'unlockTournament'])
+             ->name('matches.doubles.unlockTournament');
+
+        // 7) Update multiple matches
+        Route::put('/update-multiple', [DoublesMatchController::class, 'updateMultiple'])
+             ->name('matches.doubles.updateMultiple');
+
+        // 8) Update a single match
+        Route::put('/{id}/update', [DoublesMatchController::class, 'update'])
+             ->name('matches.doubles.update');
+
+        // 9) Soft delete a match
+        Route::delete('/{id}/delete', [DoublesMatchController::class, 'softDelete'])
+             ->name('matches.doubles.delete');
+    });
+});

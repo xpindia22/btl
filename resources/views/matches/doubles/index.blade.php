@@ -1,4 +1,3 @@
-doubles index
 @extends('layouts.app')
 
 @section('content')
