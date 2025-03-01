@@ -9,6 +9,16 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login') }}">
             @csrf
 
@@ -16,19 +26,21 @@
             <div class="input-row">
                 <div class="input-group">
                     <label for="email">Email</label> 
-                    <input type="email" name="email" required autofocus>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus>
                 </div>
                 <div class="input-group">
                     <label for="password">Password</label> 
-                    <input type="password" name="password" required>
+                    <input type="password" id="password" name="password" required>
                 </div>
             </div>
 
             <!-- Remember Me -->
             <div class="remember-me">
-                <input type="checkbox" name="remember" id="remember">
+                <input type="hidden" name="remember" value="0"> <!-- ✅ Ensures Laravel always gets a value -->
+                <input type="checkbox" name="remember" id="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
                 <label for="remember">Remember Me</label>
             </div>
+
 
             <!-- Submit Button -->
             <button type="submit" class="login-button">Login</button>

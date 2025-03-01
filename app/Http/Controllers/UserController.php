@@ -97,7 +97,6 @@ class UserController extends Controller
         return view('users.edit', compact('user', 'roles', 'tournaments'));
     }
 
-    // ✅ Update User (Restricted)
    // ✅ Update User (Restricted)
    public function update(Request $request, $id)
    {

@@ -1,0 +1,103 @@
+/* styles.css */
+
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e6f7ff; /* Soothing Light Blue */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Centered Container */
+.container {
+    width: 80%;
+    max-width: 1200px;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: #f0f8ff; /* Light background for table */
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #b3e0ff; /* Light Blue Header */
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #d9f2d9; /* Light Green for alternate rows */
+}
+
+tr:hover {
+    background-color: #cce7ff; /* Slightly darker blue on hover */
+}
+
+/* Forms */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 50%;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f8fcff;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #66b3ff;
+    outline: none;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    background-color: blue;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background-color: darkblue;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+    }
+    form {
+        width: 80%;
+    }
+}
