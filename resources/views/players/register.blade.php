@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    {{-- Show Registration Form --}}
+    {{-- Registration Form --}}
     <form method="POST" action="{{ route('player.register') }}" class="registration-form mb-5">
         @csrf
         <div class="form-group">
@@ -40,38 +40,5 @@
         </div>
         <button type="submit" class="btn btn-primary">Register</button>
     </form>
-
-    {{-- Show Players Table only if URL is /players --}}
-    @if(request()->is('players'))
-        <h2 class="mb-3">Registered Players</h2>
-        <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>#</th>
-                        <th>UID</th>
-                        <th>Name</th>
-                        <th>Date of Birth</th>
-                        <th>Age</th>
-                        <th>Gender</th>
-                        <th>Registered At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($players as $player)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $player->uid }}</td> {{-- UID still displayed in the table --}}
-                            <td>{{ $player->name }}</td>
-                            <td>{{ $player->dob }}</td>
-                            <td>{{ $player->age }}</td>
-                            <td>{{ $player->sex }}</td>
-                            <td>{{ date("d-m-Y h:i A", strtotime($player->created_at)) }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endif
 </div>
 @endsection
