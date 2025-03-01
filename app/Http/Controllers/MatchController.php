@@ -219,14 +219,51 @@ class MatchController extends Controller
     }
 
     // Display all Singles Matches (Paginated)
-    public function indexSingles()
+    // Display all Singles Matches (Paginated with filters)
+    public function indexSingles(Request $request)
     {
-        $matches = MatchModel::singles()
-            ->with(['tournament', 'category', 'player1', 'player2'])
-            ->paginate(10);
-        return view('matches.singles.index', compact('matches'));
+        $tournaments = Tournament::all();
+        $players = Player::all(); // Fetch players list
+    
+        $query = MatchModel::singles()
+            ->with(['tournament', 'category', 'player1', 'player2']);
+    
+        $query->whereHas('category', function($q) {
+            $q->where('name', 'LIKE', '%BS%')
+              ->orWhere('name', 'LIKE', '%GS%');
+        });
+    
+        // Apply filters
+        if ($request->has('filter_tournament') && $request->filter_tournament != 'all') {
+            $query->where('tournament_id', $request->filter_tournament);
+        }
+        if ($request->has('filter_category') && $request->filter_category != 'all') {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->filter_category}%");
+            });
+        }
+        if ($request->has('filter_player1') && $request->filter_player1 != 'all') {
+            $query->whereHas('player1', function($q) use ($request) {
+                $q->where('id', $request->filter_player1);
+            });
+        }
+        if ($request->has('filter_player2') && $request->filter_player2 != 'all') {
+            $query->whereHas('player2', function($q) use ($request) {
+                $q->where('id', $request->filter_player2);
+            });
+        }
+        if ($request->has('filter_stage') && $request->filter_stage != 'all') {
+            $query->where('stage', $request->filter_stage);
+        }
+        if ($request->has('filter_match_date') && $request->filter_match_date) {
+            $query->where('match_date', $request->filter_match_date);
+        }
+    
+        $matches = $query->paginate(10);
+    
+        return view('matches.singles.index', compact('matches', 'tournaments', 'players'));
     }
-
+    
     // Display all Doubles Matches (Paginated with filters)
     public function indexDoubles(Request $request)
     {

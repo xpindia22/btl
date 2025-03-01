@@ -8,6 +8,99 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    <style>
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            flex: 1 1 150px;
+        }
+        .filter-item label {
+            white-space: nowrap;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        .filter-item select,
+        .filter-item input {
+            flex: 1;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+        }
+    </style>
+
+    <form method="GET" action="{{ route('matches.singles.index') }}" class="mb-3">
+        <div class="filter-row">
+            <div class="filter-item">
+                <label for="filter_tournament">Tournament:</label>
+                <select name="filter_tournament" id="filter_tournament" class="form-control">
+                    <option value="all">All</option>
+                    @foreach($tournaments as $tournament)
+                        <option value="{{ $tournament->id }}" {{ request('filter_tournament') == $tournament->id ? 'selected' : '' }}>
+                            {{ $tournament->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label for="filter_player1">Player 1:</label>
+                <select name="filter_player1" id="filter_player1" class="form-control">
+                    <option value="all">All</option>
+                    @foreach($players as $player)
+                        <option value="{{ $player->id }}" {{ request('filter_player1') == $player->id ? 'selected' : '' }}>
+                            {{ $player->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label for="filter_player2">Player 2:</label>
+                <select name="filter_player2" id="filter_player2" class="form-control">
+                    <option value="all">All</option>
+                    @foreach($players as $player)
+                        <option value="{{ $player->id }}" {{ request('filter_player2') == $player->id ? 'selected' : '' }}>
+                            {{ $player->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label for="filter_category">Category:</label>
+                <select name="filter_category" id="filter_category" class="form-control">
+                    <option value="all">All</option>
+                    <option value="%BS%">Boys Singles (BS)</option>
+                    <option value="%GS%">Girls Singles (GS)</option>
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label for="filter_date">Date:</label>
+                <input type="date" name="filter_date" id="filter_date" class="form-control" value="{{ request('filter_date') }}">
+            </div>
+
+            <div class="filter-item">
+                <label for="filter_stage">Stage:</label>
+                <select name="filter_stage" id="filter_stage" class="form-control">
+                    <option value="all">All</option>
+                    <option value="Pre Quarter Finals">Pre Quarter Finals</option>
+                    <option value="Quarter Finals">Quarter Finals</option>
+                    <option value="Semifinals">Semifinals</option>
+                    <option value="Finals">Finals</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+        </div>
+    </form>
+
     <table class="table table-striped">
         <thead>
             <tr>
@@ -39,7 +132,7 @@
                     <td>{{ $match->set1_player1_points ?? 0 }} - {{ $match->set1_player2_points ?? 0 }}</td>
                     <td>{{ $match->set2_player1_points ?? 0 }} - {{ $match->set2_player2_points ?? 0 }}</td>
                     <td>
-                        @if(!is_null($match->set3_player1_points) && !is_null($match->set3_player2_points))
+                        @if($match->set3_player1_points !== null && $match->set3_player2_points !== null)
                             {{ $match->set3_player1_points }} - {{ $match->set3_player2_points }}
                         @else
                             N/A
@@ -47,22 +140,9 @@
                     </td>
                     <td>
                         @php
-                            $p1_sets = 0; 
-                            $p2_sets = 0;
-
-                            if ($match->set1_player1_points > $match->set1_player2_points) $p1_sets++;
-                            if ($match->set1_player2_points > $match->set1_player1_points) $p2_sets++;
-
-                            if ($match->set2_player1_points > $match->set2_player2_points) $p1_sets++;
-                            if ($match->set2_player2_points > $match->set2_player1_points) $p2_sets++;
-
-                            if (!is_null($match->set3_player1_points) && !is_null($match->set3_player2_points)) {
-                                if ($match->set3_player1_points > $match->set3_player2_points) $p1_sets++;
-                                if ($match->set3_player2_points > $match->set3_player1_points) $p2_sets++;
-                            }
-
-                            $winner = $p1_sets > $p2_sets ? optional($match->player1)->name : 
-                                      ($p2_sets > $p1_sets ? optional($match->player2)->name : 'Draw');
+                            $p1_sets = ($match->set1_player1_points > $match->set1_player2_points) + ($match->set2_player1_points > $match->set2_player2_points) + ($match->set3_player1_points > $match->set3_player2_points);
+                            $p2_sets = ($match->set1_player2_points > $match->set1_player1_points) + ($match->set2_player2_points > $match->set2_player1_points) + ($match->set3_player2_points > $match->set3_player1_points);
+                            $winner = $p1_sets > $p2_sets ? optional($match->player1)->name : ($p2_sets > $p1_sets ? optional($match->player2)->name : 'Draw');
                         @endphp
                         {{ $winner }}
                     </td>
@@ -71,7 +151,6 @@
         </tbody>
     </table>
 </div>
-<!-- Pagination -->
 <div class="d-flex justify-content-center">
     {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
 </div>

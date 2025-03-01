@@ -81,7 +81,7 @@
         <div class="links">
             <a href="{{ route('dashboard') }}">Dashboard</a>
             <a href="{{ route('register') }}">Register Tournament Manager</a>
-            <a href="{{ route('player.register') }}">Register Player</a>
+            <a href="{{ route('players.register') }}">Register Players</a>
 
             @if ($user_Role === 'admin')
                 <!-- Dropdown: Admin Zone -->
@@ -98,22 +98,18 @@
                 </div>
             @endif
 
-            <!-- Dropdown: Singles Matches -->
-            <div class="dropdown">
-                <a href="#">Singles Matches</a>
-                <div class="dropdown-content">
-                    @if (in_array($user_Role, ['admin', 'moderator', 'user']))
-                        <a href="{{ route('matches.singles.create') }}">Add Singles</a>
-                    @endif
-                    <a href="{{ route('matches.singles.index') }}">Singles Results</a>
-                    @if (in_array($user_Role, ['admin', 'moderator', 'user']))
-                        <!-- Ensure a match ID is available for editing -->
-                        @if(isset($latestMatch))
-                            <a href="{{ route('matches.singles.edit', ['match' => $latestMatch->id]) }}">Manage Singles</a>
-                        @endif
-                    @endif
-                </div>
-            </div>
+<!-- Dropdown: Singles Matches -->
+<div class="dropdown">
+    <a href="#">Singles Matches</a>
+    <div class="dropdown-content">
+        @if (in_array($user_Role, ['admin', 'moderator', 'user']))
+            <a href="{{ route('matches.singles.create') }}">Add Singles Match</a>
+        @endif
+        <a href="{{ route('matches.singles.index') }}">Singles Results</a>
+        <a href="{{ route('matches.singles.edit') }}">Edit Singles Results</a>
+    </div>
+</div>
+
 
             <!-- Dropdown: Doubles - BD-GD-XD -->
             <div class="dropdown">
@@ -123,6 +119,8 @@
                         <a href="{{ route('matches.doubles.create') }}">Create Boys Doubles</a>
                     @endif
                     <a href="{{ route('matches.doubles.index') }}">Result Boys Doubles</a>
+                    <a href="{{ route('matches.doubles.edit') }}">Edit Doubles Matches</a>
+
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
                         <!-- Ensure a match ID is available for editing -->
                         @if(isset($latestDoublesMatch))

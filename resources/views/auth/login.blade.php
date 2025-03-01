@@ -1,5 +1,11 @@
 @extends('layouts.app')
 
+@section('head')
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    <!-- <link rel="stylesheet" href="{{ asset('css/login.css') }}"> -->
+
+@endsection
+
 @section('content')
 <div class="login-wrapper">
     <div class="login-box">

@@ -25,30 +25,24 @@ class PlayerController extends Controller
     }
 
     public function register(Request $request)
-    {
-        $request->validate([
-            'name'     => ['required', 'regex:/^[a-zA-Z ]+$/'],
-            'dob'      => 'required|date',
-            'sex'      => 'required|in:M,F',
-            'password' => 'required|min:6',
-        ]);
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'dob' => 'required|date',
+        'sex' => 'required|string|in:M,F',
+        'password' => 'required|string|min:6',
+    ]);
 
-        $uid = $this->getNextAvailableUid(); // Get next UID properly
+    Player::create([
+        'name' => $request->name,
+        'dob' => $request->dob,
+        'sex' => $request->sex,
+        'password' => bcrypt($request->password),
+    ]);
 
-        $age = Carbon::parse($request->dob)->age;
+    return redirect()->route('players.index')->with('success', 'Player registered successfully!');
+}
 
-        Player::create([
-            'uid'       => $uid,
-            'name'      => $request->name,
-            'dob'       => $request->dob,
-            'age'       => $age,
-            'sex'       => $request->sex,
-            'password'  => Hash::make($request->password),
-            'created_by'=> auth()->id(),
-        ]);
-
-        return redirect()->route('player.register')->with('success', 'Player registered successfully!');
-    }
 
     public function create()
     {
