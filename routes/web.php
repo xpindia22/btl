@@ -35,11 +35,15 @@ Route::controller(RegisterController::class)->group(function () {
 // --------------------------------------------------
 // PUBLIC PLAYERS
 // --------------------------------------------------
+
+
 Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
-Route::prefix('players')->group(function () {
-    Route::get('/register', [PlayerController::class, 'showRegistrationForm'])->name('player.register');
-    Route::post('/register', [PlayerController::class, 'register']);
-});
+Route::post('/player/register', [PlayerController::class, 'register'])->name('player.register');
+Route::get('/players/register', function () {
+     return view('players.register'); // Correct Blade file path
+ })->name('players.register');
+ 
+
 
 // --------------------------------------------------
 // PROTECTED ROUTES (AUTH REQUIRED)
