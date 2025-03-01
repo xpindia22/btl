@@ -118,7 +118,7 @@
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
                         <a href="{{ route('matches.doubles.create') }}">Create Boys Doubles</a>
                     @endif
-                    <a href="{{ route('matches.doubles.index') }}">Result Boys Doubles</a>
+                    <a href="{{ route('matches.doubles.index') }}">Doubles Results</a>
                     <a href="{{ route('matches.doubles.edit') }}">Edit Doubles Matches</a>
 
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
