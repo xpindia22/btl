@@ -47,8 +47,8 @@ Route::controller(RegisterController::class)->group(function () {
  //     Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register');
      Route::get('/players', [PlayerController::class, 'index'])->name('players.index'); 
      Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
-     Route::put('/players/{uid}', [PlayerController::class, 'update'])->name('players.update');
-     Route::delete('/players/{uid}', [PlayerController::class, 'destroy'])->name('players.destroy');
+     Route::put('/players/{uid}/update', [PlayerController::class, 'update']);
+     Route::delete('/players/{uid}/delete', [PlayerController::class, 'destroy']);
      
  });
  

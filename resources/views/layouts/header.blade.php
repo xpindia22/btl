@@ -82,8 +82,7 @@
         <!-- Navigation Links -->
         <div class="links">
             <a href="{{ route('dashboard') }}">Dashboard</a>
-            <a href="{{ route('register') }}">Register Tournament Manager</a>
-            <a href="{{ route('players.register') }}">Register Players</a>
+
 
             @if ($user_Role === 'admin')
                 <!-- Dropdown: Admin Zone -->
@@ -136,9 +135,9 @@
             <div class="dropdown">
                 <a href="#">Match Results</a>
                 <div class="dropdown-content">
-                    <a href="{{ route('matches.singles.index') }}">Singles Results</a>
+                    <a href="{{ route('matches.singles.index') }}">All Singles Results</a>
                     @if (in_array($user_Role, ['admin', 'moderator', 'user']))
-                        <a href="{{ route('matches.doubles.index') }}">Doubles Results</a>
+                        <a href="{{ route('matches.doubles.index') }}">All Doubles Results</a>
                         <a href="http://localhost:8000/matches/singles?filter_tournament=all&filter_player1=all&filter_player2=all&filter_category=%25BS%25&filter_date=&filter_stage=all">Boys Singles Results</a>
                         <a href="http://localhost:8000/matches/singles?filter_tournament=all&filter_player1=all&filter_player2=all&filter_category=%25GS%25&filter_date=&filter_stage=all">Girls Singles Results</a>
 
@@ -152,7 +151,25 @@
                     @endif
                 </div>
             </div>
+<!-- Dropdown: Your Panel -->
+@if (in_array($user_Role, ['admin', 'user']))
+<div class="dropdown">
+    <a href="#">Your Panel</a>
+    <div class="dropdown-content">
+        @if (in_array($user_Role, ['admin', 'moderator', 'user']))
+        <a href="{{ route('matches.singles.create') }}">Add Singles Match</a>
+        <a href="{{ route('matches.singles.index') }}">Singles Results</a>
+        <a href="{{ route('matches.singles.index') }}">Edit Singles Results</a>
+        ......................
+        <a href="{{ route('register') }}">Register Manager</a>
+        <a href="{{ route('users.index') }}">Your Users</a>
+        <a href="{{ route('users.edit') }}">Edit Your Users</a>
 
+        <a href="{{ route('players.register') }}">Register Your Players</a>
+        @endif
+        </div>
+</div>
+@endif
             <!-- Logout Form (Hidden) -->
             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                 @csrf

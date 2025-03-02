@@ -57,11 +57,7 @@
                                     @endif
                                 </ul>
                             </li>
-
-                            <!-- Results -->
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('results.index') }}">Match Results</a>
-                            </li>
+ 
 
                             <!-- Logout -->
                             <li class="nav-item">

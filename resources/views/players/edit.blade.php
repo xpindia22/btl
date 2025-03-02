@@ -4,13 +4,14 @@
 <div class="container">
     <h2>Edit Players</h2>
     
-    <table class="table table-bordered">
-        <thead>
+    <table class="registration-form-1400 mb-3 table table-bordered">
+    <thead>
             <tr>
-                <th>#</th> <!-- Serial Number Column -->
+                <th>S No</th> <!-- Serial Number Column -->
                 <th>UID</th>
                 <th>Name</th>
                 <th>DOB</th>
+                <th>Age</th> <!-- Age Column -->
                 <th>Sex</th>
                 <th>Actions</th>
             </tr>
@@ -22,8 +23,10 @@
                 <td class="editable" data-field="uid">{{ $player->uid }}</td>
                 <td class="editable" data-field="name">{{ $player->name }}</td>
                 <td class="editable" data-field="dob">{{ $player->dob }}</td>
+                <td class="age">{{ \Carbon\Carbon::parse($player->dob)->age }}</td> <!-- Auto-calculate Age -->
                 <td class="editable" data-field="sex">{{ $player->sex }}</td>
                 <td>
+                    <button class="btn btn-success btn-sm save-btn" style="display:none;">Save</button>
                     <button class="btn btn-primary btn-sm edit-btn">Edit</button>
                     <button class="btn btn-danger btn-sm delete-btn">Delete</button>
                 </td>
@@ -37,13 +40,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     const csrfToken = '{{ csrf_token() }}';
 
-    document.addEventListener("click", function (event) {
-        let target = event.target;
-
-        // Handle Edit/Save button clicks
-        if (target.classList.contains("edit-btn")) {
-            let row = target.closest("tr");
-            let uid = row.dataset.uid;
+    document.querySelectorAll(".edit-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            let row = this.closest("tr");
 
             row.querySelectorAll(".editable").forEach(cell => {
                 let value = cell.innerText.trim();
@@ -55,20 +54,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 cell.appendChild(input);
             });
 
-            target.textContent = "Save";
-            target.classList.remove("edit-btn");
-            target.classList.add("save-btn");
-        } 
-        else if (target.classList.contains("save-btn")) {
-            let row = target.closest("tr");
+            row.querySelector(".save-btn").style.display = "inline-block";
+            this.style.display = "none";
+        });
+    });
+
+    document.querySelectorAll(".save-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            let row = this.closest("tr");
             let uid = row.dataset.uid;
             let data = {};
 
             row.querySelectorAll(".editable input").forEach(input => {
                 data[input.dataset.field] = input.value.trim();
             });
-
-            console.log("Updating UID:", uid, "with data:", data); // Debugging log
 
             fetch(`/players/${uid}/update`, {
                 method: "PUT",
@@ -80,26 +79,34 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(response => response.json())
             .then(responseData => {
-                console.log("Response:", responseData); // Debugging log
                 if (responseData.success) {
                     row.querySelectorAll(".editable").forEach(cell => {
                         let field = cell.dataset.field;
                         cell.innerHTML = responseData.player[field]; // Update table with new values
                     });
 
-                    target.textContent = "Edit";
-                    target.classList.remove("save-btn");
-                    target.classList.add("edit-btn");
+                    // Auto-update Age column based on new DOB
+                    let newAge = calculateAge(responseData.player.dob);
+                    row.querySelector(".age").textContent = newAge;
+
+                    row.querySelector(".edit-btn").style.display = "inline-block";
+                    row.querySelector(".save-btn").style.display = "none";
+
+                    alert("Player updated successfully!");
                 } else {
                     alert("Update failed: " + responseData.message);
                 }
             })
-            .catch(error => console.error("Error:", error));
-        }
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while updating.");
+            });
+        });
+    });
 
-        // Handle Delete button clicks
-        else if (target.classList.contains("delete-btn")) {
-            let row = target.closest("tr");
+    document.querySelectorAll(".delete-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            let row = this.closest("tr");
             let uid = row.dataset.uid;
 
             if (!confirm("Are you sure you want to delete this player?")) return;
@@ -113,17 +120,26 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(response => response.json())
             .then(responseData => {
-                console.log("Delete Response:", responseData); // Debugging log
                 if (responseData.success) {
-                    row.remove(); // Remove row from UI
+                    row.remove();
                 } else {
                     alert("Delete failed!");
                 }
             })
             .catch(error => console.error("Error:", error));
-        }
+        });
     });
+
+    function calculateAge(dob) {
+        let birthDate = new Date(dob);
+        let today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        let monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    }
 });
 </script>
-
 @endsection
