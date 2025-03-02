@@ -27,9 +27,9 @@ class PlayerController extends Controller
     public function register(Request $request)
 {
     $request->validate([
-        'name' => 'required|string|max:255',
+        'name' => 'required|string',
         'dob' => 'required|date',
-        'sex' => 'required|in:M,F',
+        'sex' => 'required|string',
         'password' => 'required|string|min:6',
     ]);
 
@@ -37,13 +37,17 @@ class PlayerController extends Controller
     $dob = Carbon::parse($request->dob);
     $age = $dob->diffInYears(Carbon::now());
 
+    // Get the next available UID
+    $uid = $this->getNextAvailableUid();  // ✅ Ensuring UID is assigned
+
     Player::create([
+        'uid' => $uid,  // ✅ Add UID here
         'name' => $request->name,
         'dob' => $dob,
         'sex' => $request->sex,
         'password' => Hash::make($request->password),
+        'age' => $age,
         'ip_address' => $request->ip(),
-        'age' => $age,  
     ]);
 
     return redirect()->route('players.register')->with('success', 'Player registered successfully!');
