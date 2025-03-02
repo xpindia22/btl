@@ -1,5 +1,5 @@
 @php
-//header.blade.php file.
+//header.blade.php file...
 
     use Illuminate\Support\Facades\Auth;
 
