@@ -152,7 +152,7 @@
                 </div>
             </div>
 <!-- Dropdown: Your Panel -->
-@if (in_array($user_Role, ['admin', 'user']))
+@if (in_array($user_Role, ['admin', 'moderator','user']))
 <div class="dropdown">
     <a href="#">Your Panel</a>
     <div class="dropdown-content">

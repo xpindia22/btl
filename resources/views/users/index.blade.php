@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container" >
     <h2>Registered Users --- <a href="{{ route('users.edit', ['user' => $users->first()->id ?? null]) }}">Edit Users</a></h2>
 
     <table class="table">
