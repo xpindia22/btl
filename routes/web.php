@@ -32,16 +32,22 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/register', 'register');
 });
 
-// --------------------------------------------------
+
 // PUBLIC PLAYERS
-// --------------------------------------------------
 
 
-Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
-Route::post('/player/register', [PlayerController::class, 'register'])->name('player.register');
-Route::get('/players/register', function () {
-     return view('players.register'); // Correct Blade file path
- })->name('players.register');
+     // Handle form submission
+     Route::middleware(['web'])->group(function () {
+      // Show the registration form
+      Route::get('/players/register', [PlayerController::class, 'create'])->name('players.register');
+  
+      // Handle form submission
+      Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register.post');
+ 
+ //     Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register');
+     Route::get('/players', [PlayerController::class, 'index'])->name('players.index'); 
+  
+ });
  
 
 

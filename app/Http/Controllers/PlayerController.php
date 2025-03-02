@@ -29,18 +29,24 @@ class PlayerController extends Controller
     $request->validate([
         'name' => 'required|string|max:255',
         'dob' => 'required|date',
-        'sex' => 'required|string|in:M,F',
+        'sex' => 'required|in:M,F',
         'password' => 'required|string|min:6',
     ]);
 
+    // Calculate age from DOB
+    $dob = Carbon::parse($request->dob);
+    $age = $dob->diffInYears(Carbon::now());
+
     Player::create([
         'name' => $request->name,
-        'dob' => $request->dob,
+        'dob' => $dob,
         'sex' => $request->sex,
-        'password' => bcrypt($request->password),
+        'password' => Hash::make($request->password),
+        'ip_address' => $request->ip(),
+        'age' => $age,  
     ]);
 
-    return redirect()->route('players.index')->with('success', 'Player registered successfully!');
+    return redirect()->route('players.register')->with('success', 'Player registered successfully!');
 }
 
 
@@ -52,27 +58,32 @@ class PlayerController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'dob' => 'required|date',
-            'sex' => 'required|in:M,F',
-            'password' => 'required|min:6',
-        ]);
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'dob' => 'required|date',
+        'sex' => 'required|in:M,F',
+        'password' => 'required|min:6',
+    ]);
 
-        $uid = $this->getNextAvailableUid(); // Get next available UID
+    $uid = $this->getNextAvailableUid();
+    $dob = Carbon::parse($validated['dob']);
+    $age = $dob->diffInYears(Carbon::now()); // ✅ Calculate age
 
-        $player = new Player();
-        $player->uid = $uid;
-        $player->name = $validated['name'];
-        $player->dob = $validated['dob'];
-        $player->sex = $validated['sex'];
-        $player->password = bcrypt($validated['password']);
-        $player->ip_address = request()->ip();
-        $player->save();
+    $player = new Player();
+    $player->uid = $uid;
+    $player->name = $validated['name'];
+    $player->dob = $dob;
+    $player->sex = $validated['sex'];
+    $player->password = Hash::make($validated['password']);
+    $player->ip_address = request()->ip();
+    $player->age = $age; // ✅ Ensure 'age' is inserted
+    $player->save();
 
-        return redirect()->back()->with('success', 'Player registered successfully!');
-    }
+    return redirect()->back()->with('success', 'Player registered successfully!');
+}
+
+
 
     public function edit($id)
     {
@@ -117,3 +128,4 @@ class PlayerController extends Controller
         return $nextUid;
     }
 }
+
