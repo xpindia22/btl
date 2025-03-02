@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 01, 2025 at 05:28 AM
+-- Generation Time: Mar 02, 2025 at 08:44 AM
 -- Server version: 11.4.3-MariaDB-1
 -- PHP Version: 8.2.24
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `btl-1-3-25beforeUIDissue`
+-- Database: `btl`
 --
 
 -- --------------------------------------------------------
@@ -386,7 +386,10 @@ INSERT INTO `matches` (`id`, `tournament_id`, `category_id`, `pool`, `player1_id
 (179, 1, 1, NULL, 2, 3, 0, 0, 0, 0, 21, 2, 2, 21, 21, 2, 4, NULL, 'Pre Quarter Finals', '2025-02-28', '11:13:00', 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, NULL, NULL, NULL, NULL, NULL, '2025-02-28 06:08:32'),
 (180, 1, 13, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-02-28', '11:42:00', 2, 1, 10, 15, 21, 2, 2, 21, 21, 2, NULL, NULL, '2025-02-28 06:25:55', NULL, '2025-02-28 00:43:11', '2025-02-28 00:55:55'),
 (181, 1, 13, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-02-28', '12:38:00', 2, 1, 6, 16, 21, 12, 12, 21, 21, 12, NULL, NULL, NULL, NULL, '2025-02-28 01:39:11', '2025-02-28 01:40:12'),
-(182, 1, 11, NULL, 20, 6, 0, 0, 0, 0, 11, 21, 21, 11, 12, 21, 4, NULL, 'Pre Quarter Finals', '2025-02-28', '18:11:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-02-28 07:11:59', '2025-02-28 07:11:59');
+(182, 1, 11, NULL, 20, 6, 0, 0, 0, 0, 11, 21, 21, 11, 12, 21, 4, NULL, 'Pre Quarter Finals', '2025-02-28', '18:11:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-02-28 07:11:59', '2025-02-28 07:11:59'),
+(183, 3, 25, NULL, 47, 40, 0, 0, 0, 0, 21, 2, 2, 21, 21, 6, 4, NULL, 'Pre Quarter Finals', '2025-03-02', '14:05:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-02 03:05:21', '2025-03-02 03:06:17'),
+(184, 1, 26, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-02', '14:07:00', 2, 47, 43, 40, 21, 11, 11, 21, 21, 12, NULL, NULL, NULL, NULL, '2025-03-02 03:07:24', '2025-03-02 03:07:24'),
+(185, 1, 13, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-02', '14:08:00', 44, 45, 2, 15, 21, 11, 12, 21, 21, 14, NULL, NULL, NULL, NULL, '2025-03-02 03:08:34', '2025-03-02 03:08:34');
 
 -- --------------------------------------------------------
 
@@ -494,26 +497,42 @@ CREATE TABLE `players` (
 --
 
 INSERT INTO `players` (`id`, `name`, `dob`, `age`, `sex`, `uid`, `password`, `created_by`, `ip_address`, `updated_at`, `category_id`, `created_at`) VALUES
-(1, 'Sreesha', '2008-01-01', 16, 'F', '3', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-01-17 04:14:30', 0, '2025-01-24 03:01:50'),
-(2, 'Eric James', '2009-05-02', 15, 'M', '1', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-01-17 04:14:30', 0, '2025-01-24 03:01:50'),
-(3, 'Akshaj Tiwari', '2012-01-01', 12, 'M', '2', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-01-17 04:14:30', 0, '2025-01-24 03:01:50'),
-(4, 'Lakshmita', '2011-01-01', 13, 'F', '4', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-01-17 04:14:30', 0, '2025-01-24 03:01:50'),
-(6, 'Lee Chong Wei', '1980-01-03', 44, 'M', '5', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-01-17 04:14:30', 0, '2025-01-24 03:01:50'),
-(9, 'Lakshaya', '2010-01-01', 15, 'F', '10', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(10, 'Gokulan', '1990-01-01', 35, 'M', '9', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(11, 'Zanpear', '1978-05-01', 46, 'M', '6', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(12, 'Pandyraj', '1968-01-01', 57, 'M', '7', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 20, '2025-01-24 03:01:50'),
-(13, 'Vijay', '1970-01-30', 54, 'M', '8', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(14, 'Tai Tzu Ying', '1998-01-01', 27, 'F', '11', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(15, 'An Se Young', '2000-01-01', 25, 'F', '13', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(16, 'Okuhara', '1998-01-01', 27, 'F', '14', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(17, 'Anitha Anthony', '2008-01-01', 17, 'F', '15', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(18, 'Carolina Marine', '1995-06-06', 29, 'F', '16', '$2y$12$oAMjJaLvBukk6dDh5aVmu.EgCwKqw.sVGYTkllW6bwqrgCLcKaGzC', 4, NULL, '2025-02-11 12:29:54', 1, '2025-01-24 03:01:50'),
-(19, 'PV Sindhu', '1995-06-07', 29, 'F', '12', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(20, 'Victor Axelsen', '1995-05-07', 29, 'M', '17', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(21, 'Lin Dan', '1986-02-06', 38, 'M', '18', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(22, 'Player', '2025-01-17', 0, 'M', '19', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, NULL, '2025-01-17 04:14:30', 1, '2025-01-24 03:01:50'),
-(24, 'zzzaddedPlayer', '1999-02-02', 26, 'M', '1011', '$2y$12$DZ/9nkVKOJW1Kk47jyqgseEtolyJR5OP/3xgRxTYSrrGTJFIz0j4e', NULL, NULL, '2025-02-11 12:32:37', 1, '2025-02-11 12:32:37');
+(1, 'Sreesha', '2008-01-01', 16, 'F', '100000', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-03-01 05:18:27', 0, '2025-01-24 03:01:50'),
+(2, 'Eric James', '2009-05-02', 15, 'M', '100001', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-03-01 05:18:48', 0, '2025-01-24 03:01:50'),
+(3, 'Akshaj Tiwari', '2012-01-01', 12, 'M', '100002', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-03-01 05:19:21', 0, '2025-01-24 03:01:50'),
+(4, 'Lakshmita', '2011-01-01', 13, 'F', '100004', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-03-01 05:19:38', 0, '2025-01-24 03:01:50'),
+(6, 'Lee Chong Wei', '1980-01-03', 44, 'M', '100005', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 1, NULL, '2025-03-01 05:19:51', 0, '2025-01-24 03:01:50'),
+(9, 'Lakshaya', '2010-01-01', 15, 'F', '100006', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:20:06', 1, '2025-01-24 03:01:50'),
+(10, 'Gokulan', '1990-01-01', 35, 'M', '100007', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:20:25', 1, '2025-01-24 03:01:50'),
+(11, 'Zanpear', '1978-05-01', 46, 'M', '100008', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:20:40', 1, '2025-01-24 03:01:50'),
+(12, 'Pandyraj', '1968-01-01', 57, 'M', '100009', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:20:53', 20, '2025-01-24 03:01:50'),
+(13, 'Vijay', '1970-01-30', 54, 'M', '100010', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:21:09', 1, '2025-01-24 03:01:50'),
+(14, 'Tai Tzu Ying', '1998-01-01', 27, 'F', '100011', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:21:21', 1, '2025-01-24 03:01:50'),
+(15, 'An Se Young', '2000-01-01', 25, 'F', '100012', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:21:35', 1, '2025-01-24 03:01:50'),
+(16, 'Okuhara', '1998-01-01', 27, 'F', '100013', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:21:48', 1, '2025-01-24 03:01:50'),
+(17, 'Anitha Anthony', '2008-01-01', 17, 'F', '100014', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:22:24', 1, '2025-01-24 03:01:50'),
+(18, 'Carolina Marine', '1995-06-06', 29, 'F', '100015', '$2y$12$oAMjJaLvBukk6dDh5aVmu.EgCwKqw.sVGYTkllW6bwqrgCLcKaGzC', 4, NULL, '2025-03-01 05:22:38', 1, '2025-01-24 03:01:50'),
+(19, 'PV Sindhu', '1995-06-07', 29, 'F', '100016', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:22:51', 1, '2025-01-24 03:01:50'),
+(20, 'Victor Axelsen', '1995-05-07', 29, 'M', '100017', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:23:08', 1, '2025-01-24 03:01:50'),
+(21, 'Lin Dan', '1986-02-06', 38, 'M', '100018', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', 4, NULL, '2025-03-01 05:23:25', 1, '2025-01-24 03:01:50'),
+(22, 'Player', '2025-01-17', 0, 'M', '100019', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, NULL, '2025-03-01 05:23:38', 1, '2025-01-24 03:01:50'),
+(24, 'zzzaddedPlayer', '1999-02-02', 26, 'M', '100020', '$2y$12$DZ/9nkVKOJW1Kk47jyqgseEtolyJR5OP/3xgRxTYSrrGTJFIz0j4e', NULL, NULL, '2025-03-01 05:23:54', 1, '2025-02-11 12:32:37'),
+(31, 'FirstMarch', '2000-01-01', 25, 'M', '100026', '$2y$12$VTqpdhQGOSrpNRZBdMhvk.1n64LLWf1lx0vlDv/iShGx7UqjKMJiG', NULL, '127.0.0.1', '2025-03-01 05:59:54', 1, '2025-03-01 05:24:10'),
+(32, 'second', '2007-07-18', 17, 'M', '100022', '$2y$12$XBOIiCdSRUUJxWNRNncXBeExpu/RoylbRGDiQU8MNWSBKY3NUcKzm', NULL, '127.0.0.1', '2025-03-01 06:00:35', 1, '2025-03-01 05:25:15'),
+(34, 'threefemale', '2011-10-18', 13, 'F', '100027', '$2y$12$nq0UqrcoRxyH9kwssmhAk.p6spIDyNmC.yctssqMnaoInD6ZW7Jaa', NULL, '127.0.0.1', '2025-03-01 06:02:57', 1, '2025-03-01 05:57:13'),
+(35, 'Okuhara Japan', '2007-09-17', 17, 'F', '100021', '$2y$12$2QpE1/UMQCZG9WRbryeEceHuE6dlgdrpKAzQRgwgk5tTQeQ.xQTWS', NULL, '127.0.0.1', '2025-03-01 05:58:54', 1, '2025-03-01 05:58:54'),
+(36, 'Lakshaya Sen', '2010-02-01', 15, 'M', '100023', '$2y$12$jJ6dDbNjh0eqwrnFze25sOXI1.nuZik7ozFEkWiIaGjszsghmqYvG', NULL, '127.0.0.1', '2025-03-01 06:01:51', 1, '2025-03-01 06:01:51'),
+(37, 'Kadambi Srikant', '1996-01-30', 29, 'M', '100003', '$2y$12$QPaaOwvZ0W42mlLJ9QrmYe0xDfw4SwTPvgi2iCXyudeSUDoWex/gy', NULL, '127.0.0.1', '2025-03-01 06:03:33', 1, '2025-03-01 06:03:33'),
+(38, 'Sai Praneet', '1999-02-08', 26, 'M', '100024', '$2y$12$4sbwhyz4Ara48Wg/Kd.GGeSMv4pxC2D5rQWQ8sQWfXa914htbcija', NULL, '127.0.0.1', '2025-03-01 06:10:59', 1, '2025-03-01 06:10:59'),
+(39, 'Saina Nehwal', '1997-06-17', 27, 'F', '100025', '$2y$12$eomoYeQzV5/52LC7mq9c3O0LO4yxxlTt1n5BfzLi0E5bHyFKIQZT.', NULL, '127.0.0.1', '2025-03-01 06:11:51', 1, '2025-03-01 06:11:51'),
+(40, 'Akshit Bobby', '2009-12-28', 15, 'M', '100028', '$2y$12$/f.4DVljrc1BlKOTTlQZXeEJpbY4oyeW7mdzUtyHuqJZNyXzm6CDy', NULL, '127.0.0.1', '2025-03-02 07:20:40', 1, '2025-03-02 07:20:40'),
+(41, 'Pallavo G', '2008-01-29', 17, 'F', '100029', '$2y$12$xIQXyQ1kAxPPowy91LDxZOh0NItOMsOAHAO58zKj5ua6pJw2hTNu.', NULL, '127.0.0.1', '2025-03-02 07:49:57', 1, '2025-03-02 07:49:57'),
+(42, 'Pallavo G', '2008-01-29', 17, 'F', '100030', '$2y$12$KXS2.oqXyv7Ss2Mx6GwUUeSxwiT6ZgR92cEHTkmSn.KnTZILPYafC', NULL, '127.0.0.1', '2025-03-02 07:50:58', 1, '2025-03-02 07:50:58'),
+(43, 'Harshit Anthony', '2011-01-02', 14, 'M', '100031', '$2y$12$W9K8QYr42jLiGmd9x.68ReYZ2bAp8cN4aApx0XmGHFS4Axtf0TxCy', NULL, '127.0.0.1', '2025-03-02 07:53:59', 1, '2025-03-02 07:53:59'),
+(44, 'Aadil', '1999-12-28', 25, 'M', '100032', '$2y$12$nBsZhQJya5mgrvavX6h9CO8otI1lJvZMa4oNQjiQe/CYqj0S1mqki', NULL, '127.0.0.1', '2025-03-02 08:18:43', 1, '2025-03-02 08:18:43'),
+(45, 'Prabha', '1990-01-01', 35, 'F', '100033', '$2y$12$Mg2BilEeOpfDTxB7ghNPteZIoLF1pA9Mq6wsFx.u4NVmOhrMgWgkG', NULL, '127.0.0.1', '2025-03-02 08:20:25', 1, '2025-03-02 08:20:25'),
+(46, 'Aditya', '2002-01-30', 23, 'M', '100034', '$2y$12$Ez7bOE19mCQztwLOugTRNuWriFVEtdh8OB5NspDRexs20lUDJJd4S', NULL, '127.0.0.1', '2025-03-02 08:30:52', 1, '2025-03-02 08:30:52'),
+(47, 'Suman', '2007-01-01', 18, 'M', '100035', '$2y$12$g4eSHNua3Qg99QFx2qpi5.a5D/UC26Tm7gJqTQ7n1c9VEb6hTsAOm', NULL, '127.0.0.1', '2025-03-02 08:32:27', 1, '2025-03-02 08:32:27');
 
 -- --------------------------------------------------------
 
@@ -568,7 +587,8 @@ CREATE TABLE `sessions` (
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
 ('UtMVYlSIV5Bo7KYuHcazfcaJ9g0M1OcF2NwgLxfX', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiYmRZaEpzOWZIeU1uZTY3Z3dKZVVZY0hLYks1WjdMMFJZWFdjSVM1SyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9tYXRjaGVzL3NpbmdsZXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo0O3M6MTc6ImxvY2tlZF90b3VybmFtZW50IjtzOjE6IjEiO3M6Mjg6ImxvY2tlZF9zaW5nbGVzX3RvdXJuYW1lbnRfaWQiO3M6MToiMSI7fQ==', 1740746519),
-('WOxq7dz6KKtZBOXwdMlxNsPzdHKvSTiYVj089KbC', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMURkdXoyQ2tXQmFFdUJ2ck53NkRsWG9wVlh6VnQ0emROMlJabXo5aiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9wbGF5ZXJzL3JlZ2lzdGVyIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NDt9', 1740804718);
+('WOxq7dz6KKtZBOXwdMlxNsPzdHKvSTiYVj089KbC', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMURkdXoyQ2tXQmFFdUJ2ck53NkRsWG9wVlh6VnQ0emROMlJabXo5aiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9wbGF5ZXJzL3JlZ2lzdGVyIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NDt9', 1740809511),
+('ykCMGrxwk0ceugALGlMDwXhbWN6y4hG2gzsPaLRV', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiZGNTenVYYjU2QzBlSmZXMnZlenRpb2ZYRUVzeE5Xb09sN1BPQWtlbiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MTQzOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvbWF0Y2hlcy9kb3VibGVzP2ZpbHRlcl9jYXRlZ29yeT1YRCZmaWx0ZXJfZGF0ZT0mZmlsdGVyX3BsYXllcj1hbGwmZmlsdGVyX3Jlc3VsdHM9YWxsJmZpbHRlcl9zdGFnZT1hbGwmZmlsdGVyX3RvdXJuYW1lbnQ9MSI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjQ7czoyODoibG9ja2VkX3NpbmdsZXNfdG91cm5hbWVudF9pZCI7czoxOiIzIjtzOjE3OiJsb2NrZWRfdG91cm5hbWVudCI7czoxOiIxIjt9', 1740904736);
 
 -- --------------------------------------------------------
 
@@ -772,7 +792,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `role`, `created_by`, `email_ver
 (46, 'testuser2', 'test2@example.com', 'user', 1, NULL, '$2y$12$4a/SZNzSxGL.7WkFY1.CDu8g/SW99b9eAeEWmy7e83PxYqrvBuG7C', NULL, NULL, NULL, NULL, NULL, '2025-02-10 01:06:34', '2025-02-10 01:06:34', '9876543210', '2025-02-10 06:36:34', NULL),
 (49, 'testuser3', 'test3@example.com', 'user', 1, NULL, '$2y$12$/KZjcQja7hE7mhtQUDqide7rUfhHbI79FptKRwWuFAhK3HKj.SCD.', NULL, NULL, NULL, NULL, NULL, '2025-02-10 01:52:01', '2025-02-10 01:52:01', '9876543210', '2025-02-10 07:22:01', NULL),
 (52, 'xxcdx', 'xxcdd@xxcdd.com', 'visitor', NULL, NULL, '$2y$12$xmUUP0wxOs1CpHj6kWEhEuVy2rEWSSrzx0/OB9b41lKBq2O2QFgjm', NULL, NULL, NULL, NULL, NULL, '2025-02-10 07:47:29', '2025-02-21 05:42:14', '2211777777', '2025-02-10 13:17:29', NULL),
-(53, 'zzzuserx', 'zzzuser@zzzuser.com', 'admin', 7, NULL, '$2y$12$bmIJs.jtPS3UgzobzsKrMu/Y6sV4jWvAIVfK5/SfWUpLtBJUyj.Pu', NULL, NULL, NULL, NULL, NULL, '2025-02-21 23:11:43', '2025-02-21 23:12:04', '1111111111', '2025-02-22 10:11:43', NULL);
+(53, 'zzzuserx', 'zzzuser@zzzuser.com', 'admin', 7, NULL, '$2y$12$bmIJs.jtPS3UgzobzsKrMu/Y6sV4jWvAIVfK5/SfWUpLtBJUyj.Pu', NULL, NULL, NULL, NULL, NULL, '2025-02-21 23:11:43', '2025-02-21 23:12:04', '1111111111', '2025-02-22 10:11:43', NULL),
+(55, 'ThirdMarchUser', 'ThirdMarchUser@ThirdMarchUser.com', 'user', NULL, NULL, '$2y$12$y/wVTmejQaznwvq3G1Uwd.BqJkVQZBlBUfjkQJJfE4e5SsKAorzJG', NULL, NULL, NULL, NULL, NULL, '2025-03-02 03:03:35', '2025-03-02 03:03:35', '2222222222', '2025-03-02 14:03:35', NULL);
 
 --
 -- Indexes for dumped tables
@@ -878,7 +899,8 @@ ALTER TABLE `personal_access_tokens`
 --
 ALTER TABLE `players`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uid` (`uid`);
+  ADD UNIQUE KEY `uid` (`uid`),
+  ADD UNIQUE KEY `uid_2` (`uid`);
 
 --
 -- Indexes for table `player_access`
@@ -966,7 +988,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `matches`
 --
 ALTER TABLE `matches`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=183;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=186;
 
 --
 -- AUTO_INCREMENT for table `match_details`
@@ -990,7 +1012,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `players`
 --
 ALTER TABLE `players`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `player_access`
@@ -1020,7 +1042,7 @@ ALTER TABLE `tournament_moderators`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- Constraints for dumped tables

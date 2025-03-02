@@ -116,7 +116,7 @@
                 <a href="#">Doubles & Mixed Doubles</a>
                 <div class="dropdown-content">
                     @if (in_array($user_Role, ['admin', 'moderator', 'user'])) 
-                        <a href="{{ route('matches.doubles.create') }}">Create Boys Doubles</a>
+                        <a href="{{ route('matches.doubles.create') }}">Creat Doubles Match</a>
                     @endif
                     <a href="{{ route('matches.doubles.index') }}">Doubles Results</a>
                     <a href="{{ route('matches.doubles.edit') }}">Edit Doubles Matches</a>
