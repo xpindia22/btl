@@ -11,13 +11,12 @@ class PlayerController extends Controller
 {
     public function index()
     {
-        $players = Player::orderBy('uid', 'desc')->paginate(10); // Paginate results (10 per page)
+        $players = Player::orderBy('uid', 'desc')->paginate(10);
         $nextUid = $this->getNextAvailableUid();
-        $showRegistration = auth()->check(); // Ensure registration form only shows when logged in
-    
+        $showRegistration = auth()->check();
+
         return view('players.index', compact('players', 'nextUid', 'showRegistration'));
     }
-    
 
     public function showRegistrationForm()
     {
@@ -25,34 +24,30 @@ class PlayerController extends Controller
     }
 
     public function register(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string',
-        'dob' => 'required|date',
-        'sex' => 'required|string',
-        'password' => 'required|string|min:6',
-    ]);
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'dob' => 'required|date',
+            'sex' => 'required|string',
+            'password' => 'required|string|min:6',
+        ]);
 
-    // Calculate age from DOB
-    $dob = Carbon::parse($request->dob);
-    $age = $dob->diffInYears(Carbon::now());
+        $dob = Carbon::parse($request->dob);
+        $age = $dob->diffInYears(Carbon::now());
+        $uid = $this->getNextAvailableUid();
 
-    // Get the next available UID
-    $uid = $this->getNextAvailableUid();  // ✅ Ensuring UID is assigned
+        Player::create([
+            'uid' => $uid,
+            'name' => $request->name,
+            'dob' => $dob,
+            'sex' => $request->sex,
+            'password' => Hash::make($request->password),
+            'age' => $age,
+            'ip_address' => $request->ip(),
+        ]);
 
-    Player::create([
-        'uid' => $uid,  // ✅ Add UID here
-        'name' => $request->name,
-        'dob' => $dob,
-        'sex' => $request->sex,
-        'password' => Hash::make($request->password),
-        'age' => $age,
-        'ip_address' => $request->ip(),
-    ]);
-
-    return redirect()->route('players.register')->with('success', 'Player registered successfully!');
-}
-
+        return redirect()->route('players.index')->with('success', 'Player registered successfully!');
+    }
 
     public function create()
     {
@@ -62,74 +57,82 @@ class PlayerController extends Controller
     }
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'dob' => 'required|date',
-        'sex' => 'required|in:M,F',
-        'password' => 'required|min:6',
-    ]);
-
-    $uid = $this->getNextAvailableUid();
-    $dob = Carbon::parse($validated['dob']);
-    $age = $dob->diffInYears(Carbon::now()); // ✅ Calculate age
-
-    $player = new Player();
-    $player->uid = $uid;
-    $player->name = $validated['name'];
-    $player->dob = $dob;
-    $player->sex = $validated['sex'];
-    $player->password = Hash::make($validated['password']);
-    $player->ip_address = request()->ip();
-    $player->age = $age; // ✅ Ensure 'age' is inserted
-    $player->save();
-
-    return redirect()->back()->with('success', 'Player registered successfully!');
-}
-
-
-
-    public function edit($id)
     {
-        $player = Player::findOrFail($id);
-        return view('players.edit', compact('player'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'dob' => 'required|date',
             'sex' => 'required|in:M,F',
-            'password' => 'nullable|min:6',
-            'uid' => 'required|integer|min:100001|unique:players,uid,' . $id, // Ensure UID is unique but editable
+            'password' => 'required|min:6',
         ]);
 
-        $player = Player::findOrFail($id);
-        $player->uid = $request->uid;
-        $player->name = $request->name;
-        $player->dob = $request->dob;
-        $player->sex = $request->sex;
+        $uid = $this->getNextAvailableUid();
+        $dob = Carbon::parse($validated['dob']);
+        $age = $dob->diffInYears(Carbon::now());
 
-        if ($request->filled('password')) {
-            $player->password = bcrypt($request->password);
+        Player::create([
+            'uid' => $uid,
+            'name' => $validated['name'],
+            'dob' => $dob,
+            'sex' => $validated['sex'],
+            'password' => Hash::make($validated['password']),
+            'age' => $age,
+            'ip_address' => request()->ip(),
+        ]);
+
+        return redirect()->route('players.index')->with('success', 'Player registered successfully!');
+    }
+
+    // ✅ Fix edit function to show all players in a table for inline editing
+    public function edit()
+    {
+        $players = Player::orderBy('uid', 'desc')->get();
+        return view('players.edit', compact('players'));
+    }
+
+    // ✅ Fix update function for inline editing
+    public function update(Request $request, $uid)
+    {
+        $player = Player::where('uid', $uid)->firstOrFail();
+    
+        if ($request->has('name')) {
+            $player->name = $request->input('name');
         }
-
+    
+        if ($request->has('dob')) {
+            $player->dob = Carbon::parse($request->input('dob'))->format('Y-m-d');
+        }
+    
+        if ($request->has('sex')) {
+            $player->sex = $request->input('sex');
+        }
+    
         $player->save();
+    
+        return response()->json([
+            'success' => true,
+            'player' => $player
+        ]);
+    }
+    
 
-        return redirect()->route('player.register')->with('success', 'Player updated successfully!');
+
+    public function destroy($uid)
+    {
+        $player = Player::where('uid', $uid)->firstOrFail();
+        $player->delete();
+
+        return response()->json(['success' => true]);
     }
 
     private function getNextAvailableUid()
     {
-        $usedUids = Player::orderBy('uid')->pluck('uid')->toArray(); // Get all existing UIDs
-        $nextUid = 100001; // Start from 100001
+        $usedUids = Player::orderBy('uid')->pluck('uid')->toArray();
+        $nextUid = 100001;
 
         while (in_array($nextUid, $usedUids)) {
-            $nextUid++; // Keep increasing until a free UID is found
+            $nextUid++;
         }
 
         return $nextUid;
     }
 }
-

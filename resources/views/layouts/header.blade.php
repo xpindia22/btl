@@ -108,8 +108,9 @@
             <a href="{{ route('matches.singles.create') }}">Add Singles Match</a>
         @endif
         <a href="{{ route('matches.singles.index') }}">Singles Results</a>
-        <a href="{{ route('matches.singles.edit') }}">Edit Singles Results</a>
-    </div>
+        <a href="{{ route('matches.singles.index') }}">Edit Singles Results</a>
+
+        </div>
 </div>
 
             <!-- Dropdown: Doubles - BD-GD-XD -->
@@ -138,6 +139,16 @@
                     <a href="{{ route('matches.singles.index') }}">Singles Results</a>
                     @if (in_array($user_Role, ['admin', 'moderator', 'user']))
                         <a href="{{ route('matches.doubles.index') }}">Doubles Results</a>
+                        <a href="http://localhost:8000/matches/singles?filter_tournament=all&filter_player1=all&filter_player2=all&filter_category=%25BS%25&filter_date=&filter_stage=all">Boys Singles Results</a>
+                        <a href="http://localhost:8000/matches/singles?filter_tournament=all&filter_player1=all&filter_player2=all&filter_category=%25GS%25&filter_date=&filter_stage=all">Girls Singles Results</a>
+
+
+                        <a href="http://localhost:8000/matches/doubles?filter_tournament=all&filter_player=all&filter_category=BD&filter_date=&filter_stage=all&filter_results=all">Boys Doubles Results</a>
+                        <a href="http://localhost:8000/matches/doubles?filter_tournament=all&filter_player=all&filter_category=GD&filter_date=&filter_stage=all&filter_results=all">Girls Doubles Results</a>
+
+                        <a href="http://localhost:8000/matches/doubles?filter_tournament=all&filter_player=all&filter_category=XD&filter_date=&filter_stage=all&filter_results=all">Mixed Doubles Results</a>
+
+
                     @endif
                 </div>
             </div>

@@ -415,4 +415,6 @@ class MatchController extends Controller
 
         return redirect()->route('matches.doubles.index')->with('success', 'Doubles match updated successfully.');
     }
+
+    
 }
