@@ -1,4 +1,6 @@
 @php
+//header.blade.php file.
+
     use Illuminate\Support\Facades\Auth;
 
     $logged_in_user = Auth::check() ? Auth::user()->username : 'Guest';
@@ -109,7 +111,6 @@
         <a href="{{ route('matches.singles.edit') }}">Edit Singles Results</a>
     </div>
 </div>
-
 
             <!-- Dropdown: Doubles - BD-GD-XD -->
             <div class="dropdown">
