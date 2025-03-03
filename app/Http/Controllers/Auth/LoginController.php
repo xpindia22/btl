@@ -26,7 +26,7 @@ class LoginController extends Controller
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $remember)) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/btl/dashboard')->with('success', 'Login successful!');
+            return redirect()->intended('/dashboard')->with('success', 'Login successful!');
         }
 
         return back()->withErrors(['email' => 'Invalid credentials'])->onlyInput('email');
@@ -38,6 +38,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/btl/login')->with('success', 'You have been logged out.');
+        return redirect('/login')->with('success', 'You have been logged out.');
     }
 }
