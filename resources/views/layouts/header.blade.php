@@ -166,6 +166,8 @@
         <a href="{{ route('users.edit') }}">Edit Your Users</a>
 
         <a href="{{ route('players.register') }}">Register Your Players</a>
+        <a href="{{ route('players.edit') }}">Edit Your Players</a>
+
         @endif
         </div>
 </div>
