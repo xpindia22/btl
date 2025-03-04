@@ -5,7 +5,9 @@
     <h1 class="mb-3">Registered Players</h1>
 
     <div class="table-responsive">
-        <table class="table table-striped align-middle">
+        <!-- <table class="table table-striped align-middle"> -->
+        <table class="registration-form-1400 mb-3 table table-bordered">
+
             <thead class="table-dark">
                 <tr>
                     <th>#</th>
