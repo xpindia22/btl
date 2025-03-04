@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h2>Manage Users --- <a href="{{ route('users.index') }}">View Users</a></h2>
+    <h2>--- Manage Users --- <a href="{{ route('users.index') }}">View Users</a></h2>
 
     <table class="table">
         <thead>
