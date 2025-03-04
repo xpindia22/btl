@@ -9,11 +9,15 @@ use App\Http\Controllers\MatchController;
 use App\Http\Controllers\DoublesMatchController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TournamentController;
-
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\ProfileController;
 
-// Redirect root to dashboard if authenticated, else to login.
+// --------------------------------------------------
+// ROOT REDIRECT
+// --------------------------------------------------
 Route::get('/', function () {
     return auth()->check() ? redirect()->route('dashboard') : redirect()->route('login');
 });
@@ -32,27 +36,17 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/register', 'register');
 });
 
-
-// PUBLIC PLAYERS
-
-
-     // Handle form submission
-     Route::middleware(['web'])->group(function () {
-      // Show the registration form
-      Route::get('/players/register', [PlayerController::class, 'create'])->name('players.register');
-  
-      // Handle form submission
-      Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register.post');
- 
- //     Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register');
-     Route::get('/players', [PlayerController::class, 'index'])->name('players.index'); 
-     Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
-     Route::put('/players/{uid}/update', [PlayerController::class, 'update']);
-     Route::delete('/players/{uid}/delete', [PlayerController::class, 'destroy']);
-     
- });
- 
-
+// --------------------------------------------------
+// PUBLIC PLAYER REGISTRATION & VIEWING
+// --------------------------------------------------
+Route::middleware(['web'])->group(function () {
+    Route::get('/players/register', [PlayerController::class, 'create'])->name('players.register');
+    Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register.post');
+    Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
+    Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
+    Route::put('/players/{uid}/update', [PlayerController::class, 'update']);
+    Route::delete('/players/{uid}/delete', [PlayerController::class, 'destroy']);
+});
 
 // --------------------------------------------------
 // PROTECTED ROUTES (AUTH REQUIRED)
@@ -77,7 +71,6 @@ Route::middleware(['auth'])->group(function () {
     // --------------------------
     Route::middleware(['admin'])->prefix('admin')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
-        // example resource route – adapt as needed
         Route::resource('admin/edit_users', AdminController::class)->except(['create', 'store', 'show']);
         Route::get('/edit_players', [AdminController::class, 'editPlayers'])->name('admin.edit_players');
         Route::get('/add_moderator', [AdminController::class, 'addModerator'])->name('admin.add_moderator');
@@ -89,84 +82,63 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/matches/lock-tournament', [MatchController::class, 'lockTournament'])->name('matches.lockTournament');
     Route::post('/matches/{id}/restore', [MatchController::class, 'restore'])->name('matches.restore');
     Route::delete('/matches/{id}/force-delete', [MatchController::class, 'forceDelete'])->name('matches.forceDelete');
-
-    // For filtering players in matches
     Route::get('/matches/filtered-players', [MatchController::class, 'filteredPlayers'])->name('matches.filteredPlayers');
 
-// --------------------------
-// SINGLES MATCHES
-// --------------------------
-Route::prefix('matches/singles')->group(function () {
-     Route::get('/', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
-     Route::get('/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
-     Route::post('/store', [MatchController::class, 'storeSingles'])->name('matches.singles.store');
- 
-     // Lock/Unlock Tournaments
-     Route::post('/lock-tournament', [MatchController::class, 'lockSinglesTournament'])
-          ->name('matches.singles.lockTournament');
-     Route::post('/unlock-tournament', [MatchController::class, 'unlockSinglesTournament'])
-          ->name('matches.singles.unlockTournament');
- 
-     // Filtered Players for Singles
-     Route::get('/filtered-players', [MatchController::class, 'filteredPlayersSingles'])
-          ->name('matches.singles.filteredPlayers');
- 
-     // Update & Delete Singles Matches
-     Route::get('/{match}/edit', [MatchController::class, 'editSingles'])->name('matches.singles.edit'); // ✅ FIXED
-     Route::put('/{match}/update', [MatchController::class, 'updateSingles'])->name('matches.singles.update');
-     Route::delete('/{match}/delete', [MatchController::class, 'deleteSingles'])->name('matches.singles.delete');
- });
+    // --------------------------
+    // SINGLES MATCHES
+    // --------------------------
+    Route::prefix('matches/singles')->group(function () {
+        Route::get('/', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
+        Route::get('/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
+        Route::post('/store', [MatchController::class, 'storeSingles'])->name('matches.singles.store');
+        Route::post('/lock-tournament', [MatchController::class, 'lockSinglesTournament'])->name('matches.singles.lockTournament');
+        Route::post('/unlock-tournament', [MatchController::class, 'unlockSinglesTournament'])->name('matches.singles.unlockTournament');
+        Route::get('/filtered-players', [MatchController::class, 'filteredPlayersSingles'])->name('matches.singles.filteredPlayers');
+        Route::get('/{match}/edit', [MatchController::class, 'editSingles'])->name('matches.singles.edit');
+        Route::put('/{match}/update', [MatchController::class, 'updateSingles'])->name('matches.singles.update');
+        Route::delete('/{match}/delete', [MatchController::class, 'deleteSingles'])->name('matches.singles.delete');
+    });
 
+    // --------------------------
+    // DOUBLES MATCH ROUTES
+    // --------------------------
+    Route::prefix('matches/doubles')->group(function () {
+        Route::get('/', [DoublesMatchController::class, 'index'])->name('matches.doubles.index');
+        Route::get('/edit', [DoublesMatchController::class, 'indexWithEdit'])->name('matches.doubles.edit');
+        Route::get('/create', [DoublesMatchController::class, 'createDoubles'])->name('matches.doubles.create');
+        Route::post('/store', [DoublesMatchController::class, 'storeDoubles'])->name('matches.doubles.store');
+        Route::get('/filtered-players', [DoublesMatchController::class, 'getFilteredPlayers'])->name('matches.doubles.filteredPlayers');
+        Route::post('/lock', [DoublesMatchController::class, 'lockTournament'])->name('matches.doubles.lockTournament');
+        Route::post('/unlock', [DoublesMatchController::class, 'unlockTournament'])->name('matches.doubles.unlockTournament');
+        Route::put('/{match}/update', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
+        Route::delete('/{match}/delete', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
+    });
 
     // --------------------------
     // CATEGORIES
     // --------------------------
     Route::resource('categories', CategoryController::class)->except(['show']);
+
+    // --------------------------
+    // PROFILE SETTINGS (EDIT USER DETAILS)
+    // --------------------------
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
+// --------------------------------------------------
+// RESULTS
+// --------------------------------------------------
 Route::prefix('results')->group(function () {
-     Route::get('/singles', [MatchController::class, 'showSinglesResults'])->name('results.singles');
-     Route::get('/doubles', [MatchController::class, 'showDoublesResults'])->name('results.doubles');
- });
- 
-// --------------------------------------------------
-// DOUBLES MATCH ROUTES (AUTH REQUIRED)
-// --------------------------------------------------
-Route::middleware(['auth'])->group(function () {
-    Route::prefix('matches/doubles')->group(function () {
-
-        // 1) Read-only index
-        Route::get('/', [DoublesMatchController::class, 'index'])
-             ->name('matches.doubles.index');
-
-        // 2) “Edit” view (shows a table w/ inline editing & delete)
-        Route::get('/edit', [DoublesMatchController::class, 'indexWithEdit'])
-             ->name('matches.doubles.edit');
-
-        // 3) Create doubles
-        Route::get('/create', [DoublesMatchController::class, 'createDoubles'])
-             ->name('matches.doubles.create');
-
-        // 4) Store doubles
-        Route::post('/store', [DoublesMatchController::class, 'storeDoubles'])
-             ->name('matches.doubles.store');
-
-        // 5) Filtered players for doubles (BD, GD, XD)
-        Route::get('/filtered-players', [DoublesMatchController::class, 'getFilteredPlayers'])
-             ->name('matches.doubles.filteredPlayers');
-
-        // 6) Lock/unlock tournament
-        Route::post('/lock', [DoublesMatchController::class, 'lockTournament'])
-             ->name('matches.doubles.lockTournament');
-        Route::post('/unlock', [DoublesMatchController::class, 'unlockTournament'])
-             ->name('matches.doubles.unlockTournament');
-
-        // 7) Update one doubles match (inline editing)
-        Route::put('/{match}/update', [DoublesMatchController::class, 'update'])
-             ->name('matches.doubles.update');
-
-        // 8) Soft delete one doubles match
-        Route::delete('/{match}/delete', [DoublesMatchController::class, 'softDelete'])
-             ->name('matches.doubles.delete');
-    });
+    Route::get('/singles', [MatchController::class, 'showSinglesResults'])->name('results.singles');
+    Route::get('/doubles', [MatchController::class, 'showDoublesResults'])->name('results.doubles');
 });
+
+// --------------------------------------------------
+// PASSWORD RESET (FORGOT PASSWORD)
+// --------------------------------------------------
+Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
+Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+
