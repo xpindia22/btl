@@ -42,6 +42,8 @@ Route::middleware(['web'])->group(function () {
     Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
     Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
     Route::put('/players/{uid}/update', [PlayerController::class, 'update']);
+    Route::put('/players/{uid}/update', [PlayerController::class, 'update'])->name('players.update');
+
     Route::delete('/players/{uid}/delete', [PlayerController::class, 'destroy']);
 });
 

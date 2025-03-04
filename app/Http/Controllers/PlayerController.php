@@ -92,21 +92,22 @@ class PlayerController extends Controller
     // ✅ Fix update function for inline editing
     public function update(Request $request, $uid)
     {
-        $player = Player::where('uid', $uid)->firstOrFail();
-    
-        if ($request->has('name')) {
-            $player->name = $request->input('name');
+        $player = Player::where('uid', $uid)->first();
+        if (!$player) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Player not found'
+            ], 404);
         }
     
-        if ($request->has('dob')) {
-            $player->dob = Carbon::parse($request->input('dob'))->format('Y-m-d');
-        }
+        // Optionally, validate the input
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'dob'  => 'required|date',
+            'sex'  => 'required|string'
+        ]);
     
-        if ($request->has('sex')) {
-            $player->sex = $request->input('sex');
-        }
-    
-        $player->save();
+        $player->update($validated);
     
         return response()->json([
             'success' => true,

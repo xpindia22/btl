@@ -5,13 +5,13 @@
     <h2>Edit Players</h2>
     
     <table class="registration-form-1400 mb-3 table table-bordered">
-    <thead>
+        <thead>
             <tr>
-                <th>S No</th> <!-- Serial Number Column -->
+                <th>S No</th>
                 <th>UID</th>
                 <th>Name</th>
                 <th>DOB</th>
-                <th>Age</th> <!-- Age Column -->
+                <th>Age</th>
                 <th>Sex</th>
                 <th>Actions</th>
             </tr>
@@ -19,11 +19,11 @@
         <tbody>
             @foreach ($players as $index => $player)
             <tr data-uid="{{ $player->uid }}">
-                <td>{{ $index + 1 }}</td> <!-- Serial Number -->
+                <td>{{ $index + 1 }}</td>
                 <td class="editable" data-field="uid">{{ $player->uid }}</td>
                 <td class="editable" data-field="name">{{ $player->name }}</td>
                 <td class="editable" data-field="dob">{{ $player->dob }}</td>
-                <td class="age">{{ \Carbon\Carbon::parse($player->dob)->age }}</td> <!-- Auto-calculate Age -->
+                <td class="age">{{ \Carbon\Carbon::parse($player->dob)->age }}</td>
                 <td class="editable" data-field="sex">{{ $player->sex }}</td>
                 <td>
                     <button class="btn btn-success btn-sm save-btn" style="display:none;">Save</button>
@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".edit-btn").forEach(button => {
         button.addEventListener("click", function () {
             let row = this.closest("tr");
+            console.log("Edit clicked for row:", row.dataset.uid);
 
             row.querySelectorAll(".editable").forEach(cell => {
                 let value = cell.innerText.trim();
@@ -63,6 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
         button.addEventListener("click", function () {
             let row = this.closest("tr");
             let uid = row.dataset.uid;
+            console.log("Save clicked for row:", uid);
             let data = {};
 
             row.querySelectorAll(".editable input").forEach(input => {
@@ -72,6 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
             fetch(`/players/${uid}/update`, {
                 method: "PUT",
                 headers: {
+                    "Accept": "application/json", // Forces JSON response
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": csrfToken
                 },
@@ -82,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (responseData.success) {
                     row.querySelectorAll(".editable").forEach(cell => {
                         let field = cell.dataset.field;
-                        cell.innerHTML = responseData.player[field]; // Update table with new values
+                        cell.innerHTML = responseData.player[field];
                     });
 
                     // Auto-update Age column based on new DOB
@@ -98,8 +101,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             })
             .catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred while updating.");
+                console.error("Error updating player:", error);
+                alert("An error occurred while updating: " + (error.message || error));
             });
         });
     });
@@ -108,12 +111,14 @@ document.addEventListener("DOMContentLoaded", function () {
         button.addEventListener("click", function () {
             let row = this.closest("tr");
             let uid = row.dataset.uid;
+            console.log("Delete clicked for row:", uid);
 
             if (!confirm("Are you sure you want to delete this player?")) return;
 
             fetch(`/players/${uid}/delete`, {
                 method: "DELETE",
                 headers: {
+                    "Accept": "application/json", // Forces JSON response
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": csrfToken
                 }
@@ -123,10 +128,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (responseData.success) {
                     row.remove();
                 } else {
-                    alert("Delete failed!");
+                    alert("Delete failed: " + responseData.message);
                 }
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => {
+                console.error("Error deleting player:", error);
+                alert("An error occurred while deleting: " + (error.message || error));
+            });
         });
     });
 
