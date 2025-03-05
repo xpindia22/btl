@@ -107,7 +107,8 @@
             <a href="{{ route('matches.singles.create') }}">Add Singles Match</a>
         @endif
         <a href="{{ route('matches.singles.index') }}">Singles Results</a>
-        <a href="{{ route('matches.singles.index') }}">Edit Singles Results</a>
+        <a href="{{ route('matches.singles.Edit') }}">Edit Singles Results</a>
+
 
         </div>
 </div>

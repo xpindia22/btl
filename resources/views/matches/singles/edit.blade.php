@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Singles Matches (Edit Mode)</h1>
+    <h1>Singles Matches (Inline Edit Mode)</h1>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -28,7 +28,6 @@
                 <th>Player 1</th>
                 <th>Player 2</th>
                 <th>Stage</th>
-                <!-- Separate columns for each set/player -->
                 <th>Set 1 (P1)</th>
                 <th>Set 1 (P2)</th>
                 <th>Set 2 (P1)</th>
@@ -48,7 +47,7 @@
                     <td>{{ optional($match->category)->name ?? 'N/A' }}</td>
                     <td>{{ optional($match->player1)->name ?? 'N/A' }}</td>
                     <td>{{ optional($match->player2)->name ?? 'N/A' }}</td>
-
+                    
                     <!-- Stage -->
                     <td>
                         <select class="form-control stage" data-match-id="{{ $match->id }}">
@@ -59,7 +58,7 @@
                             @endforeach
                         </select>
                     </td>
-
+                    
                     <!-- Set 1 -->
                     <td>
                         <input type="number" 
@@ -73,7 +72,7 @@
                                data-match-id="{{ $match->id }}"
                                value="{{ $match->set1_player2_points ?? '' }}">
                     </td>
-
+                    
                     <!-- Set 2 -->
                     <td>
                         <input type="number" 
@@ -87,7 +86,7 @@
                                data-match-id="{{ $match->id }}"
                                value="{{ $match->set2_player2_points ?? '' }}">
                     </td>
-
+                    
                     <!-- Set 3 -->
                     <td>
                         <input type="number" 
@@ -101,7 +100,7 @@
                                data-match-id="{{ $match->id }}"
                                value="{{ $match->set3_player2_points ?? '' }}">
                     </td>
-
+                    
                     <!-- Date -->
                     <td>
                         <input type="date" 
@@ -109,7 +108,7 @@
                                data-match-id="{{ $match->id }}"
                                value="{{ $match->match_date }}">
                     </td>
-
+                    
                     <!-- Time -->
                     <td>
                         <input type="time" 
@@ -117,7 +116,7 @@
                                data-match-id="{{ $match->id }}"
                                value="{{ $match->match_time }}">
                     </td>
-
+                    
                     <!-- Actions: Update & Delete -->
                     <td>
                         <button class="btn btn-sm btn-primary update-btn" data-match-id="{{ $match->id }}">
@@ -131,17 +130,22 @@
             @endforeach
         </tbody>
     </table>
+    
+    <!-- Pagination Links -->
+    <div class="d-flex justify-content-center">
+        {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
+    </div>
 </div>
-
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Handle UPDATE
+    // Handle UPDATE using POST with _method override to PUT
     document.querySelectorAll(".update-btn").forEach(button => {
         button.addEventListener("click", function () {
             let matchId = this.dataset.matchId;
             let data = {
                 _token: "{{ csrf_token() }}",
+                _method: "PUT", // <-- Method override
                 stage: document.querySelector(`.stage[data-match-id="${matchId}"]`).value,
                 match_date: document.querySelector(`.match_date[data-match-id="${matchId}"]`).value,
                 match_time: document.querySelector(`.match_time[data-match-id="${matchId}"]`).value,
@@ -153,44 +157,77 @@ document.addEventListener("DOMContentLoaded", function () {
                 set3_player2_points: document.querySelector(`.set3_player2_points[data-match-id="${matchId}"]`).value
             };
 
-            // Make a PUT request
-            fetch(`/matches/singles/${matchId}/update`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
+            fetch(`/btl/matches/singles/${matchId}/update`, {
+                method: "POST", // Using POST instead of PUT
+                headers: { 
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Accept": "application/json"
+                },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
-            .then(responseData => {
-                alert(responseData.message);
-                // You can also refresh the table or show a success message, etc.
+            .then(response => {
+                console.log("Update response status:", response.status);
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.log("Update response text:", text);
+                        throw new Error("Update failed. See console for details.");
+                    });
+                }
+                return response.json();
             })
-            .catch(error => console.error("Error:", error));
+            .then(responseData => {
+                console.log("Update success:", responseData);
+                alert(responseData.message);
+            })
+            .catch(error => {
+                console.error("Error during update:", error);
+                alert("An error occurred while updating the match: " + error.message);
+            });
         });
     });
 
-    // Handle DELETE
+    // Handle DELETE using POST with _method override to DELETE
     document.querySelectorAll(".delete-btn").forEach(button => {
         button.addEventListener("click", function () {
             let matchId = this.dataset.matchId;
             if (confirm("Are you sure you want to delete this match?")) {
-                fetch(`/matches/singles/${matchId}/delete`, {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ _token: "{{ csrf_token() }}" })
+                fetch(`/btl/matches/singles/${matchId}/delete`, {
+                    method: "POST", // Using POST instead of DELETE
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ 
+                        _token: "{{ csrf_token() }}",
+                        _method: "DELETE" // <-- Method override
+                    })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log("Delete response status:", response.status);
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            console.log("Delete response text:", text);
+                            throw new Error("Delete failed. See console for details.");
+                        });
+                    }
+                    return response.json();
+                })
                 .then(responseData => {
+                    console.log("Delete success:", responseData);
                     document.getElementById(`match-${matchId}`).remove();
-                    alert("Match deleted successfully!");
+                    alert(responseData.message);
                 })
-                .catch(error => console.error("Error:", error));
+                .catch(error => {
+                    console.error("Error during delete:", error);
+                    alert("An error occurred while deleting the match: " + error.message);
+                });
             }
         });
     });
 });
 </script>
-<!-- Pagination -->
-<div class="d-flex justify-content-center">
-    {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
-</div>
+
+
 @endsection

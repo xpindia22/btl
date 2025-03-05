@@ -31,18 +31,18 @@ class MatchController extends Controller
     }
 
     // Lock/unlock Doubles tournaments
-    public function lockDoublesTournament(Request $request)
-    {
-        $validated = $request->validate(['tournament_id' => 'required|exists:tournaments,id']);
-        session(['locked_doubles_tournament_id' => $validated['tournament_id']]);
-        return redirect()->back()->with('success', 'Doubles tournament locked successfully.');
-    }
+    // public function lockDoublesTournament(Request $request)
+    // {
+    //     $validated = $request->validate(['tournament_id' => 'required|exists:tournaments,id']);
+    //     session(['locked_doubles_tournament_id' => $validated['tournament_id']]);
+    //     return redirect()->back()->with('success', 'Doubles tournament locked successfully.');
+    // }
 
-    public function unlockDoublesTournament()
-    {
-        session()->forget('locked_doubles_tournament_id');
-        return redirect()->back()->with('success', 'Doubles tournament unlocked successfully.');
-    }
+    // public function unlockDoublesTournament()
+    // {
+    //     session()->forget('locked_doubles_tournament_id');
+    //     return redirect()->back()->with('success', 'Doubles tournament unlocked successfully.');
+    // }
 
     // Create Singles Match View
     public function createSingles()
@@ -63,23 +63,23 @@ class MatchController extends Controller
     }
 
     // Create Doubles Match View
-    public function createDoubles()
-    {
-        $user = Auth::user();
-        $tournaments = Tournament::where('created_by', $user->id)
-            ->orWhereHas('moderators', fn($q) => $q->where('user_id', $user->id))
-            ->get();
+    // public function createDoubles()
+    // {
+    //     $user = Auth::user();
+    //     $tournaments = Tournament::where('created_by', $user->id)
+    //         ->orWhereHas('moderators', fn($q) => $q->where('user_id', $user->id))
+    //         ->get();
 
-        $lockedTournamentId = session('locked_doubles_tournament_id');
-        $lockedTournament = $lockedTournamentId ? Tournament::find($lockedTournamentId) : null;
+    //     $lockedTournamentId = session('locked_doubles_tournament_id');
+    //     $lockedTournament = $lockedTournamentId ? Tournament::find($lockedTournamentId) : null;
 
-        $categories = Category::where('name', 'LIKE', '%BD%')
-            ->orWhere('name', 'LIKE', '%GD%')
-            ->orWhere('name', 'LIKE', '%XD%')
-            ->get();
+    //     $categories = Category::where('name', 'LIKE', '%BD%')
+    //         ->orWhere('name', 'LIKE', '%GD%')
+    //         ->orWhere('name', 'LIKE', '%XD%')
+    //         ->get();
 
-        return view('matches.doubles.create', compact('tournaments', 'lockedTournament', 'categories'));
-    }
+    //     return view('matches.doubles.create', compact('tournaments', 'lockedTournament', 'categories'));
+    // }
 
     // Fetch players for Singles Matches
     public function filteredPlayersSingles(Request $request)
@@ -111,41 +111,41 @@ class MatchController extends Controller
     }
 
     // Fetch players for Doubles Matches
-    public function filteredPlayersDoubles(Request $request)
-    {
-        \Log::info("🔍 API called: filteredPlayersDoubles", ['category_id' => $request->category_id]);
+    // public function filteredPlayersDoubles(Request $request)
+    // {
+    //     \Log::info("🔍 API called: filteredPlayersDoubles", ['category_id' => $request->category_id]);
 
-        $category = Category::find($request->category_id);
-        if (!$category) return response()->json([]);
+    //     $category = Category::find($request->category_id);
+    //     if (!$category) return response()->json([]);
 
-        $categoryName = strtoupper($category->name);
-        $minAge = 0;
-        $maxAge = 100;
-        $sexFilter = [];
+    //     $categoryName = strtoupper($category->name);
+    //     $minAge = 0;
+    //     $maxAge = 100;
+    //     $sexFilter = [];
 
-        if (preg_match('/^U(\d+)(BD|GD|XD)$/', $categoryName, $matches)) {
-            $maxAge = (int) $matches[1];
-        } elseif (preg_match('/^SENIOR (\d+) PLUS (BD|GD|XD)$/', $categoryName, $matches)) {
-            $minAge = (int) $matches[1];
-        }
+    //     if (preg_match('/^U(\d+)(BD|GD|XD)$/', $categoryName, $matches)) {
+    //         $maxAge = (int) $matches[1];
+    //     } elseif (preg_match('/^SENIOR (\d+) PLUS (BD|GD|XD)$/', $categoryName, $matches)) {
+    //         $minAge = (int) $matches[1];
+    //     }
 
-        if (strpos($categoryName, 'BD') !== false) {
-            $sexFilter = ['M'];
-        } elseif (strpos($categoryName, 'GD') !== false) {
-            $sexFilter = ['F'];
-        } elseif (strpos($categoryName, 'XD') !== false) {
-            $sexFilter = ['M', 'F'];
-        }
+    //     if (strpos($categoryName, 'BD') !== false) {
+    //         $sexFilter = ['M'];
+    //     } elseif (strpos($categoryName, 'GD') !== false) {
+    //         $sexFilter = ['F'];
+    //     } elseif (strpos($categoryName, 'XD') !== false) {
+    //         $sexFilter = ['M', 'F'];
+    //     }
 
-        $players = Player::whereBetween('age', [$minAge, $maxAge])
-                         ->whereIn('sex', $sexFilter)
-                         ->whereNotNull('uid')
-                         ->where('uid', '!=', '')
-                         ->select('id', 'name', 'age', 'sex')
-                         ->get();
+    //     $players = Player::whereBetween('age', [$minAge, $maxAge])
+    //                      ->whereIn('sex', $sexFilter)
+    //                      ->whereNotNull('uid')
+    //                      ->where('uid', '!=', '')
+    //                      ->select('id', 'name', 'age', 'sex')
+    //                      ->get();
 
-        return response()->json($players);
-    }
+    //     return response()->json($players);
+    // }
 
     // Store Singles Match
     public function storeSingles(Request $request)
@@ -188,35 +188,35 @@ class MatchController extends Controller
     }
 
     // Store Doubles Match
-    public function storeDoubles(Request $request)
-    {
-        $validated = $request->validate([
-            'tournament_id' => 'required|exists:tournaments,id',
-            'category_id' => 'required|exists:categories,id',
-            'match_date' => 'required|date',
-            'match_time' => 'required',
-            'stage' => 'required|string',
-            'team1_player1_id' => 'required|exists:players,id',
-            'team1_player2_id' => 'required|exists:players,id|different:team1_player1_id',
-            'team2_player1_id' => 'required|exists:players,id',
-            'team2_player2_id' => 'required|exists:players,id|different:team2_player1_id',
-        ]);
+    // public function storeDoubles(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'tournament_id' => 'required|exists:tournaments,id',
+    //         'category_id' => 'required|exists:categories,id',
+    //         'match_date' => 'required|date',
+    //         'match_time' => 'required',
+    //         'stage' => 'required|string',
+    //         'team1_player1_id' => 'required|exists:players,id',
+    //         'team1_player2_id' => 'required|exists:players,id|different:team1_player1_id',
+    //         'team2_player1_id' => 'required|exists:players,id',
+    //         'team2_player2_id' => 'required|exists:players,id|different:team2_player1_id',
+    //     ]);
 
-        MatchModel::create([
-            'tournament_id' => $validated['tournament_id'],
-            'category_id' => $validated['category_id'],
-            'match_date' => $validated['match_date'],
-            'match_time' => $validated['match_time'],
-            'stage' => $validated['stage'],
-            'team1_player1_id' => $validated['team1_player1_id'],
-            'team1_player2_id' => $validated['team1_player2_id'],
-            'team2_player1_id' => $validated['team2_player1_id'],
-            'team2_player2_id' => $validated['team2_player2_id'],
-            'created_by' => Auth::id(),
-        ]);
+    //     MatchModel::create([
+    //         'tournament_id' => $validated['tournament_id'],
+    //         'category_id' => $validated['category_id'],
+    //         'match_date' => $validated['match_date'],
+    //         'match_time' => $validated['match_time'],
+    //         'stage' => $validated['stage'],
+    //         'team1_player1_id' => $validated['team1_player1_id'],
+    //         'team1_player2_id' => $validated['team1_player2_id'],
+    //         'team2_player1_id' => $validated['team2_player1_id'],
+    //         'team2_player2_id' => $validated['team2_player2_id'],
+    //         'created_by' => Auth::id(),
+    //     ]);
 
-        return redirect()->route('matches.doubles.index')->with('success', 'Doubles match created successfully.');
-    }
+    //     return redirect()->route('matches.doubles.index')->with('success', 'Doubles match created successfully.');
+    // }
 
     // Display all Singles Matches (Paginated)
     // Display all Singles Matches (Paginated with filters)
@@ -265,79 +265,79 @@ class MatchController extends Controller
     }
     
     // Display all Doubles Matches (Paginated with filters)
-    public function indexDoubles(Request $request)
-    {
-        // Fetch tournaments (for the filter dropdown)
-        $tournaments = Tournament::all();
+    // public function indexDoubles(Request $request)
+    // {
+    //     // Fetch tournaments (for the filter dropdown)
+    //     $tournaments = Tournament::all();
 
-        // Base query: only doubles, plus relationships for teams
-        $query = MatchModel::doubles()
-            ->with([
-                'tournament', 'category',
-                'team1Player1', 'team1Player2',
-                'team2Player1', 'team2Player2'
-            ]);
+    //     // Base query: only doubles, plus relationships for teams
+    //     $query = MatchModel::doubles()
+    //         ->with([
+    //             'tournament', 'category',
+    //             'team1Player1', 'team1Player2',
+    //             'team2Player1', 'team2Player2'
+    //         ]);
 
-        // Ensure categories contain BD, GD, or XD 
-        $query->whereHas('category', function($q) {
-            $q->where('name', 'LIKE', '%BD%')
-              ->orWhere('name', 'LIKE', '%GD%')
-              ->orWhere('name', 'LIKE', '%XD%');
-        });
+    //     // Ensure categories contain BD, GD, or XD 
+    //     $query->whereHas('category', function($q) {
+    //         $q->where('name', 'LIKE', '%BD%')
+    //           ->orWhere('name', 'LIKE', '%GD%')
+    //           ->orWhere('name', 'LIKE', '%XD%');
+    //     });
 
-        // OPTIONAL FILTERS
-        if ($request->has('filter_tournament') && $request->filter_tournament != 'all') {
-            $query->where('tournament_id', $request->filter_tournament);
-        }
+    //     // OPTIONAL FILTERS
+    //     if ($request->has('filter_tournament') && $request->filter_tournament != 'all') {
+    //         $query->where('tournament_id', $request->filter_tournament);
+    //     }
 
-        if ($request->has('filter_category') && $request->filter_category != 'all') {
-            $filterCat = $request->filter_category;
-            $query->whereHas('category', function($q) use ($filterCat) {
-                $q->where('name','LIKE',"%{$filterCat}%");
-            });
-        }
+    //     if ($request->has('filter_category') && $request->filter_category != 'all') {
+    //         $filterCat = $request->filter_category;
+    //         $query->whereHas('category', function($q) use ($filterCat) {
+    //             $q->where('name','LIKE',"%{$filterCat}%");
+    //         });
+    //     }
 
-        if ($request->has('filter_team1') && $request->filter_team1) {
-            $team1Name = $request->filter_team1;
-            $query->where(function($q) use ($team1Name) {
-                $q->whereHas('team1Player1', function($subQ) use ($team1Name){
-                    $subQ->where('name','LIKE',"%{$team1Name}%");
-                })
-                ->orWhereHas('team1Player2', function($subQ) use ($team1Name){
-                    $subQ->where('name','LIKE',"%{$team1Name}%");
-                });
-            });
-        }
+    //     if ($request->has('filter_team1') && $request->filter_team1) {
+    //         $team1Name = $request->filter_team1;
+    //         $query->where(function($q) use ($team1Name) {
+    //             $q->whereHas('team1Player1', function($subQ) use ($team1Name){
+    //                 $subQ->where('name','LIKE',"%{$team1Name}%");
+    //             })
+    //             ->orWhereHas('team1Player2', function($subQ) use ($team1Name){
+    //                 $subQ->where('name','LIKE',"%{$team1Name}%");
+    //             });
+    //         });
+    //     }
 
-        if ($request->has('filter_team2') && $request->filter_team2) {
-            $team2Name = $request->filter_team2;
-            $query->where(function($q) use ($team2Name) {
-                $q->whereHas('team2Player1', function($subQ) use ($team2Name){
-                    $subQ->where('name','LIKE',"%{$team2Name}%");
-                })
-                ->orWhereHas('team2Player2', function($subQ) use ($team2Name){
-                    $subQ->where('name','LIKE',"%{$team2Name}%");
-                });
-            });
-        }
+    //     if ($request->has('filter_team2') && $request->filter_team2) {
+    //         $team2Name = $request->filter_team2;
+    //         $query->where(function($q) use ($team2Name) {
+    //             $q->whereHas('team2Player1', function($subQ) use ($team2Name){
+    //                 $subQ->where('name','LIKE',"%{$team2Name}%");
+    //             })
+    //             ->orWhereHas('team2Player2', function($subQ) use ($team2Name){
+    //                 $subQ->where('name','LIKE',"%{$team2Name}%");
+    //             });
+    //         });
+    //     }
 
-        if ($request->has('filter_stage') && $request->filter_stage != 'all') {
-            $query->where('stage', $request->filter_stage);
-        }
+    //     if ($request->has('filter_stage') && $request->filter_stage != 'all') {
+    //         $query->where('stage', $request->filter_stage);
+    //     }
 
-        if ($request->has('filter_match_date') && $request->filter_match_date) {
-            $query->where('match_date', $request->filter_match_date);
-        }
+    //     if ($request->has('filter_match_date') && $request->filter_match_date) {
+    //         $query->where('match_date', $request->filter_match_date);
+    //     }
 
-        if ($request->has('filter_winner') && $request->filter_winner) {
-            $winnerFilter = $request->filter_winner;
-            // Additional filtering logic if needed
-        }
+    //     if ($request->has('filter_winner') && $request->filter_winner) {
+    //         $winnerFilter = $request->filter_winner;
+    //         // Additional filtering logic if needed
+    //     }
 
-        $matches = $query->orderBy('match_date', 'desc')->paginate(10);
+    //     $matches = $query->orderBy('match_date', 'desc')->paginate(10);
 
-        return view('matches.doubles.index', compact('matches','tournaments'));
-    }
+    //     return view('matches.doubles.index', compact('matches','tournaments'));
+    // }
 
     // ======================= EDIT & UPDATE MATCHES ========================= //
 
@@ -351,8 +351,11 @@ class MatchController extends Controller
     }
 
     // Update Singles Match
-    public function updateSingles(Request $request, $id)
-    {
+    // Update Singles Match
+// Update Singles Match
+public function updateSingles(Request $request, \App\Models\Matches $match)
+{
+    try {
         $validated = $request->validate([
             'stage' => 'nullable|string',
             'match_date' => 'nullable|date',
@@ -363,58 +366,25 @@ class MatchController extends Controller
             'set2_player2_points' => 'nullable|integer',
             'set3_player1_points' => 'nullable|integer',
             'set3_player2_points' => 'nullable|integer',
-            'tournament_id' => 'nullable|exists:tournaments,id',
-            'category_id'   => 'nullable|exists:categories,id',
-            'player1_id'    => 'nullable|exists:players,id',
-            'player2_id'    => 'nullable|exists:players,id|different:player1_id',
         ]);
 
-        $match = MatchModel::singles()->findOrFail($id);
         $match->update($validated);
 
         return response()->json(['message' => 'Match updated successfully.']);
+    } catch (\Exception $e) {
+        \Log::error("Update failed for match {$match->id}: " . $e->getMessage());
+        return response()->json(['message' => "Error: " . $e->getMessage()], 500);
     }
+}
 
-    // Edit Doubles Match
-    public function editDoubles($id)
-    {
-        $match = MatchModel::doubles()->findOrFail($id);
-        $tournaments = Tournament::all();
-        $categories = Category::where('name', 'LIKE', '%BD%')
-                              ->orWhere('name', 'LIKE', '%GD%')
-                              ->orWhere('name', 'LIKE', '%XD%')
-                              ->get();
-        $players = Player::all();
 
-        return view('matches.doubles.edit', compact('match', 'tournaments', 'categories', 'players'));
-    }
+// Delete Singles Match
+public function deleteSingles(\App\Models\Matches $match)
+{
+    $match->delete();
 
-    // Update Doubles Match
-    public function updateDoubles(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'tournament_id' => 'required|exists:tournaments,id',
-            'category_id' => 'required|exists:categories,id',
-            'match_date' => 'required|date',
-            'match_time' => 'required',
-            'stage' => 'required|string',
-            'team1_player1_id' => 'required|exists:players,id',
-            'team1_player2_id' => 'required|exists:players,id|different:team1_player1_id',
-            'team2_player1_id' => 'required|exists:players,id',
-            'team2_player2_id' => 'required|exists:players,id|different:team2_player1_id',
-            'set1_team1_points' => 'nullable|integer',
-            'set1_team2_points' => 'nullable|integer',
-            'set2_team1_points' => 'nullable|integer',
-            'set2_team2_points' => 'nullable|integer',
-            'set3_team1_points' => 'nullable|integer',
-            'set3_team2_points' => 'nullable|integer',
-        ]);
-
-        $match = MatchModel::doubles()->findOrFail($id);
-        $match->update($validated);
-
-        return redirect()->route('matches.doubles.index')->with('success', 'Doubles match updated successfully.');
-    }
+    return response()->json(['message' => 'Match deleted successfully.']);
+}
 
     
 }

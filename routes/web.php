@@ -87,9 +87,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/matches/{id}/force-delete', [MatchController::class, 'forceDelete'])->name('matches.forceDelete');
     Route::get('/matches/filtered-players', [MatchController::class, 'filteredPlayers'])->name('matches.filteredPlayers');
 
-    // --------------------------
-    // SINGLES MATCHES
-    // --------------------------
+    //singles matches
     Route::prefix('matches/singles')->group(function () {
         Route::get('/', [MatchController::class, 'indexSingles'])->name('matches.singles.index');
         Route::get('/create', [MatchController::class, 'createSingles'])->name('matches.singles.create');
@@ -97,10 +95,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/lock-tournament', [MatchController::class, 'lockSinglesTournament'])->name('matches.singles.lockTournament');
         Route::post('/unlock-tournament', [MatchController::class, 'unlockSinglesTournament'])->name('matches.singles.unlockTournament');
         Route::get('/filtered-players', [MatchController::class, 'filteredPlayersSingles'])->name('matches.singles.filteredPlayers');
+    
+        // Static route for the inline edit view (live table view)
+        Route::get('/edit', [MatchController::class, 'EditSingles'])->name('matches.singles.Edit');
+
+        // Dynamic route for editing a specific match
         Route::get('/{match}/edit', [MatchController::class, 'editSingles'])->name('matches.singles.edit');
         Route::put('/{match}/update', [MatchController::class, 'updateSingles'])->name('matches.singles.update');
         Route::delete('/{match}/delete', [MatchController::class, 'deleteSingles'])->name('matches.singles.delete');
     });
+    
 
     // --------------------------
     // DOUBLES MATCH ROUTES
