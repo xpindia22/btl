@@ -138,7 +138,7 @@ Route::prefix('results')->group(function () {
 // --------------------------------------------------
 // PASSWORD RESET (FORGOT PASSWORD)
 // --------------------------------------------------
-// ✅ Using `ForgotPasswordController` (not `UserController`)
+// ✅ Using `ForgotPasswordController` for password resets
 Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
 Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');

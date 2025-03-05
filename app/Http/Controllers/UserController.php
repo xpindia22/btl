@@ -36,29 +36,44 @@ class UserController extends Controller
         return view('users.profile', ['user' => Auth::user()]);
     }
 
-    // ✅ Update Own Profile (Name, Age, Sex, Password)
+    // ✅ Update Own Profile (Name, Age, Sex, Email, Password)
     public function updateProfile(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'age' => 'required|integer|min:1|max:120',
+            'username' => 'required|string|max:255|unique:users,username,' . Auth::id(),
+            'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
+            'dob' => 'required|date',
             'sex' => 'required|string|in:Male,Female,Other',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
-
-        $user = Auth::user();
-        $user->name = $request->name;
-        $user->age = $request->age;
-        $user->sex = $request->sex;
-
-        if ($request->password) {
-            $user->password = Hash::make($request->password);
+    
+        try {
+            $user = Auth::user();
+            $user->username = $request->username;
+            $user->email = $request->email;
+            $user->dob = $request->dob;
+            $user->sex = $request->sex;
+    
+            // ✅ Update password only if a new password is provided
+            if (!empty($request->password)) {
+                $user->password = Hash::make($request->password);
+            }
+    
+            $user->save();
+    
+            // ✅ Log the successful update
+            \Log::info('Profile updated successfully for user ID: ' . $user->id);
+    
+            // ✅ Redirect back with a success message
+            return redirect()->back()->with('success', 'Profile updated successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Profile update failed: ' . $e->getMessage());
+    
+            // ❌ Redirect back with an error message
+            return redirect()->back()->with('error', 'Profile update failed. Please try again.');
         }
-
-        $user->save();
-
-        return redirect()->back()->with('success', 'Profile updated successfully.');
     }
+    
 
     // ✅ Forgot Password - Send Reset Link
     public function forgotPassword()
@@ -99,18 +114,21 @@ class UserController extends Controller
 
         return view('admin.password-resets', compact('passwordResets'));
     }
+
     public function editUsers() 
-{
-    if (!auth()->user()->isAdmin()) {
-        return redirect()->route('dashboard')->with('error', 'Unauthorized access!');
+    {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access!');
+        }
+
+        $users = User::with(['moderatedTournaments', 'createdTournaments'])->orderBy('id', 'asc')->paginate(10);
+        $tournaments = Tournament::orderBy('year', 'desc')->get(); // ✅ Get all tournaments for dropdown
+
+        return view('users.edit', compact('users', 'tournaments'));
     }
 
-    $users = User::with(['moderatedTournaments', 'createdTournaments'])->orderBy('id', 'asc')->paginate(10);
-    $tournaments = Tournament::orderBy('year', 'desc')->get(); // ✅ Get all tournaments for dropdown
-
-    return view('users.edit', compact('users', 'tournaments'));
-}
-public function update(Request $request, $id)
+    // ✅ Update User (For Admin)
+    public function update(Request $request, $id)
 {
     $user = User::findOrFail($id);
 
@@ -119,19 +137,29 @@ public function update(Request $request, $id)
         return redirect()->route('dashboard')->with('error', 'Unauthorized action.');
     }
 
-    // ✅ Validate input
+    // ✅ Validate input (includes DOB for auto age calculation)
     $request->validate([
         'username' => 'required|string|max:255|unique:users,username,' . $id,
         'email' => 'required|email|unique:users,email,' . $id,
+        'dob' => 'required|date|before:today', // ✅ Must be a valid past date
+        'sex' => 'required|string|in:Male,Female,Other',
         'mobile_no' => 'nullable|digits:10',
         'role' => 'required|in:admin,user,visitor,player',
+        'password' => 'nullable|min:8|confirmed',
     ]);
 
     // ✅ Update user details
     $user->username = $request->username;
     $user->email = $request->email;
+    $user->dob = $request->dob;
+    $user->sex = $request->sex;
     $user->mobile_no = $request->mobile_no;
     $user->role = $request->role;
+
+    if ($request->filled('password')) {
+        $user->password = Hash::make($request->password);
+    }
+
     $user->save();
 
     // ✅ Sync Moderated Tournaments (BelongsToMany)
@@ -147,41 +175,38 @@ public function update(Request $request, $id)
     // ✅ Update Creator Field using the checkboxes submitted from the form
     $selectedTournaments = $request->input('created_tournaments', []);
 
-    // For tournaments that previously had this user as creator but are now unchecked,
-    // reassign them to the default admin.
+    // If unchecked, reassign to default admin
     Tournament::where('created_by', $user->id)
         ->whereNotIn('id', $selectedTournaments)
         ->update(['created_by' => $defaultAdminId]);
 
-    // For tournaments that are checked, assign this user as the creator.
+    // If checked, assign this user as creator
     if (!empty($selectedTournaments)) {
         Tournament::whereIn('id', $selectedTournaments)
             ->update(['created_by' => $user->id]);
     }
 
-    // ✅ Refresh relationships so the UI updates correctly
+    // ✅ Refresh relationships so UI updates correctly
     $user->load('moderatedTournaments', 'createdTournaments');
 
     return redirect()->route('users.index')->with('success', 'User updated successfully.');
 }
 
+    // ✅ Delete User
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        
+        if (!Auth::user()->isAdmin()) {
+            return redirect()->route('users.index')->with('error', 'Unauthorized action.');
+        }
 
-public function destroy($id)
-{
-    $user = User::findOrFail($id);
-    
-    if (!Auth::user()->isAdmin()) {
-        return redirect()->route('users.index')->with('error', 'Unauthorized action.');
+        // Prevent self-delete
+        if ($user->id === Auth::id()) {
+            return redirect()->route('users.index')->with('error', 'You cannot delete yourself.');
+        }
+
+        $user->delete();
+        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
-
-    // Prevent self-delete
-    if ($user->id === Auth::id()) {
-        return redirect()->route('users.index')->with('error', 'You cannot delete yourself.');
-    }
-
-    $user->delete();
-    return redirect()->route('users.index')->with('success', 'User deleted successfully.');
-}
-
-
 }
