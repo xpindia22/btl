@@ -95,6 +95,8 @@
                         <a href="{{ route('categories.create') }}">Insert Category</a> 
                         <a href="{{ route('admin.add_moderator') }}">Add Moderator</a>
                         <a href="{{ route('tournaments.create') }}">Insert Tournament</a>
+                        <a href="{{ route('password.request') }}" class="nav-link">Reset Link - Forgot Password</a>
+
                     </div>
                 </div>
             @endif
@@ -139,14 +141,14 @@
                     <a href="{{ route('matches.singles.index') }}">All Singles Results</a>
                     @if (in_array($user_Role, ['admin', 'moderator', 'user']))
                         <a href="{{ route('matches.doubles.index') }}">All Doubles Results</a>
-                        <a href="http://localhost:8000/matches/singles?filter_tournament=all&filter_player1=all&filter_player2=all&filter_category=%25BS%25&filter_date=&filter_stage=all">Boys Singles Results</a>
-                        <a href="http://localhost:8000/matches/singles?filter_tournament=all&filter_player1=all&filter_player2=all&filter_category=%25GS%25&filter_date=&filter_stage=all">Girls Singles Results</a>
+                        <a href="http://localhost/btl/matches/singles?filter_tournament=all&filter_player1=all&filter_player2=all&filter_category=%25BS%25&filter_date=&filter_stage=all">Boys Singles Results</a>
+                        <a href="http://localhost/btl/matches/singles?filter_tournament=all&filter_player1=all&filter_player2=all&filter_category=%25GS%25&filter_date=&filter_stage=all">Girls Singles Results</a>
 
 
-                        <a href="http://localhost:8000/matches/doubles?filter_tournament=all&filter_player=all&filter_category=BD&filter_date=&filter_stage=all&filter_results=all">Boys Doubles Results</a>
-                        <a href="http://localhost:8000/matches/doubles?filter_tournament=all&filter_player=all&filter_category=GD&filter_date=&filter_stage=all&filter_results=all">Girls Doubles Results</a>
+                        <a href="http://localhost/btl/matches/doubles?filter_tournament=all&filter_player=all&filter_category=BD&filter_date=&filter_stage=all&filter_results=all">Boys Doubles Results</a>
+                        <a href="http://localhost/btl/matches/doubles?filter_tournament=all&filter_player=all&filter_category=GD&filter_date=&filter_stage=all&filter_results=all">Girls Doubles Results</a>
 
-                        <a href="http://localhost:8000/matches/doubles?filter_tournament=all&filter_player=all&filter_category=XD&filter_date=&filter_stage=all&filter_results=all">Mixed Doubles Results</a>
+                        <a href="http://localhost/btl/matches/doubles?filter_tournament=all&filter_player=all&filter_category=XD&filter_date=&filter_stage=all&filter_results=all">Mixed Doubles Results</a>
 
 
                     @endif
@@ -158,6 +160,8 @@
     <a href="#">Your Panel</a>
     <div class="dropdown-content">
         @if (in_array($user_Role, ['admin', 'moderator', 'user']))
+        <a href="{{ route('users.profile') }}" class="nav-link">Change Profile</a>
+        ................
         <a href="{{ route('matches.singles.create') }}">Add Singles Match</a>
         <a href="{{ route('matches.singles.index') }}">Singles Results</a>
         <a href="{{ route('matches.singles.index') }}">Edit Singles Results</a>
