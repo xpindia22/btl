@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 04, 2025 at 12:24 PM
+-- Generation Time: Mar 05, 2025 at 06:58 AM
 -- Server version: 11.4.3-MariaDB-1
 -- PHP Version: 8.2.24
 
@@ -20,6 +20,28 @@ SET time_zone = "+00:00";
 --
 -- Database: `btl`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_password_resets`
+--
+
+CREATE TABLE `admin_password_resets` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `reset_link` varchar(255) NOT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `admin_password_resets`
+--
+
+INSERT INTO `admin_password_resets` (`id`, `email`, `token`, `reset_link`, `expires_at`, `created_at`) VALUES
+(1, 'xxx@xxx.com', '19644a299e23661d740a9d8737d71bd99e226aca8da090ad0c65d5bf387c67c1', 'http://localhost/btl/btl/reset-password/19644a299e23661d740a9d8737d71bd99e226aca8da090ad0c65d5bf387c67c1?email=xxx%40xxx.com', NULL, '2025-03-05 01:14:37');
 
 -- --------------------------------------------------------
 
@@ -232,7 +254,7 @@ CREATE TABLE `matches` (
 --
 
 INSERT INTO `matches` (`id`, `tournament_id`, `category_id`, `pool`, `player1_id`, `player2_id`, `pre_quarter`, `quarter`, `semi`, `final`, `set1_player1_points`, `set1_player2_points`, `set2_player1_points`, `set2_player2_points`, `set3_player1_points`, `set3_player2_points`, `created_by`, `moderated_by`, `stage`, `match_date`, `match_time`, `team1_player1_id`, `team1_player2_id`, `team2_player1_id`, `team2_player2_id`, `set1_team1_points`, `set1_team2_points`, `set2_team1_points`, `set2_team2_points`, `set3_team1_points`, `set3_team2_points`, `player3_id`, `player4_id`, `deleted_at`, `ip_address`, `created_at`, `updated_at`) VALUES
-(5, 3, 16, NULL, 1, 4, 0, 0, 0, 0, 21, 3, 5, 21, 21, 14, 1, NULL, 'Pre Quarter Finals', '2025-01-01', '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, '2025-03-01 06:24:02'),
+(5, 3, 16, NULL, 1, 4, 0, 0, 0, 0, 21, 6, 7, 21, 21, 17, 1, NULL, 'Pre Quarter Finals', '2025-01-01', '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, '2025-03-04 23:28:59'),
 (7, 1, 1, NULL, 2, 3, 0, 0, 0, 0, 21, 2, 2, 21, 21, 3, 1, NULL, 'Quarter Finals', '2025-01-01', '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
 (10, 3, 20, NULL, 11, 12, 0, 0, 0, 0, 21, 11, 12, 21, 21, 16, 1, NULL, 'Pre Quarter Finals', '2025-01-02', '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
 (13, 3, 11, NULL, 10, 6, 0, 0, 0, 0, 28, 26, 24, 26, 28, 2, 1, NULL, 'Pre Quarter Finals', '2025-01-03', '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
@@ -278,7 +300,7 @@ INSERT INTO `matches` (`id`, `tournament_id`, `category_id`, `pool`, `player1_id
 (53, 1, 20, NULL, 21, 6, 0, 0, 0, 0, 21, 2, 2, 21, 21, 2, NULL, NULL, 'Pre Quarter Finals', NULL, '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
 (54, 1, 20, NULL, 21, 6, 0, 0, 0, 0, 21, 2, 2, 21, 21, 2, NULL, NULL, 'Pre Quarter Finals', '2025-01-20', '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
 (55, 1, 20, NULL, 2, 10, 0, 0, 0, 0, 21, 2, 21, 2, 21, 2, NULL, NULL, 'Pre Quarter Finals', NULL, '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-(56, 1, 20, NULL, 2, 10, 0, 0, 0, 0, 21, 2, 21, 2, 21, 2, NULL, NULL, 'Pre Quarter Finals', NULL, '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+(56, 1, 20, NULL, 2, 10, 0, 0, 0, 0, 21, 2, 21, 2, 21, 2, NULL, NULL, 'Pre Quarter Finals', NULL, '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, '2025-03-05 03:45:38', NULL, NULL, '2025-03-04 22:15:38'),
 (57, 1, 20, NULL, 2, 10, 0, 0, 0, 0, 21, 2, 21, 2, 21, 2, NULL, NULL, 'Pre Quarter Finals', NULL, '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
 (58, 1, 20, NULL, 20, 2, 0, 0, 0, 0, 21, 2, 2, 21, 21, 2, NULL, NULL, 'Pre Quarter Finals', NULL, '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
 (59, 1, 20, NULL, 20, 2, 0, 0, 0, 0, 21, 2, 2, 21, 21, 2, NULL, NULL, 'Pre Quarter Finals', '2025-01-20', '00:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL),
@@ -389,7 +411,11 @@ INSERT INTO `matches` (`id`, `tournament_id`, `category_id`, `pool`, `player1_id
 (182, 1, 11, NULL, 20, 6, 0, 0, 0, 0, 11, 21, 21, 11, 12, 21, 4, NULL, 'Pre Quarter Finals', '2025-02-28', '18:11:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-02-28 07:11:59', '2025-02-28 07:11:59'),
 (183, 1, 15, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-03', '10:16:00', 40, 41, 15, 19, 21, 12, 11, 21, 21, 11, NULL, NULL, NULL, NULL, '2025-03-02 23:17:03', '2025-03-02 23:17:03'),
 (184, 3, 16, NULL, 43, 1, 0, 0, 0, 0, 21, 12, 1, 21, 21, 11, 4, NULL, 'Pre Quarter Finals', '2025-03-04', '17:47:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-04 06:48:11', '2025-03-04 06:48:11'),
-(185, 1, 13, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-04', '17:50:00', 38, 35, 6, 17, 21, 11, 11, 21, 21, 11, NULL, NULL, NULL, NULL, '2025-03-04 06:50:20', '2025-03-04 06:50:20');
+(185, 1, 13, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-04', '17:50:00', 38, 35, 6, 17, 21, 11, 12, 21, 21, 11, NULL, NULL, NULL, NULL, '2025-03-04 06:50:20', '2025-03-04 22:06:52'),
+(186, 1, 1, NULL, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Semifinals', '2025-03-05', '08:20:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-04 21:20:52', '2025-03-04 21:20:52'),
+(187, 1, 4, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-05', '09:24:00', 2, 36, 3, 2, 21, 2, 7, 21, 21, 2, NULL, NULL, NULL, NULL, '2025-03-04 22:24:40', '2025-03-04 23:29:53'),
+(188, 1, 27, NULL, 35, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-05', '10:28:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-04 23:28:49', '2025-03-04 23:28:49'),
+(189, 1, 15, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-05', '10:29:00', 43, 18, 14, 15, 21, 2, 2, 21, 21, 2, NULL, NULL, NULL, NULL, '2025-03-04 23:29:39', '2025-03-04 23:29:39');
 
 -- --------------------------------------------------------
 
@@ -439,7 +465,31 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (16, '2025_02_09_153144_add_created_by_to_users_table', 9),
 (17, '2025_02_11_180851_add_ip_address_columns_to_tables', 10),
 (18, '2025_02_26_113416_add_timestamps_to_matches', 11),
-(19, '2025_03_04_045702_create_admin_password_resets_table', 12);
+(19, '2025_03_04_045702_create_admin_password_resets_table', 12),
+(20, '2025_03_05_054203_add_dob_to_users_table', 13),
+(21, '2025_03_05_055838_add_dob_to_users_table', 14),
+(22, '2025_03_05_060841_add_dob_and_sex_to_users_table', 15),
+(23, '2025_03_05_064350_create_password_resets_table', 16),
+(24, '2025_03_05_065136_add_expires_at_to_admin_password_resets', 17);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `password_resets`
+--
+
+CREATE TABLE `password_resets` (
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `password_resets`
+--
+
+INSERT INTO `password_resets` (`email`, `token`, `created_at`) VALUES
+('xxx@xxx.com', '19644a299e23661d740a9d8737d71bd99e226aca8da090ad0c65d5bf387c67c1', '2025-03-05 01:14:37');
 
 -- --------------------------------------------------------
 
@@ -458,7 +508,26 @@ CREATE TABLE `password_reset_tokens` (
 --
 
 INSERT INTO `password_reset_tokens` (`email`, `token`, `created_at`) VALUES
-('xxx@xxx.com', '$2y$12$C79U5peJA9NifhnQ9dNEx.HJ2o2x5xfmbFRTAJFILJfiG6N6qpxJy', '2025-03-03 23:19:04');
+('xxx@xxx.com', '$2y$12$DGivlyW4FtLcg/bLlRDeFOMpNOCmJM2qKoC0npXw/6N0MRbowYz/e', '2025-03-05 01:14:37');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `personal_access_tokens`
+--
+
+CREATE TABLE `personal_access_tokens` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `tokenable_type` varchar(255) NOT NULL,
+  `tokenable_id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `abilities` text DEFAULT NULL,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -516,7 +585,8 @@ INSERT INTO `players` (`id`, `name`, `dob`, `age`, `sex`, `uid`, `password`, `cr
 (40, 'Adriana', '2007-01-30', 18, 'F', '100028', '$2y$12$vobra7ZhPtLgt9ZzrLTqmuba1ZmRswWjj5cOD0Y955z3dq0HVAzK6', NULL, '127.0.0.1', '2025-03-01 06:27:05', 1, '2025-03-01 06:27:05'),
 (41, 'Preeti Kaur', '2007-02-06', 18, 'F', '100029', '$2y$12$Ml1tQUtA67Ro0yfXPvAJke7RVkEmxBp8ZLoXrZHVFkuB7kmthTnWK', NULL, '127.0.0.1', '2025-03-01 06:35:00', 1, '2025-03-01 06:35:00'),
 (42, 'Adrina Thomas', '2007-02-01', 18, 'F', '100030', '$2y$12$pqR8B2l3D8x7vVNfiiVj3.QykGnFby38MOikTgqeBsGrcgl9Rt7mO', NULL, '::1', '2025-03-04 12:06:15', 1, '2025-03-04 11:50:31'),
-(43, 'Priya', '2008-12-29', 16, 'F', '100022', '$2y$12$Wi9dC.LWtfgrK..3SFAKQe89ofRnb/g1zivegd1j1u0y2u4g6sMHC', NULL, '127.0.0.1', '2025-03-04 12:17:02', 1, '2025-03-04 12:17:02');
+(43, 'Priya', '2008-12-29', 16, 'F', '100022', '$2y$12$Wi9dC.LWtfgrK..3SFAKQe89ofRnb/g1zivegd1j1u0y2u4g6sMHC', NULL, '127.0.0.1', '2025-03-04 12:17:02', 1, '2025-03-04 12:17:02'),
+(44, 'Bharat', '2000-01-11', 25, 'M', '100031', '$2y$12$ak68q4wxLRmDx.5k9PGE6uKrNu9AlB62KqL4s2lna/a7RbIRnfmvy', NULL, '::1', '2025-03-05 05:20:47', 1, '2025-03-05 05:15:53');
 
 -- --------------------------------------------------------
 
@@ -570,8 +640,9 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
+('1cbLAJwAh7zJfPjKNdZzPG9QKSWJaAkYxcdCR4hY', 4, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiOWFQRGY4M0hFWWZJeUVNQ21BVlpFQ1lOdmtDZ3ZKZ2NXYmg1Y2wxdiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly9sb2NhbGhvc3QvYnRsL21hdGNoZXMvc2luZ2xlcy9lZGl0Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NDt9', 1741146785),
+('j2Akqwv7EwuiGfz4A63LjnY8cxlhMDrtxgyEF5Nc', 4, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQ2szVmNJalV4ZVJPQ2hBcE1zdGYwMVVINmhoMFc0M2p0SWlpdEFQOSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly9sb2NhbGhvc3QvYnRsL2ZvcmdvdC1wYXNzd29yZCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjQ7fQ==', 1741157890),
 ('UtMVYlSIV5Bo7KYuHcazfcaJ9g0M1OcF2NwgLxfX', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiYmRZaEpzOWZIeU1uZTY3Z3dKZVVZY0hLYks1WjdMMFJZWFdjSVM1SyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9tYXRjaGVzL3NpbmdsZXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo0O3M6MTc6ImxvY2tlZF90b3VybmFtZW50IjtzOjE6IjEiO3M6Mjg6ImxvY2tlZF9zaW5nbGVzX3RvdXJuYW1lbnRfaWQiO3M6MToiMSI7fQ==', 1740746519),
-('wkwhEEY3rkWkPExRG7qGY7d7dDnMsUnLmbvFQw34', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo3OntzOjY6Il90b2tlbiI7czo0MDoiaW10QVA4Rm5FdkkzUlNNM2ZSd2NuTnhOTEwxRDRUNG80V1NZNjV4cSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9tYXRjaGVzL2RvdWJsZXMiO31zOjM6InVybCI7YTowOnt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NDtzOjI4OiJsb2NrZWRfc2luZ2xlc190b3VybmFtZW50X2lkIjtzOjE6IjMiO3M6MTc6ImxvY2tlZF90b3VybmFtZW50IjtzOjE6IjEiO30=', 1741090821),
 ('X78bPKEZ8r2hBNS5tHfYQuOkz9da1qBbP6f5HTjE', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRzhSOFZTcGp5eXRNMEpxNThVR0VrSVVYMnlKSFd0SUx4dmVnaVd3NiI7czo3OiJzdWNjZXNzIjtzOjI1OiJZb3UgaGF2ZSBiZWVuIGxvZ2dlZCBvdXQuIjtzOjY6Il9mbGFzaCI7YToyOntzOjM6Im5ldyI7YTowOnt9czozOiJvbGQiO2E6MTp7aTowO3M6Nzoic3VjY2VzcyI7fX19', 1740829639);
 
 -- --------------------------------------------------------
@@ -599,11 +670,11 @@ INSERT INTO `tournaments` (`id`, `name`, `created_by`, `year`, `moderated_by`, `
 (1, 'ABPL3', 4, 2024, 4, '2025-02-08 11:57:49', '2025-02-23 22:41:04', NULL),
 (2, 'Super Series 2024', 2, 2024, 4, '2025-02-08 11:57:49', '2025-02-22 06:42:40', NULL),
 (3, 'Winter Series', 4, 2024, 4, '2025-02-08 11:57:49', '2025-02-23 22:41:04', NULL),
-(6, 'ACE Championship', 1, 2025, 4, '2025-02-08 11:57:49', '2025-02-25 22:59:35', NULL),
-(7, 'xxxxsx', 1, 2025, 1, '2025-02-08 11:57:49', '2025-02-25 22:59:35', NULL),
-(13, 'uuuuh', 1, 2025, NULL, '2025-02-08 11:57:49', '2025-02-25 22:59:35', NULL),
+(6, 'ACE Championship', 1, 2025, 4, '2025-02-08 11:57:49', '2025-03-04 23:45:08', NULL),
+(7, 'xxxxsx', 1, 2025, 1, '2025-02-08 11:57:49', '2025-03-04 23:45:08', NULL),
+(13, 'uuuuh', 1, 2025, NULL, '2025-02-08 11:57:49', '2025-03-04 23:45:08', NULL),
 (14, 'xxxxaa', 4, 2025, NULL, '2025-02-08 11:57:49', '2025-02-23 22:41:04', NULL),
-(17, 'zzz', 7, 2025, NULL, '2025-02-08 11:57:49', '2025-02-08 11:57:49', NULL),
+(17, 'zzz', 1, 2025, NULL, '2025-02-08 11:57:49', '2025-03-04 23:45:08', NULL),
 (18, 'zzzz', 7, 2025, NULL, '2025-02-08 11:57:49', '2025-02-08 11:57:49', NULL),
 (20, 'zlara25', 7, 2025, NULL, '2025-02-08 19:38:45', '2025-02-08 19:38:45', NULL),
 (22, 'Test 2025', 4, 2025, NULL, '2025-02-21 05:57:22', '2025-02-23 22:41:04', NULL);
@@ -716,6 +787,7 @@ INSERT INTO `tournament_moderators` (`id`, `tournament_id`, `user_id`) VALUES
 (5, 6, 4),
 (3, 13, 6),
 (10, 14, 7),
+(34, 17, 1),
 (15, 17, 7),
 (21, 18, 7),
 (20, 18, 17),
@@ -733,6 +805,8 @@ CREATE TABLE `users` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `username` varchar(66) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
+  `dob` date DEFAULT NULL,
+  `sex` varchar(10) DEFAULT NULL,
   `role` varchar(255) NOT NULL DEFAULT 'user',
   `created_by` bigint(20) UNSIGNED DEFAULT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
@@ -753,34 +827,43 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `role`, `created_by`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `ip_address`, `created_at`, `updated_at`, `mobile_no`, `last_login`, `profile_picture`) VALUES
-(1, 'user', 'user@user.com', 'user', NULL, NULL, '$2y$12$MsyjI5qJ2gNqZcpOnWU4QOhq1N.7HU2GQbTW9SkqwaQAWZZ1jrpi.', NULL, NULL, NULL, NULL, NULL, '2024-12-28 22:20:28', '2025-02-22 05:40:02', '3333111112', NULL, 'uploads/profiles/1737177818_WhatsApp Image 2025-01-18 at 08.59.27.jpeg'),
-(2, 'admin', 'admin@admin.com', 'admin', NULL, NULL, '$2y$10$Vzemd6vNZoJ7tsir9lxqKuBfkPhks/ZL3mB6YRRNKRLg3H8THFdba', NULL, NULL, NULL, NULL, NULL, '2024-12-28 22:41:42', NULL, '7432001215', NULL, 'default.png'),
-(4, 'xxx', 'xxx@xxx.com', 'admin', NULL, NULL, '$2y$12$ragYOxZSmqDM7sE.rs6ELOe1T1tZZGVMA8gObnKXubnzot/EZHpQ6', NULL, NULL, NULL, 'WtAEmOpqupEwdUhI0q3b4ia9IhCNYbR6WP7FDcKlTvToK7rb0KvUyfJixhhZ', NULL, '2024-12-29 06:40:35', '2025-02-22 05:54:52', '3332222222', NULL, 'default.png'),
-(5, 'user2', 'user2@jdjdj.com', 'user', NULL, NULL, '$2y$10$h2N1Jb3tCQ72X.KWuQaB8eUfBfJa61DULmbLDzMArIlUdtpj4im.m', NULL, NULL, NULL, NULL, NULL, '2024-12-31 09:58:19', NULL, '2222222222', NULL, 'default.png'),
-(6, 'user1', 'asda@sd.asda', 'user', NULL, NULL, '$2y$10$630Wk4DbeWyToUcclXn66.2YMBCpUb8/ZwAvZwsbMU72PF3nNWdB2', NULL, NULL, NULL, NULL, NULL, '2025-01-10 00:25:38', NULL, '2222222222', NULL, 'default.png'),
-(7, 'zzz', 'zzz@zzz.com', 'user', NULL, NULL, '$2y$12$VRCf6/po9K0NC4EMCrfQmunhjxbeXN2b.cmLhsHvDJcqlCCquC6H6', NULL, NULL, NULL, NULL, NULL, '2025-01-10 22:23:39', '2025-02-08 19:39:38', '1111111111', NULL, 'default.png'),
-(8, 'usernnn', 'user@useqr.com', 'admin', NULL, NULL, '$2y$10$iN/RiIEqGmxmgHcz.xHgAOBS051B5b9yS.K676o3U4KdgvqikeRfC', NULL, NULL, NULL, NULL, NULL, '2025-01-23 07:20:46', '2025-02-21 05:36:17', '1111111111', NULL, 'default.png'),
-(14, 'nnn', 'nnn@nnn.com', 'visitor', NULL, NULL, '$2y$12$M1pGTW.gdl3LHVSUJPaD0ue4Gt4n4fJBo/SSOHGIM6c4czFgQfSC2', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:03:13', '2025-02-09 03:03:13', '3333333333', '2025-02-09 14:03:13', NULL),
-(15, 'zxc', 'zxc@zxc.com', 'visitor', NULL, NULL, '$2y$12$0v0M3eqYj4joU7BUssufquppkYAsJ4Jaq6JlqAbgyMry5RQ1/Irn2', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:06:23', '2025-02-09 03:06:23', '2233223322', '2025-02-09 14:06:23', NULL),
-(16, 'xxxx', 'xxxx@xxxx.com', 'visitor', NULL, NULL, '$2y$12$mAE8cI0ulrxTvX7bxryYeu368a121Om0m6ZkTiC2SufwCAdaZKKPG', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:15:54', '2025-02-09 03:15:54', '1111111111', '2025-02-09 14:15:54', NULL),
-(17, 'ccx', 'ccx@ccx.com', 'visitor', NULL, NULL, '$2y$12$34I4kKKFtDUrBmeAcZBaeOWq8T0BDPVVy/iqovJk8IsijBV39pG6W', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:22:18', '2025-02-09 03:22:18', '1122332222', '2025-02-09 14:22:18', NULL),
-(18, 'ddd', 'ddd@ddd.com', 'user', NULL, NULL, '$2y$12$uk6.hL9HSyp6IhBGKc8v0eCK9iv5nvp0orJM2GpHJQ0lhbUVlPco.', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:42:30', '2025-02-09 03:42:30', '2222222222', '2025-02-09 14:42:30', NULL),
-(19, 'dddd', 'dddd@dddd.com', 'visitor', NULL, NULL, '$2y$12$FIJbBToBzJ1mt1TNvoi5f.c2MIAuRxgcoG93CAV8LeHPFXxNmyCHG', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:42:54', '2025-02-09 03:42:54', '2222222222', '2025-02-09 14:42:54', NULL),
-(20, 'qww', 'qww@qww.com', 'user', NULL, NULL, '$2y$12$HrqCRaqCSdab1zAz6pA9U.OxQ4rYVnUUh8.CnaeroJcmqw2vp.fR6', NULL, NULL, NULL, NULL, NULL, '2025-02-09 04:32:44', '2025-02-09 04:32:44', '2222222222', '2025-02-09 15:32:44', NULL),
-(21, 'ccc', 'ccc@ccc.com', 'user', NULL, NULL, '$2y$12$e76QH5HAWX0fB9uCitKayeBMpEYyu00m.6zSn8jtpJYb1Qd25cpu.', NULL, NULL, NULL, NULL, NULL, '2025-02-09 05:51:36', '2025-02-09 05:51:36', '2222222222', '2025-02-09 16:51:36', NULL),
-(41, 'xzzz', 'xzzz@xzzz.com', 'user', NULL, NULL, '$2y$12$i6jS0uiVby0J/4SfunnYJuCr9hBY79GESqS4OKdU1CdMbw8MZ2INO', NULL, NULL, NULL, NULL, NULL, '2025-02-10 00:30:37', '2025-02-10 00:30:37', '1111111111', '2025-02-10 06:00:37', NULL),
-(42, 'xxzz', 'xzxz@zxz.xx', 'user', NULL, NULL, '$2y$12$xdrSrLDEYDQjD3Pgoj/sS.yCJlwVckXeOI1WDNF9A2.sD9JmuwyoC', NULL, NULL, NULL, NULL, NULL, '2025-02-10 00:37:44', '2025-02-10 00:37:44', '2222222222', '2025-02-10 06:07:44', NULL),
-(43, 'xxzzxx', 'czxc@dad.com', 'user', NULL, NULL, '$2y$12$9GeDrGRkOHpt/LEXNeBqDOPYWSjChdgyFpKusA61.z3aDR8mtpGA6', NULL, NULL, NULL, NULL, NULL, '2025-02-10 00:47:16', '2025-02-10 00:47:16', '2222222222', '2025-02-10 06:17:16', NULL),
-(44, 'xxxz', 'xzczc@sdsd.com', 'user', NULL, NULL, '$2y$12$dBQuM8XT4Wf7pjy0EPU7c.RmVjDSlS4dhKc6GprvyhbxKAXL6RkGm', NULL, NULL, NULL, NULL, NULL, '2025-02-10 01:01:34', '2025-02-10 01:01:34', '2222222222', '2025-02-10 06:31:34', NULL),
-(46, 'testuser2', 'test2@example.com', 'user', 1, NULL, '$2y$12$4a/SZNzSxGL.7WkFY1.CDu8g/SW99b9eAeEWmy7e83PxYqrvBuG7C', NULL, NULL, NULL, NULL, NULL, '2025-02-10 01:06:34', '2025-02-10 01:06:34', '9876543210', '2025-02-10 06:36:34', NULL),
-(49, 'testuser3', 'test3@example.com', 'user', 1, NULL, '$2y$12$/KZjcQja7hE7mhtQUDqide7rUfhHbI79FptKRwWuFAhK3HKj.SCD.', NULL, NULL, NULL, NULL, NULL, '2025-02-10 01:52:01', '2025-02-10 01:52:01', '9876543210', '2025-02-10 07:22:01', NULL),
-(52, 'xxcdx', 'xxcdd@xxcdd.com', 'visitor', NULL, NULL, '$2y$12$xmUUP0wxOs1CpHj6kWEhEuVy2rEWSSrzx0/OB9b41lKBq2O2QFgjm', NULL, NULL, NULL, NULL, NULL, '2025-02-10 07:47:29', '2025-02-21 05:42:14', '2211777777', '2025-02-10 13:17:29', NULL),
-(53, 'zzzuserx', 'zzzuser@zzzuser.com', 'admin', 7, NULL, '$2y$12$bmIJs.jtPS3UgzobzsKrMu/Y6sV4jWvAIVfK5/SfWUpLtBJUyj.Pu', NULL, NULL, NULL, NULL, NULL, '2025-02-21 23:11:43', '2025-02-21 23:12:04', '1111111111', '2025-02-22 10:11:43', NULL);
+INSERT INTO `users` (`id`, `username`, `email`, `dob`, `sex`, `role`, `created_by`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `ip_address`, `created_at`, `updated_at`, `mobile_no`, `last_login`, `profile_picture`) VALUES
+(1, 'user', 'user@user.com', NULL, NULL, 'user', NULL, NULL, '$2y$12$MsyjI5qJ2gNqZcpOnWU4QOhq1N.7HU2GQbTW9SkqwaQAWZZ1jrpi.', NULL, NULL, NULL, NULL, NULL, '2024-12-28 22:20:28', '2025-03-04 23:45:08', '3333111114', NULL, 'uploads/profiles/1737177818_WhatsApp Image 2025-01-18 at 08.59.27.jpeg'),
+(2, 'admin', 'admin@admin.com', NULL, NULL, 'admin', NULL, NULL, '$2y$10$Vzemd6vNZoJ7tsir9lxqKuBfkPhks/ZL3mB6YRRNKRLg3H8THFdba', NULL, NULL, NULL, NULL, NULL, '2024-12-28 22:41:42', NULL, '7432001215', NULL, 'default.png'),
+(4, 'Robert James', 'xxx@xxx.com', '1967-06-08', 'Male', 'admin', NULL, NULL, '$2y$12$ragYOxZSmqDM7sE.rs6ELOe1T1tZZGVMA8gObnKXubnzot/EZHpQ6', NULL, NULL, NULL, '6KGDfmf4oNCRxUyRzl4xeBk1glO5eZBkbKbho45kGVLQFQvarQRjBGkL1Ho9', NULL, '2024-12-29 06:40:35', '2025-03-05 01:02:28', '3332222222', NULL, 'default.png'),
+(5, 'user2', 'user2@jdjdj.com', NULL, NULL, 'user', NULL, NULL, '$2y$10$h2N1Jb3tCQ72X.KWuQaB8eUfBfJa61DULmbLDzMArIlUdtpj4im.m', NULL, NULL, NULL, NULL, NULL, '2024-12-31 09:58:19', NULL, '2222222222', NULL, 'default.png'),
+(6, 'user1', 'asda@sd.asda', NULL, NULL, 'user', NULL, NULL, '$2y$10$630Wk4DbeWyToUcclXn66.2YMBCpUb8/ZwAvZwsbMU72PF3nNWdB2', NULL, NULL, NULL, NULL, NULL, '2025-01-10 00:25:38', NULL, '2222222222', NULL, 'default.png'),
+(7, 'Mr ZZZ', 'zzz@zzz.com', '1995-02-01', 'Male', 'user', NULL, NULL, '$2y$12$c8hiNVO9xYgkVXCI/TP8RuJ.SOLyToKpg3mA2HWO8v/p4F384H2M2', NULL, NULL, NULL, 'hxiQ8v8B3hlChdTstcA27xlP3cVq95cKIsmNoW9bQNk6johOsdEXbnB1XCwS', NULL, '2025-01-10 22:23:39', '2025-03-05 01:01:25', '1111111111', NULL, 'default.png'),
+(8, 'usernnn', 'user@useqr.com', NULL, NULL, 'admin', NULL, NULL, '$2y$10$iN/RiIEqGmxmgHcz.xHgAOBS051B5b9yS.K676o3U4KdgvqikeRfC', NULL, NULL, NULL, NULL, NULL, '2025-01-23 07:20:46', '2025-02-21 05:36:17', '1111111111', NULL, 'default.png'),
+(14, 'nnn', 'nnn@nnn.com', NULL, NULL, 'visitor', NULL, NULL, '$2y$12$M1pGTW.gdl3LHVSUJPaD0ue4Gt4n4fJBo/SSOHGIM6c4czFgQfSC2', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:03:13', '2025-02-09 03:03:13', '3333333333', '2025-02-09 14:03:13', NULL),
+(15, 'zxc', 'zxc@zxc.com', NULL, NULL, 'visitor', NULL, NULL, '$2y$12$0v0M3eqYj4joU7BUssufquppkYAsJ4Jaq6JlqAbgyMry5RQ1/Irn2', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:06:23', '2025-02-09 03:06:23', '2233223322', '2025-02-09 14:06:23', NULL),
+(16, 'xxxx', 'xxxx@xxxx.com', NULL, NULL, 'visitor', NULL, NULL, '$2y$12$mAE8cI0ulrxTvX7bxryYeu368a121Om0m6ZkTiC2SufwCAdaZKKPG', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:15:54', '2025-02-09 03:15:54', '1111111111', '2025-02-09 14:15:54', NULL),
+(17, 'ccx', 'ccx@ccx.com', NULL, NULL, 'visitor', NULL, NULL, '$2y$12$34I4kKKFtDUrBmeAcZBaeOWq8T0BDPVVy/iqovJk8IsijBV39pG6W', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:22:18', '2025-02-09 03:22:18', '1122332222', '2025-02-09 14:22:18', NULL),
+(18, 'ddd', 'ddd@ddd.com', NULL, NULL, 'user', NULL, NULL, '$2y$12$uk6.hL9HSyp6IhBGKc8v0eCK9iv5nvp0orJM2GpHJQ0lhbUVlPco.', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:42:30', '2025-02-09 03:42:30', '2222222222', '2025-02-09 14:42:30', NULL),
+(19, 'dddd', 'dddd@dddd.com', NULL, NULL, 'visitor', NULL, NULL, '$2y$12$FIJbBToBzJ1mt1TNvoi5f.c2MIAuRxgcoG93CAV8LeHPFXxNmyCHG', NULL, NULL, NULL, NULL, NULL, '2025-02-09 03:42:54', '2025-02-09 03:42:54', '2222222222', '2025-02-09 14:42:54', NULL),
+(20, 'qww', 'qww@qww.com', NULL, NULL, 'user', NULL, NULL, '$2y$12$HrqCRaqCSdab1zAz6pA9U.OxQ4rYVnUUh8.CnaeroJcmqw2vp.fR6', NULL, NULL, NULL, NULL, NULL, '2025-02-09 04:32:44', '2025-02-09 04:32:44', '2222222222', '2025-02-09 15:32:44', NULL),
+(21, 'ccc', 'ccc@ccc.com', NULL, NULL, 'user', NULL, NULL, '$2y$12$e76QH5HAWX0fB9uCitKayeBMpEYyu00m.6zSn8jtpJYb1Qd25cpu.', NULL, NULL, NULL, NULL, NULL, '2025-02-09 05:51:36', '2025-02-09 05:51:36', '2222222222', '2025-02-09 16:51:36', NULL),
+(41, 'xzzz', 'xzzz@xzzz.com', NULL, NULL, 'user', NULL, NULL, '$2y$12$i6jS0uiVby0J/4SfunnYJuCr9hBY79GESqS4OKdU1CdMbw8MZ2INO', NULL, NULL, NULL, NULL, NULL, '2025-02-10 00:30:37', '2025-02-10 00:30:37', '1111111111', '2025-02-10 06:00:37', NULL),
+(42, 'xxzz', 'xzxz@zxz.xx', NULL, NULL, 'user', NULL, NULL, '$2y$12$xdrSrLDEYDQjD3Pgoj/sS.yCJlwVckXeOI1WDNF9A2.sD9JmuwyoC', NULL, NULL, NULL, NULL, NULL, '2025-02-10 00:37:44', '2025-02-10 00:37:44', '2222222222', '2025-02-10 06:07:44', NULL),
+(43, 'xxzzxx', 'czxc@dad.com', NULL, NULL, 'user', NULL, NULL, '$2y$12$9GeDrGRkOHpt/LEXNeBqDOPYWSjChdgyFpKusA61.z3aDR8mtpGA6', NULL, NULL, NULL, NULL, NULL, '2025-02-10 00:47:16', '2025-02-10 00:47:16', '2222222222', '2025-02-10 06:17:16', NULL),
+(44, 'xxxz', 'xzczc@sdsd.com', NULL, NULL, 'user', NULL, NULL, '$2y$12$dBQuM8XT4Wf7pjy0EPU7c.RmVjDSlS4dhKc6GprvyhbxKAXL6RkGm', NULL, NULL, NULL, NULL, NULL, '2025-02-10 01:01:34', '2025-02-10 01:01:34', '2222222222', '2025-02-10 06:31:34', NULL),
+(46, 'testuser2', 'test2@example.com', NULL, NULL, 'user', 1, NULL, '$2y$12$4a/SZNzSxGL.7WkFY1.CDu8g/SW99b9eAeEWmy7e83PxYqrvBuG7C', NULL, NULL, NULL, NULL, NULL, '2025-02-10 01:06:34', '2025-02-10 01:06:34', '9876543210', '2025-02-10 06:36:34', NULL),
+(49, 'testuser3', 'test3@example.com', NULL, NULL, 'user', 1, NULL, '$2y$12$/KZjcQja7hE7mhtQUDqide7rUfhHbI79FptKRwWuFAhK3HKj.SCD.', NULL, NULL, NULL, NULL, NULL, '2025-02-10 01:52:01', '2025-02-10 01:52:01', '9876543210', '2025-02-10 07:22:01', NULL),
+(52, 'xxcdx', 'xxcdd@xxcdd.com', NULL, NULL, 'visitor', NULL, NULL, '$2y$12$xmUUP0wxOs1CpHj6kWEhEuVy2rEWSSrzx0/OB9b41lKBq2O2QFgjm', NULL, NULL, NULL, NULL, NULL, '2025-02-10 07:47:29', '2025-02-21 05:42:14', '2211777777', '2025-02-10 13:17:29', NULL),
+(53, 'zzzuserx', 'zzzuser@zzzuser.com', NULL, NULL, 'admin', 7, NULL, '$2y$12$bmIJs.jtPS3UgzobzsKrMu/Y6sV4jWvAIVfK5/SfWUpLtBJUyj.Pu', NULL, NULL, NULL, NULL, NULL, '2025-02-21 23:11:43', '2025-02-21 23:12:04', '1111111111', '2025-02-22 10:11:43', NULL),
+(55, 'Mandeep', 'mmm@mmm.com', NULL, NULL, 'user', NULL, NULL, '$2y$12$YEZ4K/s/aRcuhivS9IBJ5ODjjUYr5NqCRYZeyr8kt457NgE.7cH.O', NULL, NULL, NULL, NULL, NULL, '2025-03-04 23:33:42', '2025-03-04 23:33:42', '2222222222', '2025-03-05 10:33:42', NULL);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `admin_password_resets`
+--
+ALTER TABLE `admin_password_resets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `admin_password_resets_token_unique` (`token`),
+  ADD KEY `admin_password_resets_email_index` (`email`);
 
 --
 -- Indexes for table `audit_logs`
@@ -864,10 +947,24 @@ ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD KEY `password_resets_email_index` (`email`);
+
+--
 -- Indexes for table `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
   ADD PRIMARY KEY (`email`);
+
+--
+-- Indexes for table `personal_access_tokens`
+--
+ALTER TABLE `personal_access_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
+  ADD KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`);
 
 --
 -- Indexes for table `players`
@@ -930,6 +1027,12 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `admin_password_resets`
+--
+ALTER TABLE `admin_password_resets`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
@@ -963,7 +1066,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `matches`
 --
 ALTER TABLE `matches`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=186;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=190;
 
 --
 -- AUTO_INCREMENT for table `match_details`
@@ -975,13 +1078,19 @@ ALTER TABLE `match_details`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT for table `personal_access_tokens`
+--
+ALTER TABLE `personal_access_tokens`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `players`
 --
 ALTER TABLE `players`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `player_access`
@@ -1005,13 +1114,13 @@ ALTER TABLE `tournament_categories`
 -- AUTO_INCREMENT for table `tournament_moderators`
 --
 ALTER TABLE `tournament_moderators`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- Constraints for dumped tables

@@ -76,6 +76,10 @@ Route::middleware(['auth'])->group(function () {
 
         // ✅ Admin Password Reset Route (SHOW ALL RESET LINKS)
         Route::get('/password-resets', [UserController::class, 'showPasswordResets'])->name('admin.password-resets');
+        // ✅ Admin Delete Password Reset Link
+        Route::delete('/password-resets/{email}', [UserController::class, 'deletePasswordReset'])
+        ->name('admin.deletePasswordReset');
+
     });
 
     // --------------------------
