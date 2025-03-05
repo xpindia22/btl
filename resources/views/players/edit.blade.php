@@ -39,12 +39,12 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const csrfToken = '{{ csrf_token() }}';
+    const baseUrl = "{{ url('players') }}"; // Ensures URL is correct even if hosted in a subfolder
 
+    // Turn table cells into input fields for editing
     document.querySelectorAll(".edit-btn").forEach(button => {
         button.addEventListener("click", function () {
             let row = this.closest("tr");
-            console.log("Edit clicked for row:", row.dataset.uid);
-
             row.querySelectorAll(".editable").forEach(cell => {
                 let value = cell.innerText.trim();
                 let input = document.createElement("input");
@@ -54,27 +54,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 cell.innerHTML = "";
                 cell.appendChild(input);
             });
-
             row.querySelector(".save-btn").style.display = "inline-block";
             this.style.display = "none";
         });
     });
 
+    // Save changes via a PUT request
     document.querySelectorAll(".save-btn").forEach(button => {
         button.addEventListener("click", function () {
             let row = this.closest("tr");
             let uid = row.dataset.uid;
-            console.log("Save clicked for row:", uid);
             let data = {};
 
             row.querySelectorAll(".editable input").forEach(input => {
                 data[input.dataset.field] = input.value.trim();
             });
 
-            fetch(`/players/${uid}/update`, {
+            fetch(`${baseUrl}/${uid}/update`, {
                 method: "PUT",
                 headers: {
-                    "Accept": "application/json", // Forces JSON response
+                    "Accept": "application/json",
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": csrfToken
                 },
@@ -87,14 +86,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         let field = cell.dataset.field;
                         cell.innerHTML = responseData.player[field];
                     });
-
-                    // Auto-update Age column based on new DOB
+                    // Update the age column based on new DOB
                     let newAge = calculateAge(responseData.player.dob);
                     row.querySelector(".age").textContent = newAge;
-
                     row.querySelector(".edit-btn").style.display = "inline-block";
                     row.querySelector(".save-btn").style.display = "none";
-
                     alert("Player updated successfully!");
                 } else {
                     alert("Update failed: " + responseData.message);
@@ -107,18 +103,18 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Delete player via a DELETE request
     document.querySelectorAll(".delete-btn").forEach(button => {
         button.addEventListener("click", function () {
             let row = this.closest("tr");
             let uid = row.dataset.uid;
-            console.log("Delete clicked for row:", uid);
 
             if (!confirm("Are you sure you want to delete this player?")) return;
 
-            fetch(`/players/${uid}/delete`, {
+            fetch(`${baseUrl}/${uid}/delete`, {
                 method: "DELETE",
                 headers: {
-                    "Accept": "application/json", // Forces JSON response
+                    "Accept": "application/json",
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": csrfToken
                 }
@@ -138,6 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Helper function to calculate age from DOB
     function calculateAge(dob) {
         let birthDate = new Date(dob);
         let today = new Date();
