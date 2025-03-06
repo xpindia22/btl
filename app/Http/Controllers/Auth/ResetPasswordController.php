@@ -31,26 +31,29 @@ class ResetPasswordController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
     public function reset(Request $request)
-    {
-        // Validate the request data.
-        $request->validate([
-            'token'                 => 'required',
-            'email'                 => 'required|email',
-            'password'              => 'required|confirmed|min:8',
-        ]);
+{
+    // Validate the request data.
+    $request->validate([
+        'token'                 => 'required',
+        'email'                 => 'required|email',
+        'password'              => 'required|confirmed|min:8',
+    ]);
 
-        // Attempt to reset the user's password.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->password = bcrypt($password);
-                $user->save();
-            }
-        );
+    // Attempt to reset the user's password.
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->password = bcrypt($password);
+            $user->save();
 
-        // Check the reset status.
-        return $status === Password::PASSWORD_RESET
-            ? redirect()->route('login')->with('status', __($status))
-            : redirect()->back()->withErrors(['email' => __($status)]);
-    }
+            // Send the confirmation email after resetting the password.
+            \Mail::to($user->email)->send(new \App\Mail\PasswordResetSuccessMail($user));
+        }
+    );
+
+    // Check the reset status.
+    return $status === Password::PASSWORD_RESET
+        ? redirect()->route('login')->with('status', __($status))
+        : redirect()->back()->withErrors(['email' => __($status)]);
+}
 }
