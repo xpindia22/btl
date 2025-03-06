@@ -142,8 +142,26 @@ Route::prefix('results')->group(function () {
 // --------------------------------------------------
 // PASSWORD RESET (FORGOT PASSWORD)
 // --------------------------------------------------
-// ✅ Using `ForgotPasswordController` for password resets
-Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
-Route::post('reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+// Show the form to request a password reset link.
+// If the user is logged in, your controller can redirect them to the profile page.
+Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    ->name('password.request');
+
+// Process the request and send the password reset link email.
+Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    ->name('password.email');
+
+// Display the password reset form using the token.
+Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+    ->name('password.reset');
+
+// Process the password update.
+Route::post('reset-password', [ResetPasswordController::class, 'reset'])
+    ->name('password.update');
+
+// Optional: Redirect GET requests to /reset-password (without a token) back to the forgot password form.
+Route::get('reset-password', function () {
+    return redirect()->route('password.request');
+});
+
