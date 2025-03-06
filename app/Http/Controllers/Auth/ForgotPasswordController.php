@@ -63,7 +63,7 @@ class ForgotPasswordController extends Controller
 
         RateLimiter::hit($key, $decaySeconds);
 
-        // Retrieve the user so that the model implements CanResetPassword.
+        // Retrieve the user using Eloquent.
         $user = User::where('email', $request->email)->first();
 
         if ($user) {
@@ -74,7 +74,7 @@ class ForgotPasswordController extends Controller
             $expiresAt = Carbon::now()->addMinutes(10);
 
             // Store the token and expiration in the password_resets table.
-            // (Ensure that the table has an 'expires_at' column.)
+            // Make sure the table has an 'expires_at' column.
             DB::table('password_resets')->updateOrInsert(
                 ['email' => $request->email],
                 [
@@ -84,6 +84,9 @@ class ForgotPasswordController extends Controller
                     'expires_at' => $expiresAt,
                 ]
             );
+
+            // Log the email address being used for debugging.
+            \Log::info('Sending reset password email to: ' . $user->email);
 
             // Send the reset link email using the mailable class.
             Mail::to($user->email)->send(new ResetPasswordMail($token, $expiresAt));
