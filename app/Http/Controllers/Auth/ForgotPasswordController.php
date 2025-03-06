@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordMail;
 
 class ForgotPasswordController extends Controller
 {
@@ -62,28 +63,30 @@ class ForgotPasswordController extends Controller
 
         RateLimiter::hit($key, $decaySeconds);
 
-        // Retrieve the user using Eloquent so the model implements CanResetPassword.
+        // Retrieve the user so that the model implements CanResetPassword.
         $user = User::where('email', $request->email)->first();
 
         if ($user) {
             // Generate a secure reset token.
             $token = Password::getRepository()->create($user);
 
-            // Optionally, set an expiration (here, 10 minutes from now).
+            // Set token expiration time (10 minutes from now).
             $expiresAt = Carbon::now()->addMinutes(10);
 
-            // Store the token in the password_resets table.
+            // Store the token and expiration in the password_resets table.
+            // (Ensure that the table has an 'expires_at' column.)
             DB::table('password_resets')->updateOrInsert(
                 ['email' => $request->email],
                 [
                     'email'      => $request->email,
                     'token'      => $token,
-                    'created_at' => now()
+                    'created_at' => now(),
+                    'expires_at' => $expiresAt,
                 ]
             );
 
-            // Optionally, send the reset link email.
-            // Mail::to($user->email)->send(new ResetPasswordMail($token));
+            // Send the reset link email using the mailable class.
+            Mail::to($user->email)->send(new ResetPasswordMail($token, $expiresAt));
         }
 
         // Return a generic success message regardless of whether the email exists.
