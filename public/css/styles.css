@@ -27,7 +27,7 @@ body {
 
 /* ✅ Styled Login Box */
 .login-box {
-    width: 400px; /* Fixed width */
+    width: 500px; /* Fixed width */
     padding: 20px;
     background-color: #d7e6f7; /* Light background */
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -294,6 +294,7 @@ select {
         font-size: 10px;
     }
 }
+
 /* ✅ Center and Reduce Form Width */
 .registration-form {
     max-width: 500px; /* Adjust width as needed */
@@ -303,6 +304,7 @@ select {
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
+
 .registration-form-1400 {
     max-width: 1400px; /* Adjust width as needed */
     margin: 0 auto; /* Centers the form */
@@ -311,6 +313,7 @@ select {
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
+
 /* ✅ Ensure Form Fields are Full Width */
 .registration-form .form-group {
     margin-bottom: 15px;
@@ -338,4 +341,24 @@ select {
         width: 90%; /* Adjust width for small screens */
         padding: 15px;
     }
+}
+
+/* Link Row Styles */
+.link-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.link-row > div {
+    flex: 1;
+}
+
+.forgot-password {
+    text-align: left;
+}
+
+.register-link {
+    text-align: right;
 }

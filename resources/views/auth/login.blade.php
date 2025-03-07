@@ -3,7 +3,6 @@
 @section('head')
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
     <!-- <link rel="stylesheet" href="{{ asset('css/login.css') }}"> -->
-
 @endsection
 
 @section('content')
@@ -47,14 +46,22 @@
                 <label for="remember">Remember Me</label>
             </div>
 
-
             <!-- Submit Button -->
             <button type="submit" class="login-button">Login</button>
 
-            <!-- Register Link -->
-            <div class="register-link">
-                <a href="{{ route('register') }}">Don't have an account? Register</a>
+            
+            <!-- Links in the same row -->
+            <div class="link-row">
+                <div class="forgot-password">
+                    <a href="{{ route('password.request') }}">Forgot Your Password?</a>
+                </div>
+                <div class="register-link">
+                    <a href="{{ route('register') }}">Don't have an account? Register</a>
+                </div>
             </div>
+
+
+
         </form>
     </div>
 </div>
