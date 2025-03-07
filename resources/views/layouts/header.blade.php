@@ -166,7 +166,7 @@
         <a href="{{ route('matches.singles.index') }}">Singles Results</a>
         <a href="{{ route('matches.singles.index') }}">Edit Singles Results</a>
         ......................
-        <a href="{{ route('register') }}">Register Manager</a>
+        <a href="{{ route('register') }}">Register Manager.</a>
         <a href="{{ route('users.index') }}">Your Users</a>
         
         <a href="{{ route('users.edit', ['user' => auth()->id()]) }}">Edit Your Users</a>
