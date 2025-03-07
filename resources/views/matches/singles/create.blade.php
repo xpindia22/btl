@@ -20,8 +20,8 @@
     @endif
 
     {{-- Tournament Lock/Unlock --}}
-    <form method="POST" action="{{ route('matches.singles.lockTournament') }}">
-        @csrf
+    <form method="POST" action="{{ route('matches.lockTournament') }}">
+    @csrf
         <label for="tournament_id">Select Tournament:</label>
         <select name="tournament_id" required>
             <option value="">Select Tournament</option>

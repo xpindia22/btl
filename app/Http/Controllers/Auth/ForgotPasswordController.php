@@ -29,7 +29,7 @@ class ForgotPasswordController extends Controller
                 ->with('status', 'You are already logged in. Please use your profile page to change your password.');
         }
         
-        return view('auth.passwords.email');
+        return view('auth.forgot-password'); // ✅ Use the new view
     }
 
     /**

@@ -109,7 +109,7 @@
             <a href="{{ route('matches.singles.create') }}">Add Singles Match</a>
         @endif
         <a href="{{ route('matches.singles.index') }}">Singles Results</a>
-        <a href="{{ route('matches.singles.Edit') }}">Edit Singles Results</a>
+        <a href="{{ route('matches.singles.edit') }}">Edit Singles Results</a>
 
 
         </div>
@@ -168,7 +168,8 @@
         ......................
         <a href="{{ route('register') }}">Register Manager</a>
         <a href="{{ route('users.index') }}">Your Users</a>
-        <a href="{{ route('users.edit') }}">Edit Your Users</a>
+        
+        <a href="{{ route('users.edit', ['user' => auth()->id()]) }}">Edit Your Users</a>
 
         <a href="{{ route('players.register') }}">Register Your Players</a>
         <a href="{{ route('players.edit') }}">Edit Your Players</a>

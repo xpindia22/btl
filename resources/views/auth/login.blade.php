@@ -2,8 +2,7 @@
 
 @section('head')
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-    <!-- <link rel="stylesheet" href="{{ asset('css/login.css') }}"> -->
-@endsection
+ @endsection
 
 @section('content')
 <div class="login-wrapper">
