@@ -32,8 +32,8 @@ Route::controller(LoginController::class)->group(function () {
 });
 
 Route::controller(RegisterController::class)->group(function () {
-    Route::get('/register', 'showRegistrationForm')->name('register');
-    Route::post('/register', 'register');
+    Route::get('/users/register', 'showRegistrationForm')->name('register');
+    Route::post('/users/register', 'register');
 });
 
 // --------------------------------------------------

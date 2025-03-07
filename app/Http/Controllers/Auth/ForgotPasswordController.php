@@ -15,13 +15,6 @@ use App\Mail\ResetPasswordMail;
 
 class ForgotPasswordController extends Controller
 {
-    /**
-     * Display the forgot password form.
-     * If the user is logged in, redirect them to the dashboard.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
-     */
     public function showLinkRequestForm(Request $request)
     {
         if (Auth::check()) {
@@ -32,13 +25,6 @@ class ForgotPasswordController extends Controller
         return view('auth.passwords.email');
     }
 
-    /**
-     * Process the request and send the password reset link email.
-     * If the user is logged in, redirect them to the dashboard.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
-     */
     public function sendResetLinkEmail(Request $request)
     {
         if (Auth::check()) {
@@ -46,10 +32,8 @@ class ForgotPasswordController extends Controller
                 ->with('status', 'You are already logged in. Please use your profile page to change your password.');
         }
         
-        // Validate the email input.
         $request->validate(['email' => 'required|email']);
 
-        // Apply rate limiting: 5 attempts per minute per IP/email combination.
         $key = 'forgot-password:' . $request->ip() . '|' . $request->email;
         $maxAttempts = 5;
         $decaySeconds = 60;
@@ -63,36 +47,62 @@ class ForgotPasswordController extends Controller
 
         RateLimiter::hit($key, $decaySeconds);
 
-        // Retrieve the user using Eloquent.
         $user = User::where('email', $request->email)->first();
 
         if ($user) {
-            // Generate a secure reset token.
             $token = Password::getRepository()->create($user);
-
-            // Set token expiration time (10 minutes from now).
             $expiresAt = Carbon::now()->addMinutes(10);
+            $ipAddress = $request->ip();
 
-            // Store the token and expiration in the password_resets table.
-            // Make sure the table has an 'expires_at' column.
             DB::table('password_resets')->updateOrInsert(
                 ['email' => $request->email],
                 [
                     'email'      => $request->email,
                     'token'      => $token,
+                    'ip_address' => $ipAddress,
                     'created_at' => now(),
                     'expires_at' => $expiresAt,
                 ]
             );
 
-            // Log the email address being used for debugging.
-            \Log::info('Sending reset password email to: ' . $user->email);
-
-            // Send the reset link email using the mailable class.
             Mail::to($user->email)->send(new ResetPasswordMail($token, $expiresAt));
         }
 
-        // Return a generic success message regardless of whether the email exists.
         return redirect()->back()->with('status', 'If an account with that email exists, you will receive a password reset link shortly.');
+    }
+
+    public function reset(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+            'token' => 'required',
+        ]);
+
+        $record = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->first();
+
+        if (!$record) {
+            return back()->withErrors(['email' => 'Invalid or expired token.']);
+        }
+
+        if ($record->ip_address !== $request->ip()) {
+            return back()->withErrors(['email' => 'This reset link can only be used on the device where it was requested.']);
+        }
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('success', 'Password reset successful. You may now log in.')
+            : back()->withErrors(['email' => [__($status)]]);
     }
 }

@@ -5,9 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Player;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PlayerController extends Controller
@@ -29,16 +26,10 @@ class PlayerController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string',
             'dob' => 'required|date',
-            'sex' => 'required|in:M,F',
-            'email' => 'required|email|unique:players',
-            'secondary_email' => 'nullable|email',
-            'password' => 'required|string|min:6|confirmed',
-            'secret_question1' => 'required|string|max:255',
-            'secret_question2' => 'required|string|max:255',
-            'secret_question3' => 'required|string|max:255',
-            'captcha' => 'required|in:10', // Simple CAPTCHA (4+6)
+            'sex' => 'required|string',
+            'password' => 'required|string|min:6',
         ]);
 
         $dob = Carbon::parse($request->dob);
@@ -50,12 +41,7 @@ class PlayerController extends Controller
             'name' => $request->name,
             'dob' => $dob,
             'sex' => $request->sex,
-            'email' => $request->email,
-            'secondary_email' => $request->secondary_email,
             'password' => Hash::make($request->password),
-            'secret_question1' => Hash::make(strtolower($request->secret_question1)),
-            'secret_question2' => Hash::make(strtolower($request->secret_question2)),
-            'secret_question3' => Hash::make(strtolower($request->secret_question3)),
             'age' => $age,
             'ip_address' => $request->ip(),
         ]);
@@ -76,13 +62,7 @@ class PlayerController extends Controller
             'name' => 'required|string|max:255',
             'dob' => 'required|date',
             'sex' => 'required|in:M,F',
-            'email' => 'required|email|unique:players',
-            'secondary_email' => 'nullable|email',
-            'password' => 'required|min:6|confirmed',
-            'secret_question1' => 'required|string|max:255',
-            'secret_question2' => 'required|string|max:255',
-            'secret_question3' => 'required|string|max:255',
-            'captcha' => 'required|in:10', // Simple CAPTCHA (4+6)
+            'password' => 'required|min:6',
         ]);
 
         $uid = $this->getNextAvailableUid();
@@ -94,12 +74,7 @@ class PlayerController extends Controller
             'name' => $validated['name'],
             'dob' => $dob,
             'sex' => $validated['sex'],
-            'email' => $validated['email'],
-            'secondary_email' => $validated['secondary_email'],
             'password' => Hash::make($validated['password']),
-            'secret_question1' => Hash::make(strtolower($validated['secret_question1'])),
-            'secret_question2' => Hash::make(strtolower($validated['secret_question2'])),
-            'secret_question3' => Hash::make(strtolower($validated['secret_question3'])),
             'age' => $age,
             'ip_address' => request()->ip(),
         ]);
@@ -107,12 +82,14 @@ class PlayerController extends Controller
         return redirect()->route('players.index')->with('success', 'Player registered successfully!');
     }
 
+    // ✅ Fix edit function to show all players in a table for inline editing
     public function edit()
     {
         $players = Player::orderBy('uid', 'desc')->get();
         return view('players.edit', compact('players'));
     }
 
+    // ✅ Fix update function for inline editing
     public function update(Request $request, $uid)
     {
         $player = Player::where('uid', $uid)->first();
@@ -122,22 +99,23 @@ class PlayerController extends Controller
                 'message' => 'Player not found'
             ], 404);
         }
-
+    
+        // Optionally, validate the input
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'dob'  => 'required|date',
-            'sex'  => 'required|string',
-            'email' => 'required|email|unique:players,email,' . $player->id,
-            'secondary_email' => 'nullable|email',
+            'sex'  => 'required|string'
         ]);
-
+    
         $player->update($validated);
-
+    
         return response()->json([
             'success' => true,
             'player' => $player
         ]);
     }
+    
+
 
     public function destroy($uid)
     {
@@ -157,32 +135,5 @@ class PlayerController extends Controller
         }
 
         return $nextUid;
-    }
-
-    // ✅ Password Recovery using Secret Questions
-    public function recover(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'secret_question1' => 'required|string|max:255',
-            'secret_question2' => 'required|string|max:255',
-            'secret_question3' => 'required|string|max:255',
-        ]);
-
-        $player = Player::where('email', $request->email)->first();
-
-        if (!$player) {
-            return back()->withErrors(['email' => 'Email not found.']);
-        }
-
-        if (
-            Hash::check(strtolower($request->secret_question1), $player->secret_question1) &&
-            Hash::check(strtolower($request->secret_question2), $player->secret_question2) &&
-            Hash::check(strtolower($request->secret_question3), $player->secret_question3)
-        ) {
-            return redirect()->route('password.reset')->with('success', 'Security answers verified. You may reset your password.');
-        }
-
-        return back()->withErrors(['secret' => 'Incorrect answers.']);
     }
 }
