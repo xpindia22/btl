@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'Asia/Kolkata'), // ✅ Set to match your timezone
+    'timezone' => env('APP_TIMEZONE', default: 'Asia/Kolkata'), // ✅ Set to match your timezone
 
     /*
     |--------------------------------------------------------------------------

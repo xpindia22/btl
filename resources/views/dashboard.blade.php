@@ -80,4 +80,23 @@
         <p>Please <a href="{{ route('login') }}">log in</a> to access the dashboard.</p>
     @endif
 </div>
+@if (session('status'))
+    <div id="flash-message" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; background-color: #d4edda; color: #155724; padding: 15px; border: 1px solid #c3e6cb; border-radius: 4px;">
+        {{ session('status') }}
+        <button type="button" style="background: transparent; border: none; font-size: 20px; line-height: 1; float: right; cursor: pointer;" onclick="document.getElementById('flash-message').style.display='none';">
+            &times;
+        </button>
+    </div>
+    <script>
+        // Automatically hide the pop-up after 5 seconds
+        setTimeout(function() {
+            var flashMessage = document.getElementById('flash-message');
+            if (flashMessage) {
+                flashMessage.style.display = 'none';
+            }
+        }, 5000);
+    </script>
+@endif
+
+
 @endsection

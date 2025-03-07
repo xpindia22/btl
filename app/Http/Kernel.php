@@ -47,4 +47,10 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
+
+    //email link expire time
+    protected function schedule(Schedule $schedule)
+{
+    $schedule->command('auth:clear-resets')->everyHour();
+}
 }
