@@ -36,17 +36,43 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/register', 'register');
 });
 
+// // --------------------------------------------------
+// // PUBLIC PLAYER REGISTRATION & VIEWING
+// // --------------------------------------------------
+// Route::middleware(['web'])->group(function () {
+//     Route::get('/players/register', [PlayerController::class, 'create'])->name('players.register');
+//     Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register.post');
+//     Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
+//     Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
+//     Route::put('/players/{uid}/update', [PlayerController::class, 'update'])->name('players.update');
+//     Route::delete('/players/{uid}/delete', [PlayerController::class, 'destroy']);
+
+//     Route::get('/players/ranking', [PlayerController::class, 'ranking'])->name('players.ranking');
+
+// });
+
 // --------------------------------------------------
 // PUBLIC PLAYER REGISTRATION & VIEWING
 // --------------------------------------------------
 Route::middleware(['web'])->group(function () {
+    
+    // Registration routes
     Route::get('/players/register', [PlayerController::class, 'create'])->name('players.register');
     Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register.post');
+
+    // Ranking route
+    Route::get('/players/ranking', [PlayerController::class, 'ranking'])->name('players.ranking');
+
+    // Player listing
     Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
-    Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
+
+    // Player CRUD operations (edit, update, delete)
+    Route::get('/players/{uid}/edit', [PlayerController::class, 'edit'])->name('players.edit');
     Route::put('/players/{uid}/update', [PlayerController::class, 'update'])->name('players.update');
-    Route::delete('/players/{uid}/delete', [PlayerController::class, 'destroy']);
+    Route::delete('/players/{uid}/delete', [PlayerController::class, 'destroy'])->name('players.delete');
+
 });
+
 
 // --------------------------------------------------
 // PROTECTED ROUTES (AUTH REQUIRED)
@@ -60,21 +86,13 @@ Route::middleware(['auth'])->group(function () {
     // --------------------------
     Route::resource('tournaments', TournamentController::class)->except(['show']);
 
-    // --------------------------
-    // USERS
-    // --------------------------
-    // Added custom GET route for /users/edit to avoid conflict with the resource route.
-    // Route::get('/users/edit', [UserController::class, 'editUsers'])->name('users.edit');
-    // Route::resource('users', UserController::class)->except(['show']);
+
 
 // Users Routes
 Route::get('/users/edit', [UserController::class, 'editUsers'])->name('users.edit');
 Route::resource('users', UserController::class)->except(['show', 'edit']);
 
 
-    // Note: The GET request for /users/edit will now be handled by editUsers().
-    // The resource route expects an edit URL of the form /users/{user}/edit,
-    // so /users/edit (without an ID) will no longer be misinterpreted.
 
     // --------------------------
     // ADMIN (ADMIN-ONLY)

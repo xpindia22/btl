@@ -6,6 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\Player;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use App\Models\Tournament;
+use App\Models\Category;
+
+
+
 
 class PlayerController extends Controller
 {
@@ -136,4 +142,66 @@ class PlayerController extends Controller
 
         return $nextUid;
     }
-}
+    
+    public function ranking(Request $request)
+    {
+        $selectedTournament = $request->input('tournament_id');
+        $selectedCategory = $request->input('category_id');
+        $selectedPlayer = $request->input('player_id');
+        $selectedDate = $request->input('date');
+    
+        $query = Player::select(
+                'players.id',
+                'players.uid',
+                'players.name',
+                'players.age',
+                'players.sex',
+                'categories.name as category_name',
+                DB::raw('COUNT(matches.id) as matches_played'),
+                DB::raw('COALESCE(SUM(
+                    CASE
+                        WHEN matches.player1_id = players.id THEN matches.set1_player1_points + matches.set2_player1_points + matches.set3_player1_points
+                        WHEN matches.player2_id = players.id THEN matches.set1_player2_points + matches.set2_player2_points + matches.set3_player2_points
+                        ELSE 0
+                    END
+                ), 0) as total_points')
+            )
+            ->leftJoin('matches', function($join) {
+                $join->on('players.id', '=', 'matches.player1_id')
+                    ->orOn('players.id', '=', 'matches.player2_id');
+            })
+            ->leftJoin('categories', 'players.category_id', '=', 'categories.id')
+            ->groupBy('players.id', 'players.uid', 'players.name', 'players.age', 'players.sex', 'categories.name')
+            ->orderByDesc('total_points');
+    
+        if ($selectedTournament) {
+            $query->where('matches.tournament_id', $selectedTournament);
+        }
+    
+        if ($selectedCategory) {
+            $query->where('matches.category_id', $selectedCategory);
+        }
+    
+        if ($selectedPlayer) {
+            $query->where('players.id', $selectedPlayer);
+        }
+    
+        if ($selectedDate) {
+            $query->whereDate('matches.match_date', $selectedDate);
+        }
+    
+        $rankings = $query->get()->map(function($player, $index) {
+            $player->ranking = $index + 1;
+            return $player;
+        });
+    
+        return view('players.players_ranking', [
+            'rankings' => $rankings,
+            'playersList' => Player::orderBy('name')->get(),
+            'tournaments' => Tournament::orderBy('name')->get(),
+            'categories' => Category::orderBy('name')->get(),
+        ]);
+    }
+    
+
+    }
