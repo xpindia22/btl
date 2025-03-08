@@ -182,7 +182,6 @@ class DoublesMatchController extends Controller
         return response()->json($playersQuery->select('id', 'name', 'age', 'sex')->get());
     }
 
-
     // ----------------------------------------
     // 4) Lock Tournament
     // ----------------------------------------
@@ -402,29 +401,26 @@ class DoublesMatchController extends Controller
     // ----------------------------------------
     // 8) Update (PUT)
     // ----------------------------------------
-    public function update(Request $request, $id)
+    public function update(Request $request, $matchId)
     {
-        $match = Matches::findOrFail($id);
-
-        // Validate
-        $validated = $request->validate([
+        $data = $request->validate([
+            'stage' => 'required|string',
             'match_date' => 'required|date',
             'match_time' => 'required',
-            'stage'      => 'required|string',
-            'set1_team1_points' => 'nullable|integer',
-            'set1_team2_points' => 'nullable|integer',
-            'set2_team1_points' => 'nullable|integer',
-            'set2_team2_points' => 'nullable|integer',
-            'set3_team1_points' => 'nullable|integer',
-            'set3_team2_points' => 'nullable|integer',
+            'set1_player1_points' => 'nullable|numeric',
+            'set1_player2_points' => 'nullable|numeric',
+            'set2_player1_points' => 'nullable|numeric',
+            'set2_player2_points' => 'nullable|numeric',
+            'set3_player1_points' => 'nullable|numeric',
+            'set3_player2_points' => 'nullable|numeric',
+            'moderator' => 'nullable|string',
+            'creator' => 'nullable|string',
         ]);
 
-        // Update
-        $match->update($validated);
+        $match = Matches::findOrFail($matchId);
+        $match->update($data);
 
-        return redirect()
-            ->back()
-            ->with('success', 'Match updated successfully!');
+        return response()->json(['message' => 'Match updated successfully.']);
     }
 
     // ----------------------------------------

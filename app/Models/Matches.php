@@ -40,6 +40,8 @@ class Matches extends Model
         'moderated_by',
         'created_at',
         'updated_at',
+        'moderator', 
+        'creator'
     ];
     
 
