@@ -161,28 +161,22 @@ class SinglesMatchController extends Controller
     // Update Match
     public function update(Request $request, $id)
 {
-    // Validate the incoming data
-    $data = $request->validate([
-        'username' => 'required|string',
-        'email'    => 'required|email',
-        'mobile_no'=> 'nullable|string',
-        'role'     => 'required|string',
-        // We don't validate the tournaments here as they are many-to-many and handled separately.
+    $validated = $request->validate([
+        'stage' => 'required|string',
+        'match_date' => 'required|date',
+        'match_time' => 'required',
+        'set1_player1_points' => 'nullable|integer',
+        'set1_player2_points' => 'nullable|integer',
+        'set2_player1_points' => 'nullable|integer',
+        'set2_player2_points' => 'nullable|integer',
+        'set3_player1_points' => 'nullable|integer',
+        'set3_player2_points' => 'nullable|integer',
     ]);
 
-    // Retrieve the user model
-    $user = User::findOrFail($id);
+    $match = MatchModel::findOrFail($id);
+    $match->update($validated);
 
-    // Update simple fields using mass assignment
-    $user->update($data);
-
-    // Update many-to-many relationships (if applicable)
-    // Make sure your User model defines the relationships (e.g. moderatedTournaments, createdTournaments)
-    $user->moderatedTournaments()->sync($request->input('moderated_tournaments', []));
-    $user->createdTournaments()->sync($request->input('created_tournaments', []));
-
-    // Redirect back with a flash message
-    return redirect()->back()->with('success', 'User updated successfully.');
+    return response()->json(['message' => 'Singles match updated successfully.']);
 }
 
     // Delete Match
@@ -198,9 +192,12 @@ class SinglesMatchController extends Controller
 public function edit()
 {
     $matches = MatchModel::with(['tournament', 'category', 'player1', 'player2'])
+    ->orderBy('created_at', 'desc')
+
         ->paginate(10);
     
     return view('matches.singles.edit', compact('matches'));
+    
 }
 
 }

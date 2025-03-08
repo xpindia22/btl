@@ -27,8 +27,6 @@
                 <th>Category</th>
                 <th>Player 1</th>
                 <th>Player 2</th>
-                <th>Moderator</th>
-                <th>Creator</th>
                 <th>Stage</th>
                 <th>Set 1 (P1)</th>
                 <th>Set 1 (P2)</th>
@@ -50,18 +48,6 @@
                     <td>{{ optional($match->player1)->name ?? 'N/A' }}</td>
                     <td>{{ optional($match->player2)->name ?? 'N/A' }}</td>
                     <td>
-                        <input type="text" 
-                               class="form-control moderator" 
-                               data-match-id="{{ $match->id }}" 
-                               value="{{ $match->moderator ?? '' }}">
-                    </td>
-                    <td>
-                        <input type="text" 
-                               class="form-control creator" 
-                               data-match-id="{{ $match->id }}" 
-                               value="{{ $match->creator ?? '' }}">
-                    </td>
-                    <td>
                         <select class="form-control stage" data-match-id="{{ $match->id }}">
                             @foreach(['Pre Quarter Finals','Quarter Finals','Semifinals','Finals'] as $stage)
                                 <option value="{{ $stage }}" {{ $match->stage == $stage ? 'selected' : '' }}>
@@ -70,161 +56,69 @@
                             @endforeach
                         </select>
                     </td>
+                    <td><input type="number" class="form-control set1_player1_points" data-match-id="{{ $match->id }}" value="{{ $match->set1_player1_points ?? '' }}"></td>
+                    <td><input type="number" class="form-control set1_player2_points" data-match-id="{{ $match->id }}" value="{{ $match->set1_player2_points ?? '' }}"></td>
+                    <td><input type="number" class="form-control set2_player1_points" data-match-id="{{ $match->id }}" value="{{ $match->set2_player1_points ?? '' }}"></td>
+                    <td><input type="number" class="form-control set2_player2_points" data-match-id="{{ $match->id }}" value="{{ $match->set2_player2_points ?? '' }}"></td>
+                    <td><input type="number" class="form-control set3_player1_points" data-match-id="{{ $match->id }}" value="{{ $match->set3_player1_points ?? '' }}"></td>
+                    <td><input type="number" class="form-control set3_player2_points" data-match-id="{{ $match->id }}" value="{{ $match->set3_player2_points ?? '' }}"></td>
+                    <td><input type="date" class="form-control match_date" data-match-id="{{ $match->id }}" value="{{ $match->match_date }}"></td>
+                    <td><input type="time" class="form-control match_time" data-match-id="{{ $match->id }}" value="{{ $match->match_time }}"></td>
                     <td>
-                        <input type="number" 
-                               class="form-control set1_player1_points" 
-                               data-match-id="{{ $match->id }}"
-                               value="{{ $match->set1_player1_points ?? '' }}">
-                    </td>
-                    <td>
-                        <input type="number" 
-                               class="form-control set1_player2_points" 
-                               data-match-id="{{ $match->id }}"
-                               value="{{ $match->set1_player2_points ?? '' }}">
-                    </td>
-                    <td>
-                        <input type="number" 
-                               class="form-control set2_player1_points" 
-                               data-match-id="{{ $match->id }}"
-                               value="{{ $match->set2_player1_points ?? '' }}">
-                    </td>
-                    <td>
-                        <input type="number" 
-                               class="form-control set2_player2_points" 
-                               data-match-id="{{ $match->id }}"
-                               value="{{ $match->set2_player2_points ?? '' }}">
-                    </td>
-                    <td>
-                        <input type="number" 
-                               class="form-control set3_player1_points" 
-                               data-match-id="{{ $match->id }}"
-                               value="{{ $match->set3_player1_points ?? '' }}">
-                    </td>
-                    <td>
-                        <input type="number" 
-                               class="form-control set3_player2_points" 
-                               data-match-id="{{ $match->id }}"
-                               value="{{ $match->set3_player2_points ?? '' }}">
-                    </td>
-                    <td>
-                        <input type="date" 
-                               class="form-control match_date" 
-                               data-match-id="{{ $match->id }}"
-                               value="{{ $match->match_date }}">
-                    </td>
-                    <td>
-                        <input type="time" 
-                               class="form-control match_time" 
-                               data-match-id="{{ $match->id }}"
-                               value="{{ $match->match_time }}">
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-primary update-btn" data-match-id="{{ $match->id }}">
-                            Update
-                        </button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-match-id="{{ $match->id }}">
-                            Delete
-                        </button>
+                        <button class="btn btn-sm btn-primary update-btn" data-match-id="{{ $match->id }}">Update</button>
+                        <button class="btn btn-sm btn-danger delete-btn" data-match-id="{{ $match->id }}">Delete</button>
                     </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
-    
-    <!-- Pagination Links -->
+
     <div class="d-flex justify-content-center">
         {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
     </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    // Handle UPDATE using fetch with PUT method
-    document.querySelectorAll(".update-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            let matchId = this.dataset.matchId;
-            let data = {
-                stage: document.querySelector(`.stage[data-match-id="${matchId}"]`).value,
-                match_date: document.querySelector(`.match_date[data-match-id="${matchId}"]`).value,
-                match_time: document.querySelector(`.match_time[data-match-id="${matchId}"]`).value,
-                set1_player1_points: document.querySelector(`.set1_player1_points[data-match-id="${matchId}"]`).value,
-                set1_player2_points: document.querySelector(`.set1_player2_points[data-match-id="${matchId}"]`).value,
-                set2_player1_points: document.querySelector(`.set2_player1_points[data-match-id="${matchId}"]`).value,
-                set2_player2_points: document.querySelector(`.set2_player2_points[data-match-id="${matchId}"]`).value,
-                set3_player1_points: document.querySelector(`.set3_player1_points[data-match-id="${matchId}"]`).value,
-                set3_player2_points: document.querySelector(`.set3_player2_points[data-match-id="${matchId}"]`).value,
-                moderator: document.querySelector(`.moderator[data-match-id="${matchId}"]`).value,
-                creator: document.querySelector(`.creator[data-match-id="${matchId}"]`).value
-            };
+document.querySelectorAll(".update-btn").forEach(button => {
+    button.addEventListener("click", function () {
+        let matchId = this.dataset.matchId;
+        let data = {
+            stage: document.querySelector(`.stage[data-match-id="${matchId}"]`).value,
+            match_date: document.querySelector(`.match_date[data-match-id="${matchId}"]`).value,
+            match_time: document.querySelector(`.match_time[data-match-id="${matchId}"]`).value,
+            set1_player1_points: document.querySelector(`.set1_player1_points[data-match-id="${matchId}"]`).value,
+            set1_player2_points: document.querySelector(`.set1_player2_points[data-match-id="${matchId}"]`).value,
+            set2_player1_points: document.querySelector(`.set2_player1_points[data-match-id="${matchId}"]`).value,
+            set2_player2_points: document.querySelector(`.set2_player2_points[data-match-id="${matchId}"]`).value,
+            set3_player1_points: document.querySelector(`.set3_player1_points[data-match-id="${matchId}"]`).value,
+            set3_player2_points: document.querySelector(`.set3_player2_points[data-match-id="${matchId}"]`).value,
+        };
 
-            console.log("Data to update for match " + matchId, data);
-
-            fetch(`/btl/matches/singles/${matchId}/update`, {
-                method: "PUT",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => {
-                console.log("Update response status:", response.status);
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        console.error("Update response text:", text);
-                        throw new Error("Update failed. See console for details.");
-                    });
-                }
-                return response.json();
-            })
-            .then(responseData => {
-                console.log("Update success:", responseData);
-                alert(responseData.message);
-            })
-            .catch(error => {
-                console.error("Error during update:", error);
-                alert("An error occurred while updating the match: " + error.message);
-            });
-        });
-    });
-
-    // Handle DELETE using fetch with DELETE method directly
-    document.querySelectorAll(".delete-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            let matchId = this.dataset.matchId;
-            if (confirm("Are you sure you want to delete this match?")) {
-                fetch(`/btl/matches/singles/${matchId}/delete`, {
-                    method: "DELETE",
-                    headers: { 
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                        "Accept": "application/json"
-                    },
-                })
-                .then(response => {
-                    console.log("Delete response status:", response.status);
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            console.error("Delete response text:", text);
-                            throw new Error("Delete failed. See console for details.");
-                        });
-                    }
-                    return response.json();
-                })
-                .then(responseData => {
-                    console.log("Delete success:", responseData);
-                    document.getElementById(`match-${matchId}`).remove();
-                    alert(responseData.message);
-                })
-                .catch(error => {
-                    console.error("Error during delete:", error);
-                    alert("An error occurred while deleting the match: " + error.message);
-                });
+        fetch(`/btl/matches/singles/${matchId}/update`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
             }
+            return response.json();
+        })
+        .then(responseData => {
+            alert(responseData.message);
+            location.reload(); // Optional: Refresh to show updated data
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Update failed: " + (error.message || 'Check the fields again.'));
         });
     });
 });
-</script>
 
+</script>
 @endsection

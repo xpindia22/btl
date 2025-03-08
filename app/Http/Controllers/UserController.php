@@ -128,69 +128,60 @@ class UserController extends Controller
     }
 
     // ✅ Update User (For Admin)
+    
     public function update(Request $request, $id)
 {
     $user = User::findOrFail($id);
 
-    // ✅ Ensure only admins or the user themselves can edit
     if (Auth::id() !== $user->id && !Auth::user()->isAdmin()) {
         return redirect()->route('dashboard')->with('error', 'Unauthorized action.');
     }
 
-    // ✅ Validate input (includes DOB for auto age calculation)
-    $request->validate([
-        'username' => 'required|string|max:255|unique:users,username,' . $id,
-        'email' => 'required|email|unique:users,email,' . $id,
-        'dob' => 'required|date|before:today', // ✅ Must be a valid past date
-        'sex' => 'required|string|in:Male,Female,Other',
+    $validated = $request->validate([
+        'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+        'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        'dob' => 'required|date|before:today',
+        'sex' => 'required|in:Male,Female,Other',
         'mobile_no' => 'nullable|digits:10',
         'role' => 'required|in:admin,user,visitor,player',
         'password' => 'nullable|min:8|confirmed',
+        'moderated_tournaments' => 'sometimes|array',
+        'created_tournaments' => 'sometimes|array',
     ]);
 
-    // ✅ Update user details
-    $user->username = $request->username;
-    $user->email = $request->email;
-    $user->dob = $request->dob;
-    $user->sex = $request->sex;
-    $user->mobile_no = $request->mobile_no;
-    $user->role = $request->role;
+    $user->username  = $validated['username'];
+    $user->email     = $validated['email'];
+    $user->dob       = $validated['dob'];
+    $user->sex       = $validated['sex'];
+    $user->mobile_no = $validated['mobile_no'];
+    $user->role      = $validated['role'];
 
-    if ($request->filled('password')) {
-        $user->password = Hash::make($request->password);
+    if (!empty($validated['password'])) {
+        $user->password = Hash::make($validated['password']);
     }
 
     $user->save();
 
-    // ✅ Sync Moderated Tournaments (BelongsToMany)
-    if ($request->has('moderated_tournaments')) {
-        $user->moderatedTournaments()->sync($request->moderated_tournaments);
-    } else {
-        $user->moderatedTournaments()->detach();
-    }
+    // Moderated Tournaments
+    $user->moderatedTournaments()->sync($validated['moderated_tournaments'] ?? []);
 
-    // ✅ Get Default Admin ID
+    // Created Tournaments
     $defaultAdminId = User::where('username', 'xxx')->where('role', 'admin')->value('id');
+    Tournament::where('created_by', $user->id)->update(['created_by' => $defaultAdminId]);
 
-    // ✅ Update Creator Field using the checkboxes submitted from the form
-    $selectedTournaments = $request->input('created_tournaments', []);
-
-    // If unchecked, reassign to default admin
-    Tournament::where('created_by', $user->id)
-        ->whereNotIn('id', $selectedTournaments)
-        ->update(['created_by' => $defaultAdminId]);
-
-    // If checked, assign this user as creator
-    if (!empty($selectedTournaments)) {
-        Tournament::whereIn('id', $selectedTournaments)
+    if (!empty($validated['created_tournaments'])) {
+        Tournament::whereIn('id', $validated['created_tournaments'])
             ->update(['created_by' => $user->id]);
     }
 
-    // ✅ Refresh relationships so UI updates correctly
     $user->load('moderatedTournaments', 'createdTournaments');
 
     return redirect()->route('users.index')->with('success', 'User updated successfully.');
 }
+
+
+
+
 
     // ✅ Delete User
     public function destroy($id)
