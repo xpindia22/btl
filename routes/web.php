@@ -106,12 +106,16 @@ Route::prefix('matches/singles')->group(function () {
     // **Edit Specific Match (if needed)**
     Route::get('/{match}/edit', [SinglesMatchController::class, 'editMatch'])->name('matches.singles.editMatch');
 
+
     Route::put('/{match}/update', [SinglesMatchController::class, 'update'])->name('matches.singles.update');
     Route::delete('/{match}/delete', [SinglesMatchController::class, 'delete'])->name('matches.singles.delete');
-
+    
     // Locking and Unlocking Singles Tournaments
     Route::post('/lock', [SinglesMatchController::class, 'lockTournament'])->name('matches.singles.lockTournament');
     Route::post('/unlock', [SinglesMatchController::class, 'unlockTournament'])->name('matches.singles.unlockTournament');
+  
+    Route::get('/matches/singles/filtered-players', [SinglesMatchController::class, 'filteredPlayers'])->name('matches.singles.filteredPlayers');
+
 });
 
 

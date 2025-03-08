@@ -139,13 +139,11 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Handle UPDATE using POST with _method override to PUT
+    // Handle UPDATE using fetch with PUT method
     document.querySelectorAll(".update-btn").forEach(button => {
         button.addEventListener("click", function () {
             let matchId = this.dataset.matchId;
             let data = {
-                _token: "{{ csrf_token() }}",
-                _method: "PUT", // <-- Method override
                 stage: document.querySelector(`.stage[data-match-id="${matchId}"]`).value,
                 match_date: document.querySelector(`.match_date[data-match-id="${matchId}"]`).value,
                 match_time: document.querySelector(`.match_time[data-match-id="${matchId}"]`).value,
@@ -158,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
             };
 
             fetch(`/btl/matches/singles/${matchId}/update`, {
-                method: "POST", // Using POST instead of PUT
+                method: "PUT", // Use PUT method directly
                 headers: { 
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": "{{ csrf_token() }}",
@@ -187,22 +185,18 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Handle DELETE using POST with _method override to DELETE
+    // Handle DELETE using fetch with DELETE method directly
     document.querySelectorAll(".delete-btn").forEach(button => {
         button.addEventListener("click", function () {
             let matchId = this.dataset.matchId;
             if (confirm("Are you sure you want to delete this match?")) {
                 fetch(`/btl/matches/singles/${matchId}/delete`, {
-                    method: "POST", // Using POST instead of DELETE
+                    method: "DELETE", // Use DELETE method directly
                     headers: { 
                         "Content-Type": "application/json",
                         "X-CSRF-TOKEN": "{{ csrf_token() }}",
                         "Accept": "application/json"
                     },
-                    body: JSON.stringify({ 
-                        _token: "{{ csrf_token() }}",
-                        _method: "DELETE" // <-- Method override
-                    })
                 })
                 .then(response => {
                     console.log("Delete response status:", response.status);
@@ -228,6 +222,5 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
-
 
 @endsection

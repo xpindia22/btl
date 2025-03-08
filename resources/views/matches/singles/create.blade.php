@@ -1,3 +1,9 @@
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
 @extends('layouts.app')
 
 @section('content')
@@ -101,40 +107,49 @@
     @endif
 </div>
 
-<script>
-$(document).ready(function() {
-    $('#category_id').change(function() {
-        let categoryId = $(this).val();
-        if (categoryId) {
-            $.ajax({
-                url: "{{ route('matches.singles.filteredPlayers') }}",
-                type: "GET",
-                data: { category_id: categoryId },
-                success: function(players) {
-                    console.log("✅ Players received:", players);
-                    $('#player1_id, #player2_id').empty().append('<option value="">Select Player</option>');
 
-                    if (players.length > 0) {
-                        players.forEach(function(player) {
-                            let optionText = `${player.name} (Age: ${player.age}, Sex: ${player.sex})`;
-                            let optionHtml = `<option value="${player.id}">${optionText}</option>`;
-                            $('#player1_id').append(optionHtml);
-                            $('#player2_id').append(optionHtml);
-                        });
-                    } else {
-                        console.warn("⚠ No players found.");
-                        alert("No players available for this category.");
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error("❌ AJAX Error:", error);
-                    console.error("❌ Response:", xhr.responseText);
-                    alert("Error fetching players. Please try again.");
-                }
-            });
-        } else {
-            $('#player1_id, #player2_id').html('<option value="">Select Player</option>');
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const categoryDropdown = document.getElementById("category_id");
+    const player1Dropdown = document.getElementById("player1_id");
+    const player2Dropdown = document.getElementById("player2_id");
+
+    categoryDropdown.addEventListener("change", function () {
+        const categoryId = this.value;
+        console.log("🔍 Selected Category ID:", categoryId);
+
+        if (!categoryId) {
+            player1Dropdown.innerHTML = "<option value=''>-- Select Player 1 --</option>";
+            player2Dropdown.innerHTML = "<option value=''>-- Select Player 2 --</option>";
+            return;
         }
+
+        fetch(`/btl/matches/singles/filtered-players?category_id=${categoryId}`)
+            .then(response => {
+                console.log("🔍 AJAX Response Status:", response.status);
+                return response.json();
+            })
+            .then(players => {
+                console.log("✅ Players Received:", players);
+
+                if (!players.length) {
+                    alert("⚠️ No players found for this category!");
+                }
+
+                let playerOptions = "<option value=''>-- Select Player --</option>";
+                players.forEach(player => {
+                    playerOptions += `<option value="${player.id}">${player.name} (Age: ${player.age}, Sex: ${player.sex})</option>`;
+                });
+
+                player1Dropdown.innerHTML = playerOptions;
+                player2Dropdown.innerHTML = playerOptions;
+
+                console.log("✅ Dropdown Updated!");
+            })
+            .catch(error => {
+                console.error("❌ Error fetching players:", error);
+                alert("⚠️ Error fetching players. Check console for details.");
+            });
     });
 });
 </script>

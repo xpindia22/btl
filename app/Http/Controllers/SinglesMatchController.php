@@ -51,17 +51,40 @@ class SinglesMatchController extends Controller
     // Fetch players for Singles Matches
     public function filteredPlayers(Request $request)
     {
-        \Log::info("🔍 API called: filteredPlayers", ['category_id' => $request->category_id]);
+        \Log::info("🔍 API Request - filteredPlayers()", ['category_id' => $request->category_id]);
+
+        if (!$request->has('category_id')) {
+            \Log::error("❌ Missing category_id in request!");
+            return response()->json(['error' => 'Category ID is required'], 400);
+        }
 
         $category = Category::find($request->category_id);
-        if (!$category) return response()->json([]);
+        if (!$category) {
+            \Log::error("❌ No category found for ID: " . $request->category_id);
+            return response()->json([]);
+        }
 
-        $players = Player::where('sex', $category->sex)
-                         ->whereBetween('age', [0, 100])
+        $categoryName = strtoupper($category->name);
+        $sex = $category->sex;
+        $minAge = 0;
+        $maxAge = 100;
+
+        \Log::info("✅ Category Selected: {$categoryName} | Sex: {$sex}");
+
+        if (preg_match('/^U(\d+)(BS|GS)$/', $categoryName, $matches)) {
+            $maxAge = (int) $matches[1];
+        } elseif (preg_match('/^SENIOR (\d+) PLUS (BS|GS)$/', $categoryName, $matches)) {
+            $minAge = (int) $matches[1];
+        }
+
+        $players = Player::where('sex', $sex)
+                         ->whereBetween('age', [$minAge, $maxAge])
                          ->whereNotNull('uid')
                          ->where('uid', '!=', '')
                          ->select('id', 'name', 'age', 'sex')
                          ->get();
+
+        \Log::info("✅ Players Found: " . $players->count(), $players->toArray());
 
         return response()->json($players);
     }
@@ -87,54 +110,88 @@ class SinglesMatchController extends Controller
 
         MatchModel::create($validated + ['created_by' => Auth::id()]);
 
-        return response()->json(['message' => 'Singles match created successfully.'], 200);
+        return redirect()->route('matches.singles.index')->with('success', 'Singles match created successfully.');
     }
 
-    // ==================== Display Singles Matches for Inline Editing ==================== //
-    public function edit()
+    // Display Singles Matches
+    public function index(Request $request)
     {
-        $matches = MatchModel::singles()
-            ->with(['tournament', 'category', 'player1', 'player2'])
-            ->paginate(10);
-            
-        return view('matches.singles.edit', compact('matches'));
-    }
+        $tournaments = Tournament::all();
+        $players = Player::all();
 
-    // ==================== Update Singles Matches (Inline Editing) ==================== //
-    public function update(Request $request, $id)
-    {
-        try {
-            $validated = $request->validate([
-                'stage' => 'nullable|string',
-                'match_date' => 'nullable|date',
-                'match_time' => 'nullable',
-                'set1_player1_points' => 'nullable|integer',
-                'set1_player2_points' => 'nullable|integer',
-                'set2_player1_points' => 'nullable|integer',
-                'set2_player2_points' => 'nullable|integer',
-                'set3_player1_points' => 'nullable|integer',
-                'set3_player2_points' => 'nullable|integer',
-            ]);
+        $query = MatchModel::with(['tournament', 'category', 'player1', 'player2'])
+                    ->whereHas('category', function ($q) {
+                        $q->where('name', 'LIKE', '%BS%')
+                          ->orWhere('name', 'LIKE', '%GS%');
+                    });
 
-            $match = MatchModel::findOrFail($id);
-            $match->update($validated);
-
-            return response()->json(['message' => 'Match updated successfully.'], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => "Error: " . $e->getMessage()], 500);
+        if ($request->filled('filter_tournament') && $request->filter_tournament !== 'all') {
+            $query->where('tournament_id', $request->filter_tournament);
         }
+
+        if ($request->filled('filter_player1') && $request->filter_player1 !== 'all') {
+            $query->where('player1_id', $request->filter_player1);
+        }
+
+        if ($request->filled('filter_player2') && $request->filter_player2 !== 'all') {
+            $query->where('player2_id', $request->filter_player2);
+        }
+
+        if ($request->filled('filter_category') && $request->filter_category !== 'all') {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('name', 'LIKE', $request->filter_category);
+            });
+        }
+
+        if ($request->filled('filter_date')) {
+            $query->whereDate('match_date', $request->filter_date);
+        }
+
+        if ($request->filled('filter_stage') && $request->filter_stage !== 'all') {
+            $query->where('stage', $request->filter_stage);
+        }
+
+        $matches = $query->paginate(10);
+
+        return view('matches.singles.index', compact('tournaments', 'players', 'matches'));
     }
 
-    // ==================== Delete Singles Matches ==================== //
+    // Update Match
+    public function update(Request $request, MatchModel $match)
+    {
+        $validated = $request->validate([
+            'stage' => 'nullable|string',
+            'match_date' => 'nullable|date',
+            'match_time' => 'nullable',
+            'set1_player1_points' => 'nullable|integer',
+            'set1_player2_points' => 'nullable|integer',
+            'set2_player1_points' => 'nullable|integer',
+            'set2_player2_points' => 'nullable|integer',
+            'set3_player1_points' => 'nullable|integer',
+            'set3_player2_points' => 'nullable|integer',
+        ]);
+
+        $match->update($validated);
+
+        return response()->json(['message' => 'Match updated successfully.']);
+    }
+
+    // Delete Match
     public function delete($id)
     {
-        try {
-            $match = MatchModel::findOrFail($id);
-            $match->delete();
+        $match = MatchModel::findOrFail($id);
+        $match->delete();
 
-            return response()->json(['message' => 'Match deleted successfully.'], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => "Error: " . $e->getMessage()], 500);
-        }
+        return response()->json(['message' => 'Match deleted successfully.']);
     }
+
+    // Display Singles Matches for Inline Editing
+public function edit()
+{
+    $matches = MatchModel::with(['tournament', 'category', 'player1', 'player2'])
+        ->paginate(10);
+    
+    return view('matches.singles.edit', compact('matches'));
+}
+
 }

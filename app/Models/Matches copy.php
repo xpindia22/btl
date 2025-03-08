@@ -110,5 +110,12 @@ class Matches extends Model
                      ->whereNotNull('team2_player1_id')
                      ->whereNotNull('team2_player2_id');
     }
-     
+    public function index()
+{
+    $tournaments = Tournament::all();
+    $players = Player::all();
+    $matches = Match::all(); // Define $matches here
+
+    return view('matches.singles.index', compact('tournaments', 'players', 'matches'));
+}
 }
