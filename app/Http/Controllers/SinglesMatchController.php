@@ -115,66 +115,75 @@ class SinglesMatchController extends Controller
 
     // Display Singles Matches
     public function index(Request $request)
-    {
-        $tournaments = Tournament::all();
-        $players = Player::all();
+{
+    $tournaments = Tournament::all();
+    $players = Player::all();
 
-        $query = MatchModel::with(['tournament', 'category', 'player1', 'player2'])
-                    ->whereHas('category', function ($q) {
-                        $q->where('name', 'LIKE', '%BS%')
-                          ->orWhere('name', 'LIKE', '%GS%');
-                    });
+    $query = MatchModel::with(['tournament', 'category', 'player1', 'player2'])
+                ->whereHas('category', function ($q) {
+                    $q->where('name', 'LIKE', '%BS%')
+                      ->orWhere('name', 'LIKE', '%GS%');
+                });
 
-        if ($request->filled('filter_tournament') && $request->filter_tournament !== 'all') {
-            $query->where('tournament_id', $request->filter_tournament);
-        }
-
-        if ($request->filled('filter_player1') && $request->filter_player1 !== 'all') {
-            $query->where('player1_id', $request->filter_player1);
-        }
-
-        if ($request->filled('filter_player2') && $request->filter_player2 !== 'all') {
-            $query->where('player2_id', $request->filter_player2);
-        }
-
-        if ($request->filled('filter_category') && $request->filter_category !== 'all') {
-            $query->whereHas('category', function ($q) use ($request) {
-                $q->where('name', 'LIKE', $request->filter_category);
-            });
-        }
-
-        if ($request->filled('filter_date')) {
-            $query->whereDate('match_date', $request->filter_date);
-        }
-
-        if ($request->filled('filter_stage') && $request->filter_stage !== 'all') {
-            $query->where('stage', $request->filter_stage);
-        }
-
-        $matches = $query->paginate(10);
-
-        return view('matches.singles.index', compact('tournaments', 'players', 'matches'));
+    if ($request->filled('filter_tournament') && $request->filter_tournament !== 'all') {
+        $query->where('tournament_id', $request->filter_tournament);
     }
+
+    if ($request->filled('filter_player1') && $request->filter_player1 !== 'all') {
+        $query->where('player1_id', $request->filter_player1);
+    }
+
+    if ($request->filled('filter_player2') && $request->filter_player2 !== 'all') {
+        $query->where('player2_id', $request->filter_player2);
+    }
+
+    if ($request->filled('filter_category') && $request->filter_category !== 'all') {
+        $query->whereHas('category', function ($q) use ($request) {
+            $q->where('name', 'LIKE', $request->filter_category);
+        });
+    }
+
+    if ($request->filled('filter_date')) {
+        $query->whereDate('match_date', $request->filter_date);
+    }
+
+    if ($request->filled('filter_stage') && $request->filter_stage !== 'all') {
+        $query->where('stage', $request->filter_stage);
+    }
+
+    // Order by creation date descending so that newest match appears first.
+    $matches = $query->orderBy('created_at', 'desc')->paginate(10);
+
+    return view('matches.singles.index', compact('tournaments', 'players', 'matches'));
+}
+
 
     // Update Match
-    public function update(Request $request, MatchModel $match)
-    {
-        $validated = $request->validate([
-            'stage' => 'nullable|string',
-            'match_date' => 'nullable|date',
-            'match_time' => 'nullable',
-            'set1_player1_points' => 'nullable|integer',
-            'set1_player2_points' => 'nullable|integer',
-            'set2_player1_points' => 'nullable|integer',
-            'set2_player2_points' => 'nullable|integer',
-            'set3_player1_points' => 'nullable|integer',
-            'set3_player2_points' => 'nullable|integer',
-        ]);
+    public function update(Request $request, $id)
+{
+    // Validate the incoming data
+    $data = $request->validate([
+        'username' => 'required|string',
+        'email'    => 'required|email',
+        'mobile_no'=> 'nullable|string',
+        'role'     => 'required|string',
+        // We don't validate the tournaments here as they are many-to-many and handled separately.
+    ]);
 
-        $match->update($validated);
+    // Retrieve the user model
+    $user = User::findOrFail($id);
 
-        return response()->json(['message' => 'Match updated successfully.']);
-    }
+    // Update simple fields using mass assignment
+    $user->update($data);
+
+    // Update many-to-many relationships (if applicable)
+    // Make sure your User model defines the relationships (e.g. moderatedTournaments, createdTournaments)
+    $user->moderatedTournaments()->sync($request->input('moderated_tournaments', []));
+    $user->createdTournaments()->sync($request->input('created_tournaments', []));
+
+    // Redirect back with a flash message
+    return redirect()->back()->with('success', 'User updated successfully.');
+}
 
     // Delete Match
     public function delete($id)
