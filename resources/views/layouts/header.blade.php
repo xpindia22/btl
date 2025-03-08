@@ -82,6 +82,12 @@
         <!-- Navigation Links -->
         <div class="links">
             <a href="{{ route('dashboard') }}">Dashboard</a>
+            <a class="nav-link {{ request()->routeIs('players.ranking') ? 'active' : '' }}" href="{{ route('players.ranking') }}">
+                        Singles Ranking
+                    </a>
+                    <a class="nav-link {{ request()->routeIs('players.doublesRanking') ? 'active' : '' }}" href="{{ route('players.doublesRanking') }}">
+                        Doubles Ranking
+                    </a>
 
 
             @if ($user_Role === 'admin')

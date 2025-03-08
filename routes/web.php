@@ -62,6 +62,9 @@ Route::middleware(['web'])->group(function () {
 
     // Ranking route
     Route::get('/players/ranking', [PlayerController::class, 'ranking'])->name('players.ranking');
+    // Ranking Doubles
+    Route::get('/players/doubles-ranking', [PlayerController::class, 'doublesRanking'])->name('players.doublesRanking');
+
 
     // Player listing
     Route::get('/players', [PlayerController::class, 'index'])->name('players.index');

@@ -203,5 +203,63 @@ class PlayerController extends Controller
         ]);
     }
     
-
+    public function doublesRanking(Request $request)
+    {
+        $selectedTournament = $request->input('tournament_id');
+        $selectedCategory = $request->input('category_id');
+        $selectedPlayer = $request->input('player_id');
+        $selectedDate = $request->input('date');
+    
+        $tournaments = Tournament::orderBy('name')->get();
+    
+        $categories = Category::query()
+            ->where('name', 'LIKE', '%BD%')
+            ->orWhere('name', 'LIKE', '%GD%')
+            ->orWhere('name', 'LIKE', '%XD%')
+            ->orderBy('name')
+            ->get();
+    
+        $playersList = Player::orderBy('name')->get();
+    
+        $query = DB::table('matches')
+            ->select(
+                'categories.name as category_name',
+                DB::raw("CONCAT(p1.name, ' / ', p2.name) as team_name"),
+                DB::raw('COUNT(matches.id) as matches_played'),
+                DB::raw('SUM(matches.set1_team1_points + matches.set2_team1_points + matches.set3_team1_points) as total_points')
+            )
+            ->join('categories', 'matches.category_id', '=', 'categories.id')
+            ->join('players as p1', 'matches.team1_player1_id', '=', 'p1.id')
+            ->join('players as p2', 'matches.team1_player2_id', '=', 'p2.id')
+            ->join('tournaments', 'matches.tournament_id', '=', 'tournaments.id');
+    
+        if ($selectedTournament) {
+            $query->where('matches.tournament_id', $selectedTournament);
+        }
+    
+        if ($selectedCategory) {
+            $query->where('matches.category_id', $selectedCategory);
+        }
+    
+        if ($selectedPlayer) {
+            $query->where(function ($query) use ($selectedPlayer) {
+                $query->where('matches.team1_player1_id', $selectedPlayer)
+                      ->orWhere('matches.team1_player2_id', $selectedPlayer)
+                      ->orWhere('matches.team2_player1_id', $selectedPlayer)
+                      ->orWhere('matches.team2_player2_id', $selectedPlayer);
+            });
+        }
+    
+        if ($selectedDate) {
+            $query->whereDate('matches.match_date', $selectedDate);
+        }
+    
+        $rankings = $query->groupBy('team_name', 'categories.name')
+                          ->orderBy('categories.name')
+                          ->orderByDesc('total_points')
+                          ->get();
+    
+        return view('players.doubles_ranking', compact('rankings', 'tournaments', 'categories', 'playersList'));
+    }
+    
     }
