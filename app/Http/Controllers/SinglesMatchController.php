@@ -137,11 +137,4 @@ class SinglesMatchController extends Controller
             return response()->json(['message' => "Error: " . $e->getMessage()], 500);
         }
     }
-    public function index()
-    {
-        $tournaments = Tournament::all();
-        $players = Player::all(); // Retrieve all players from the database
-    
-        return view('matches.singles.index', compact('tournaments', 'players', 'matches'));
-    }
 }
