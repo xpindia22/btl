@@ -64,8 +64,14 @@ Route::middleware(['auth'])->group(function () {
     // USERS
     // --------------------------
     // Added custom GET route for /users/edit to avoid conflict with the resource route.
-    Route::get('/users/edit', [UserController::class, 'editUsers'])->name('users.edit');
-    Route::resource('users', UserController::class)->except(['show']);
+    // Route::get('/users/edit', [UserController::class, 'editUsers'])->name('users.edit');
+    // Route::resource('users', UserController::class)->except(['show']);
+
+// Users Routes
+Route::get('/users/edit', [UserController::class, 'editUsers'])->name('users.edit');
+Route::resource('users', UserController::class)->except(['show', 'edit']);
+
+
     // Note: The GET request for /users/edit will now be handled by editUsers().
     // The resource route expects an edit URL of the form /users/{user}/edit,
     // so /users/edit (without an ID) will no longer be misinterpreted.

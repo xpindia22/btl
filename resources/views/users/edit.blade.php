@@ -2,18 +2,34 @@
 
 @section('content')
 <div class="container">
-    <h2>Manage Users --- <a href="{{ route('users.index') }}">View Users</a></h2>
+    <h2>Manage Users - <a href="{{ route('users.index') }}">View Users</a></h2>
 
-    <table class="table">
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <table class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Username</th>
                 <th>Email</th>
                 <th>Mobile No</th>
+                <th>DOB</th>
+                <th>Sex</th>
                 <th>Role</th>
-                <th>Moderator</th>
-                <th>Creator</th>
+                <th>Moderated Tournaments</th>
+                <th>Created Tournaments</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -25,14 +41,25 @@
                         @method('PUT')
 
                         <td>{{ $user->id }}</td>
-                        <td><input type="text" name="username" value="{{ $user->username }}" required></td>
-                        <td><input type="email" name="email" value="{{ $user->email }}" required></td>
-                        <td><input type="text" name="mobile_no" value="{{ $user->mobile_no }}"></td>
+                        <td><input type="text" name="username" value="{{ $user->username }}" class="form-control" required></td>
+                        <td><input type="email" name="email" value="{{ $user->email }}" required class="form-control"></td>
+                        <td><input type="text" name="mobile_no" value="{{ $user->mobile_no }}" class="form-control"></td>
+
+                        <td><input type="date" name="dob" value="{{ $user->dob }}" class="form-control"></td>
+
+                        <td>
+                            <select name="sex" class="form-control">
+                                <option {{ $user->sex == 'Male' ? 'selected' : '' }}>Male</option>
+                                <option {{ $user->sex == 'Female' ? 'selected' : '' }}>Female</option>
+                                <option {{ $user->sex == 'Other' ? 'selected' : '' }}>Other</option>
+                        </select></td>
+
                         <td>
                             <select name="role" class="form-control">
-                                <option value="visitor" {{ $user->role === 'visitor' ? 'selected' : '' }}>Visitor</option>
-                                <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
-                                <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="user" {{ $user->role == 'user' ? 'selected' : '' }}>User</option>
+                                <option value="visitor" {{ $user->role == 'visitor' ? 'selected' : '' }}>Visitor</option>
+                                <option value="player" {{ $user->role == 'player' ? 'selected' : '' }}>Player</option>
                             </select>
                         </td>
 
@@ -40,7 +67,7 @@
                             @foreach ($tournaments as $tournament)
                                 <label>
                                     <input type="checkbox" name="moderated_tournaments[]" value="{{ $tournament->id }}"
-                                        {{ in_array($tournament->id, $user->moderatedTournaments->pluck('id')->toArray()) ? 'checked' : '' }}>
+                                    {{ $user->moderatedTournaments->contains($tournament->id) ? 'checked' : '' }}>
                                     {{ $tournament->name }} ({{ $tournament->year }})
                                 </label><br>
                             @endforeach
@@ -50,7 +77,7 @@
                             @foreach ($tournaments as $tournament)
                                 <label>
                                     <input type="checkbox" name="created_tournaments[]" value="{{ $tournament->id }}"
-                                        {{ in_array($tournament->id, $user->createdTournaments->pluck('id')->toArray()) ? 'checked' : '' }}>
+                                        {{ $user->createdTournaments->contains('id', $tournament->id) ? 'checked' : '' }}>
                                     {{ $tournament->name }} ({{ $tournament->year }})
                                 </label><br>
                             @endforeach
@@ -61,19 +88,21 @@
                         </td>
 
                         <td>
-                            <button type="submit" class="btn btn-success btn-sm">Update</button>
-                    </form> 
+                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    </form>
 
-                    <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
+                    <form method="POST" action="{{ route('users.destroy', $user->id) }}" style="display:inline;">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                        <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Are you sure?')">Delete</button>
                     </form>
-                        </td>
-                </tr>
+                </td>
+            </tr>
             @endforeach
         </tbody>
     </table>
+
     <div class="d-flex justify-content-center">
         {{ $users->links('vendor.pagination.default') }}
     </div>

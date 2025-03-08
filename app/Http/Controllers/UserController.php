@@ -115,17 +115,28 @@ class UserController extends Controller
         return view('admin.password-resets', compact('passwordResets'));
     }
 
-    public function editUsers() 
+    public function editUsers()
     {
+        // ✅ Ensure only admins can access
         if (!auth()->user()->isAdmin()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access!');
         }
-
-        $users = User::with(['moderatedTournaments', 'createdTournaments'])->orderBy('id', 'asc')->paginate(10);
-        $tournaments = Tournament::orderBy('year', 'desc')->get(); // ✅ Get all tournaments for dropdown
-
-        return view('users.edit', compact('users', 'tournaments'));
+    
+        // ✅ Fetch users with their relationships
+        $users = User::with(['moderatedTournaments', 'createdTournaments'])
+                    ->orderByDesc('id')
+                    ->paginate(10);
+    
+        // ✅ Fetch tournaments ordered by year descending for selection dropdowns
+        $tournaments = Tournament::orderByDesc('year')->get();
+    
+        // ✅ Return inline editing view with data
+        return view('users.edit', [
+            'users' => $users,
+            'tournaments' => $tournaments
+        ]);
     }
+    
 
     // ✅ Update User (For Admin)
     
