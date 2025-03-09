@@ -17,17 +17,31 @@
                 <th>ID</th>
                 <th>Name</th>
                 <th>Created By</th>
+                <th>Categories</th>
                 <th>Moderators</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($tournaments as $tournament)
-                <tr>
-                    <td>{{ $tournament->tournament_id }}</td>
-                    <td>{{ $tournament->tournament_name }}</td>
-                    <td>{{ $tournament->created_by }}</td>
-                    <td>{{ $tournament->moderators ?? 'None' }}</td>
-                </tr>
+                @php
+                    $categories = explode(', ', $tournament->categories ?? 'None');
+                    $chunks = array_chunk($categories, 4);
+                    $maxRows = count($chunks);
+                @endphp
+
+                @for ($i = 0; $i < $maxRows; $i++)
+                    <tr>
+                        @if ($i == 0)
+                            <td rowspan="{{ $maxRows }}">{{ $tournament->tournament_id }}</td>
+                            <td rowspan="{{ $maxRows }}">{{ $tournament->tournament_name }}</td>
+                            <td rowspan="{{ $maxRows }}">{{ $tournament->created_by }}</td>
+                        @endif
+                        <td>{{ implode(', ', $chunks[$i]) }}</td>
+                        @if ($i == 0)
+                            <td rowspan="{{ $maxRows }}">{{ $tournament->moderators ?? 'None' }}</td>
+                        @endif
+                    </tr>
+                @endfor
             @endforeach
         </tbody>
     </table>

@@ -99,13 +99,12 @@ Route::resource('users', UserController::class)->except(['show', 'edit']);
      
  //Tournaments
 
-
  Route::resource('tournaments', TournamentController::class)->except(['show']);
- Route::get('/tournaments/edit', [TournamentController::class, 'edit'])->name('tournaments.edit'); // ✅ This is the correct route
+ Route::post('/tournaments/{id}/assign-categories', [TournamentController::class, 'assignCategories'])->name('tournaments.assignCategories');
+ Route::get('/tournaments/edit', [TournamentController::class, 'edit'])->name('tournaments.edit');
  Route::put('/tournaments/update/{id}', [TournamentController::class, 'update'])->name('tournaments.update');
- Route::delete('/tournaments/delete/{id}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
+ Route::delete('/tournaments/delete/{id}', [TournamentController::class, 'destroy'])->name('tournaments.destroy'); // ✅ Make sure this exists
  
-
     // --------------------------
     // GENERAL MATCH ROUTES
     // --------------------------
