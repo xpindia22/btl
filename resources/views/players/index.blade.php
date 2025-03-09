@@ -44,9 +44,10 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="d-flex justify-content-center mt-3">
-        {{ $players->links() }}
+    <div class="d-flex justify-content-center">
+        {{ $matches->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
     </div>
+</div>
 </div>
 
 <script>

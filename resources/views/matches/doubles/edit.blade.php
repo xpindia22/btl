@@ -97,7 +97,8 @@
 
     <!-- Pagination -->
     <div class="d-flex justify-content-center">
-        {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
+        {{ $matches->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
     </div>
+</div>
 </div>
 @endsection

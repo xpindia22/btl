@@ -176,45 +176,7 @@ body {
 .navbar a:hover {
     color: #d4e4ff !important;
 }
-
-/* ✅ Table Styles */
-/* .table-container {
-    overflow-x: auto;
-    display: flex;
-    
-    justify-content: center;
-    max-width: 100%;
-}
-
-.table {
-    width: 100%;
-    max-width: 1200px;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: white;
-}
-
-.table th, .table td {
-    border: 1px solid #ddd;
-    padding: 5px;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.table th {
-    background-color: #007bff;
-    color: white;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.table tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-.table tr:hover {
-    background-color: #e0e0e0;
-} */
+ 
 
 /* ✅ Table Styles */
 .table-container {
@@ -304,19 +266,31 @@ body {
 }
 
 /* ✅ Pagination Styling */
+/* ✅ Pagination Styling - Keep in One Row */
 .pagination {
     display: flex;
     justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap; /* Prevents wrapping */
     margin-top: 20px;
     list-style: none;
     padding: 0;
+    gap: 5px; /* Adds spacing between items */
+    overflow-x: auto; /* Prevents items from breaking onto the next row */
+    white-space: nowrap; /* Ensures all numbers stay in a single line */
 }
 
+/* ✅ Style for Each Page Item */
 .pagination .page-item {
-    margin: 0 5px;
+    display: inline-block; /* Ensures inline alignment */
+    margin: 0; /* Remove unnecessary margins */
 }
 
+/* ✅ Style for Page Links */
 .pagination .page-link {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     color: #007bff;
     background-color: #fff;
     padding: 8px 12px;
@@ -327,9 +301,9 @@ body {
     min-width: 40px;
     text-align: center;
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-    display: inline-block;
 }
 
+/* ✅ Hover & Active State */
 .pagination .page-link:hover {
     background-color: #007bff;
     color: #fff;
@@ -343,9 +317,26 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* ✅ Ensure First & Last Buttons Stay Aligned */
 .pagination .page-item:first-child .page-link::before,
 .pagination .page-item:last-child .page-link::after {
     display: none;
+}
+
+/* ✅ Responsive Fix for Small Screens */
+@media screen and (max-width: 768px) {
+    .pagination {
+        flex-wrap: nowrap; /* Prevents wrapping */
+        overflow-x: auto; /* Allows scrolling if too many page numbers */
+        justify-content: flex-start; /* Aligns pagination correctly */
+        padding: 10px;
+    }
+
+    .pagination .page-link {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 35px;
+    }
 }
 
 /* ✅ Form Styles */

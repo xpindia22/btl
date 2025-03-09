@@ -11,8 +11,7 @@
     <!-- Filters Form -->
     <form method="GET" action="{{ route('matches.doubles.index') }}" class="mb-3">
         <div class="filter-row">
-            <div class="filter-item">
-                <label for="filter_tournament">Tournament:</label>
+                 <label for="filter_tournament">Tournament:</label>
                 <select name="filter_tournament" id="filter_tournament" class="form-control">
                     <option value="all">All</option>
                     @foreach($tournaments as $tournament)
@@ -21,9 +20,7 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
-
-            <div class="filter-item">
+        
                 <label for="filter_player">Player:</label>
                 <select name="filter_player" id="filter_player" class="form-control">
                     <option value="all">All</option>
@@ -33,9 +30,7 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
-
-            <div class="filter-item">
+ 
                 <label for="filter_category">Category:</label>
                 <select name="filter_category" id="filter_category" class="form-control">
                     <option value="all">All</option>
@@ -43,14 +38,10 @@
                     <option value="GD" {{ request('filter_category') == 'GD' ? 'selected' : '' }}>Girls Doubles (GD)</option>
                     <option value="XD" {{ request('filter_category') == 'XD' ? 'selected' : '' }}>Mixed Doubles (XD)</option>
                 </select>
-            </div>
-
-            <div class="filter-item">
+        
                 <label for="filter_date">Date:</label>
                 <input type="date" name="filter_date" id="filter_date" class="form-control" value="{{ request('filter_date') }}">
-            </div>
-
-            <div class="filter-item">
+           
                 <label for="filter_stage">Stage:</label>
                 <select name="filter_stage" id="filter_stage" class="form-control">
                     <option value="all">All</option>
@@ -59,7 +50,7 @@
                     <option value="Semifinals">Semifinals</option>
                     <option value="Finals">Finals</option>
                 </select>
-            </div>
+            
 
             <button type="submit" class="btn btn-primary">Apply Filters</button>
         </div>
@@ -122,7 +113,7 @@
 
     <!-- Pagination -->
     <div class="d-flex justify-content-center">
-        {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
+        {{ $matches->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
     </div>
 </div>
 
