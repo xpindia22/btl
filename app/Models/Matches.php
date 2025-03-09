@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Favorite; // ✅ Import Favorite model
 
 class Matches extends Model
 {
@@ -44,7 +45,6 @@ class Matches extends Model
         'creator'
     ];
     
-
     public $timestamps = true;
 
     // Relationships
@@ -112,5 +112,15 @@ class Matches extends Model
                      ->whereNotNull('team2_player1_id')
                      ->whereNotNull('team2_player2_id');
     }
-     
+
+    // ✅ Corrected Order of Methods
+    public function favorites()
+    {
+        return $this->morphMany(Favorite::class, 'favoritable');
+    }
+
+    public function isFavoritedByUser($userId)
+    {
+        return $this->favorites()->where('user_id', $userId)->exists();
+    }
 }

@@ -116,6 +116,7 @@
                 <th>Set 2</th>
                 <th>Set 3</th>
                 <th>Winner</th>
+                <th>Favorite</th>
             </tr>
         </thead>
         <tbody>
@@ -146,6 +147,14 @@
                         @endphp
                         {{ $winner }}
                     </td>
+                    <td>
+    <button type="button"
+        class="btn btn-sm favorite-btn {{ $match->isFavoritedByUser(auth()->id()) ? 'btn-success' : 'btn-primary' }}"
+        data-match-id="{{ $match->id }}">
+        {{ $match->isFavoritedByUser(auth()->id()) ? '⭐ Pinned' : '📌 Pin' }}
+    </button>
+</td>
+
                 </tr>
             @endforeach
         </tbody>
@@ -154,4 +163,64 @@
 <div class="d-flex justify-content-center">
     {{ $matches->appends(request()->query())->links('vendor.pagination.default') }}
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".favorite-btn").forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                let buttonElement = this;
+                let matchId = buttonElement.dataset.matchId;
+                let token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+                console.log("Sending request with data:", {
+                    favoritable_id: matchId,
+                    favoritable_type: "App\\Models\\Matches" // ✅ Full namespace of the model
+                });
+
+                fetch("{{ route('favorites.toggle') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": token,
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({
+                        favoritable_id: matchId,
+                        favoritable_type: "App\\Models\\Matches" // ✅ Full namespace
+                    })
+                })
+                .then(response => response.json().catch(() => response.text())) // Handle non-JSON responses
+                .then(data => {
+                    console.log("Response received:", data);
+
+                    if (data.errors) {
+                        alert("Validation failed: " + JSON.stringify(data.errors));
+                        return;
+                    }
+
+                    if (data.status === "pinned") {
+                        buttonElement.classList.remove("btn-primary");
+                        buttonElement.classList.add("btn-success");
+                        buttonElement.innerHTML = "⭐ Pinned";
+                    } else {
+                        buttonElement.classList.remove("btn-success");
+                        buttonElement.classList.add("btn-primary");
+                        buttonElement.innerHTML = "📌 Pin";
+                    }
+                })
+                .catch(error => {
+                    console.error("Fetch error:", error);
+                    alert("An error occurred. Check the console for details.");
+                });
+            });
+        });
+    });
+</script>
+
+
+
+
+
 @endsection

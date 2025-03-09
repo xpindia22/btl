@@ -8,8 +8,7 @@ if (! function_exists('redirect_if_not_logged_in')) {
      * @return \Illuminate\Http\RedirectResponse|null
      */
     function redirect_if_not_logged_in() {
-        if (! auth()->check()) {  // Use Laravel's auth() helper
-            // send() forces the redirect immediately
+        if (! auth()->check()) {  
             return redirect()->route('login')->send();
         }
     }
@@ -35,8 +34,26 @@ if (! function_exists('is_admin')) {
      * @return bool
      */
     function is_admin() {
-        return auth()->check() && auth()->user()->Role === 'admin';
+        return auth()->check() && auth()->user()->role === 'admin';
     }
 }
 
-// ... Add other helper functions as needed.
+if (! function_exists('favorite_route_name')) {
+    /**
+     * Get the correct route name based on the favorited model type.
+     *
+     * @param string $modelType
+     * @return string|null
+     */
+    function favorite_route_name($modelType)
+    {
+        return match (class_basename($modelType)) { 
+            'Matches' => 'matches.singles.index', // ✅ Use correct route
+            'Tournament' => 'tournaments.show',
+            'Category' => 'categories.show',
+            'Player' => 'players.show',
+            default => null
+        };
+    }
+}
+

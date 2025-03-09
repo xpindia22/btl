@@ -14,6 +14,8 @@ use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\FavoriteController;
+
 
 // --------------------------------------------------
 // ROOT REDIRECT
@@ -70,7 +72,7 @@ Route::middleware(['web'])->group(function () {
     Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
 
     // Player CRUD operations (edit, update, delete)
-    Route::get('/players/{uid}/edit', [PlayerController::class, 'edit'])->name('players.edit');
+    Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
     Route::put('/players/{uid}/update', [PlayerController::class, 'update'])->name('players.update');
     Route::delete('/players/{uid}/delete', [PlayerController::class, 'destroy'])->name('players.delete');
 
@@ -144,6 +146,10 @@ Route::resource('users', UserController::class)->except(['show', 'edit']);
         Route::post('/unlock', [SinglesMatchController::class, 'unlockTournament'])->name('matches.singles.unlockTournament');
 
         Route::get('/matches/singles/filtered-players', [SinglesMatchController::class, 'filteredPlayers'])->name('matches.singles.filteredPlayers');
+    // Route to view a specific singles match
+        Route::get('/matches/singles/{id}', [SinglesMatchController::class, 'show'])->name('matches.singles.show');
+
+    
     });
 
     // --------------------------
@@ -159,6 +165,8 @@ Route::resource('users', UserController::class)->except(['show', 'edit']);
         Route::post('/unlock', [DoublesMatchController::class, 'unlockTournament'])->name('matches.doubles.unlockTournament');
         Route::put('/{match}/update', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
         Route::delete('/{match}/delete', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
+    // Route to view a specific doubles match
+        Route::get('/matches/doubles/{id}', [DoublesMatchController::class, 'show'])->name('matches.doubles.show');
     });
 
     // --------------------------
@@ -206,3 +214,11 @@ Route::post('reset-password', [ResetPasswordController::class, 'reset'])
 Route::get('reset-password', function () {
     return redirect()->route('password.request');
 });
+
+
+
+
+     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+  
+     Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+     

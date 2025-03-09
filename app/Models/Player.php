@@ -13,4 +13,15 @@ class Player extends Model
     public $timestamps = false;
 
     protected $fillable = ['uid', 'name', 'dob', 'age', 'sex', 'password'];
+
+public function favorites()
+{
+    return $this->morphMany(Favorite::class, 'favoritable');
+}
+
+public function isFavoritedByUser($userId)
+{
+    return $this->favorites()->where('user_id', $userId)->exists();
+}
+
 }

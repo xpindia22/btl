@@ -47,4 +47,15 @@ class Tournament extends Model
     });
 }
 
+public function favorites()
+{
+    return $this->morphMany(Favorite::class, 'favoritable');
+}
+
+public function isFavoritedByUser($userId)
+{
+    return $this->favorites()->where('user_id', $userId)->exists();
+}
+
+
 }

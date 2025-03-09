@@ -10,6 +10,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Badminton Tournament</title>
@@ -81,13 +83,21 @@
         </div>
         <!-- Navigation Links -->
         <div class="links">
-            <a href="{{ route('dashboard') }}">Dashboard</a>
-            <a class="nav-link {{ request()->routeIs('players.ranking') ? 'active' : '' }}" href="{{ route('players.ranking') }}">
-                        Singles Ranking
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('players.doublesRanking') ? 'active' : '' }}" href="{{ route('players.doublesRanking') }}">
-                        Doubles Ranking
-                    </a>
+    <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        ⭐ Dashboard
+    </a>
+
+    <a href="{{ route('players.ranking') }}" class="{{ request()->routeIs('players.ranking') ? 'active' : '' }}">
+        ⭐ Singles Ranking
+    </a>
+
+    <a href="{{ route('players.doublesRanking') }}" class="{{ request()->routeIs('players.doublesRanking') ? 'active' : '' }}">
+        ⭐ Doubles Ranking
+    </a>
+
+    <a href="{{ route('favorites.index') }}" class="btn btn-sm btn-warning">
+        ⭐ Favorites
+    </a>
 
 
 
@@ -180,6 +190,7 @@
 
         <a href="{{ route('players.register') }}">Register Your Players</a>
         <a href="{{ route('players.edit') }}">Edit Your Players</a>
+        
 
         @endif
         </div>
@@ -194,6 +205,16 @@
             <a href="#" id="logout-link">Logout</a>
         </div>
     </div>
+    <!-- <div class="container">
+    <h3>My Pinned Items</h3>
+    <ul>
+    @foreach(Auth::user()->favorites ?? collect() as $favorite)
+    <li>
+               
+            </li>
+        @endforeach
+    </ul>
+</div> -->
 
     <!-- Script to Handle Logout via POST -->
     <script>
