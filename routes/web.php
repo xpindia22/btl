@@ -38,21 +38,6 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/register', 'register');
 });
 
-// // --------------------------------------------------
-// // PUBLIC PLAYER REGISTRATION & VIEWING
-// // --------------------------------------------------
-// Route::middleware(['web'])->group(function () {
-//     Route::get('/players/register', [PlayerController::class, 'create'])->name('players.register');
-//     Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register.post');
-//     Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
-//     Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
-//     Route::put('/players/{uid}/update', [PlayerController::class, 'update'])->name('players.update');
-//     Route::delete('/players/{uid}/delete', [PlayerController::class, 'destroy']);
-
-//     Route::get('/players/ranking', [PlayerController::class, 'ranking'])->name('players.ranking');
-
-// });
-
 // --------------------------------------------------
 // PUBLIC PLAYER REGISTRATION & VIEWING
 // --------------------------------------------------
@@ -86,11 +71,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // --------------------------
-    // TOURNAMENTS
-    // --------------------------
-    Route::resource('tournaments', TournamentController::class)->except(['show']);
-
 
 
 // Users Routes
@@ -114,6 +94,17 @@ Route::resource('users', UserController::class)->except(['show', 'edit']);
         ->name('admin.deletePasswordReset');
 
     });
+
+ 
+     
+ //Tournaments
+
+
+ Route::resource('tournaments', TournamentController::class)->except(['show']);
+ Route::get('/tournaments/edit', [TournamentController::class, 'edit'])->name('tournaments.edit'); // ✅ This is the correct route
+ Route::put('/tournaments/update/{id}', [TournamentController::class, 'update'])->name('tournaments.update');
+ Route::delete('/tournaments/delete/{id}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
+ 
 
     // --------------------------
     // GENERAL MATCH ROUTES

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class TournamentController extends Controller
 {
-    // Display the tournament management page (list tournaments)
+    // Display the tournament management page
     public function index()
     {
         $currentUser = Auth::user();
@@ -28,21 +28,16 @@ class TournamentController extends Controller
             ->leftJoin('categories', 'tournament_categories.category_id', '=', 'categories.id')
             ->leftJoin('tournament_moderators', 'tournaments.id', '=', 'tournament_moderators.tournament_id')
             ->leftJoin('users as moderators', 'tournament_moderators.user_id', '=', 'moderators.id')
-            ->groupBy('tournaments.id', 'tournaments.name', 'users.username');
+            ->groupBy('tournaments.id', 'tournaments.name', 'users.username')
+            ->orderBy('tournaments.id', 'desc'); // Sorting in descending order
 
-        // If the user is not an admin, filter only their tournaments
         if ($userRole !== 'admin') {
             $tournamentsQuery->where('tournaments.created_by', $userId);
         }
 
-        // Paginate results
-        $tournaments = $tournamentsQuery->paginate(10); // Show 10 per page
+        $tournaments = $tournamentsQuery->paginate(10);
 
-        // Fetch dropdown data
-        $categories = DB::table('categories')->get();
-        $users      = DB::table('users')->select('id', 'username')->orderBy('username')->get();
-
-        return view('tournaments.manage', compact('tournaments', 'categories', 'users'));
+        return view('tournaments.index', compact('tournaments'));
     }
 
     // Show the form for creating a new tournament
@@ -51,139 +46,70 @@ class TournamentController extends Controller
         return view('tournaments.create');
     }
 
-    // Add a new tournament
-    public function storeTournament(Request $request)
+    // Store a new tournament
+    public function store(Request $request)
     {
         $request->validate([
-            'tournament_name' => 'required|string|max:255',
+            'tournament_name' => 'required|string|max:255|unique:tournaments,name',
         ]);
 
-        $currentUser    = Auth::user();
-        $tournamentName = $request->input('tournament_name');
-
-        $inserted = DB::table('tournaments')->insert([
-            'name'       => $tournamentName,
-            'created_by' => $currentUser->id,
+        $tournamentId = DB::table('tournaments')->insertGetId([
+            'name'       => $request->tournament_name,
+            'created_by' => Auth::id(),
         ]);
 
-        return $inserted
-            ? redirect()->route('tournaments.manage')->with('success', 'Tournament added successfully.')
-            : redirect()->route('tournaments.manage')->with('error', 'Error adding tournament.');
+        return redirect()->route('tournaments.index')->with('success', 'Tournament added successfully.');
     }
 
-    // Show the form for editing a tournament
-    public function edit($id)
-{
-    $currentUser = Auth::user();
-    $tournament = DB::table('tournaments')->where('id', $id)->first();
+    // Show the inline edit form
+    public function edit()
+    {
+        $tournaments = DB::table('tournaments')
+            ->select(
+                'tournaments.id as tournament_id',
+                'tournaments.name as tournament_name',
+                'users.username as created_by',
+                DB::raw("GROUP_CONCAT(DISTINCT moderators.username ORDER BY moderators.username SEPARATOR ', ') as moderators")
+            )
+            ->leftJoin('users', 'tournaments.created_by', '=', 'users.id')
+            ->leftJoin('tournament_moderators', 'tournaments.id', '=', 'tournament_moderators.tournament_id')
+            ->leftJoin('users as moderators', 'tournament_moderators.user_id', '=', 'moderators.id')
+            ->groupBy('tournaments.id', 'tournaments.name', 'users.username')
+            ->orderBy('tournaments.id', 'desc')
+            ->get();
 
-    if (!$tournament) {
-        return redirect()->route('tournaments.manage')->with('error', 'Tournament not found.');
+        $allModerators = DB::table('users')->select('id', 'username')->orderBy('username')->get();
+
+        return view('tournaments.edit', compact('tournaments', 'allModerators'));
     }
-
-    // Only allow admins or the tournament owner to edit
-    if ($currentUser->role !== 'admin' && $tournament->created_by != $currentUser->id) {
-        return redirect()->route('tournaments.manage')->with('error', 'Unauthorized access.');
-    }
-
-    // Retrieve current category and moderator assignments
-    $assignedCategories = DB::table('tournament_categories')
-        ->where('tournament_id', $id)
-        ->pluck('category_id')
-        ->toArray();
-
-    $assignedModerators = DB::table('tournament_moderators')
-        ->where('tournament_id', $id)
-        ->pluck('user_id')
-        ->toArray();
-
-    // ✅ Fetch all available categories and moderators
-    $allCategories = DB::table('categories')->get();
-    $allModerators = DB::table('users')->select('id', 'username')->orderBy('username')->get();
-
-    // ✅ Pass all required variables to the view
-    return view('tournaments.edit', compact(
-        'tournament',
-        'assignedCategories',
-        'assignedModerators',
-        'allCategories',
-        'allModerators'
-    ));
-}
-
 
     // Update tournament details
     public function update(Request $request, $id)
-{
-    try {
-        // Validate request
+    {
         $request->validate([
             'name' => 'required|string|max:255',
-            'categories' => 'array',
             'moderators' => 'array',
         ]);
 
-        $currentUser = Auth::user();
-        $tournament = DB::table('tournaments')->where('id', $id)->first();
-
-        if (!$tournament) {
-            return redirect()->route('tournaments.manage')->with('error', 'Tournament not found.');
-        }
-
-        if ($currentUser->role !== 'admin' && $tournament->created_by != $currentUser->id) {
-            return redirect()->route('tournaments.manage')->with('error', 'Unauthorized access.');
-        }
-
         // Update tournament name
-        DB::table('tournaments')
-            ->where('id', $id)
-            ->update(['name' => $request->input('name')]);
+        DB::table('tournaments')->where('id', $id)->update(['name' => $request->input('name')]);
 
-        // Update category assignments:
-        DB::table('tournament_categories')->where('tournament_id', $id)->delete();
-        $categories = $request->input('categories', []);
-        foreach ($categories as $catId) {
-            DB::table('tournament_categories')->insert([
-                'tournament_id' => $id,
-                'category_id'   => $catId,
-            ]);
-        }
-
-        // Update moderator assignments:
+        // Update moderators
         DB::table('tournament_moderators')->where('tournament_id', $id)->delete();
-        $moderators = $request->input('moderators', []);
-        foreach ($moderators as $modId) {
+        foreach ($request->input('moderators', []) as $moderatorId) {
             DB::table('tournament_moderators')->insert([
                 'tournament_id' => $id,
-                'user_id'       => $modId,
+                'user_id'       => $moderatorId,
             ]);
         }
 
-        return redirect()->route('tournaments.manage')->with('success', 'Tournament updated successfully.');
-    } catch (\Exception $e) {
-        return redirect()->route('tournaments.manage')->with('error', 'Error updating tournament: ' . $e->getMessage());
+        return redirect()->route('tournaments.edit')->with('success', 'Tournament updated successfully.');
     }
-}
 
-
-    // Delete a tournament (only allowed for admin or tournament owner)
+    // Delete a tournament
     public function destroy($id)
     {
-        $currentUser = Auth::user();
-        $tournament = DB::table('tournaments')->where('id', $id)->first();
-
-        if (!$tournament) {
-            return redirect()->route('tournaments.manage')->with('error', 'Tournament not found.');
-        }
-
-        if ($currentUser->role !== 'admin' && $tournament->created_by != $currentUser->id) {
-            return redirect()->route('tournaments.manage')->with('error', 'Unauthorized access.');
-        }
-
-        $deleted = DB::table('tournaments')->where('id', $id)->delete();
-
-        return $deleted
-            ? redirect()->route('tournaments.manage')->with('success', 'Tournament deleted successfully.')
-            : redirect()->route('tournaments.manage')->with('error', 'Error deleting tournament.');
+        DB::table('tournaments')->where('id', $id)->delete();
+        return redirect()->route('tournaments.edit')->with('success', 'Tournament deleted successfully.');
     }
 }
