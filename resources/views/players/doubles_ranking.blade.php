@@ -16,9 +16,7 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
-
-            <div class="col-md-3">
+ 
                 <label class="form-label">Category</label>
                 <select class="form-select" name="category_id">
                     <option value="">All Categories</option>
@@ -28,9 +26,7 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
-
-            <div class="col-md-3">
+  
                 <label class="form-label">Player</label>
                 <select class="form-select" name="player_id">
                     <option value="">All Players</option>
@@ -40,14 +36,10 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
-
-            <div class="col-md-2">
+ 
                 <label class="form-label">Date</label>
                 <input type="date" class="form-control" name="date" value="{{ request('date') }}">
-            </div>
-
-            <div class="col-md-1">
+  
                 <button type="submit" class="btn btn-primary w-100">Filter</button>
             </div>
         </div>
