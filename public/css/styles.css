@@ -100,7 +100,7 @@ body {
 }
 
 .input-group label {
-    width: 100px; /* Fixed label width */
+    width: 100px; /* Fixed label width. */
     font-weight: bold;
 }
 
