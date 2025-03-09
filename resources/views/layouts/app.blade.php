@@ -69,6 +69,39 @@
   }
   document.addEventListener('DOMContentLoaded', verifyFuter);
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".favorite-btn").forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+                let buttonElement = this;
+                let form = buttonElement.closest(".favorite-form");
+                let itemId = form.dataset.id;
+                let itemType = form.dataset.type;
+                let token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+                fetch("{{ route('favorites.toggle') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": token
+                    },
+                    body: JSON.stringify({
+                        favoritable_id: itemId,
+                        favoritable_type: itemType
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    buttonElement.classList.toggle("btn-success", data.status === "pinned");
+                    buttonElement.classList.toggle("btn-primary", data.status === "unpinned");
+                    buttonElement.innerHTML = data.status === "pinned" ? "⭐ Pinned" : "📌 Pin";
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+</script>
 
 </body>
 </html>

@@ -216,7 +216,7 @@
     </ul>
 </div> -->
 
-    <!-- Script to Handle Logout via POST -->
+    <!-- Script to Handle Logout via POST. -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("logout-link").addEventListener("click", function(event) {
