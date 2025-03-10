@@ -47,8 +47,7 @@ Route::middleware(['web'])->group(function () {
     Route::get('/players/register', [PlayerController::class, 'create'])->name('players.register');
     Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register.post');
 
-// Choice page for rankings.
-// Choice page for rankings.
+
 // Choice page for rankings.
 Route::get('/players/ranking', function () {
     return view('players.ranking_choice');

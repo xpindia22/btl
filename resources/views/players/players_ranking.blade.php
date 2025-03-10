@@ -2,12 +2,21 @@
 
 @section('content')
 <div class="container">
-    <h2 class="mb-4">Player Rankings</h2>
+    <h2 class="mb-4">Singles Rankings (BS, GS)</h2>
 
-    <!-- Filters -->
-    <form method="GET" action="{{ route('players.ranking') }}" class="mb-4">
+    <form method="GET" action="{{ route('players.doublesRanking') }}" class="mb-4">
         <div class="row g-3 align-items-end">
             <div class="col-md-3">
+                <label class="form-label">Tournament</label>
+                <select class="form-select" name="tournament_id" onchange="this.form.submit()">
+                    <option value="">All Tournaments</option>
+                    @foreach($tournaments as $tournament)
+                        <option value="{{ $tournament->id }}" {{ request('tournament_id') == $tournament->id ? 'selected' : '' }}>
+                            {{ $tournament->name }}
+                        </option>
+                    @endforeach
+                </select>
+ 
                 <label class="form-label">Category</label>
                 <select class="form-select" name="category_id">
                     <option value="">All Categories</option>
@@ -17,7 +26,7 @@
                         </option>
                     @endforeach
                 </select>
-    
+  
                 <label class="form-label">Player</label>
                 <select class="form-select" name="player_id">
                     <option value="">All Players</option>
@@ -27,10 +36,10 @@
                         </option>
                     @endforeach
                 </select>
-        
+ 
                 <label class="form-label">Date</label>
                 <input type="date" class="form-control" name="date" value="{{ request('date') }}">
-   
+  
                 <button type="submit" class="btn btn-primary w-100">Filter</button>
             </div>
         </div>

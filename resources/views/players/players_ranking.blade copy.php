@@ -6,7 +6,7 @@
 
     <!-- Filters -->
     <form method="GET" action="{{ route('players.ranking') }}" class="mb-4">
-        <div class="row g-3 align-items-end">
+        <div class="row g-6 align-items-end">
             <div class="col-md-3">
                 <label class="form-label">Category</label>
                 <select class="form-select" name="category_id">
@@ -17,9 +17,7 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
-
-            <div class="col-md-3">
+    
                 <label class="form-label">Player</label>
                 <select class="form-select" name="player_id">
                     <option value="">All Players</option>
@@ -29,14 +27,10 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
-
-            <div class="col-md-3">
+        
                 <label class="form-label">Date</label>
                 <input type="date" class="form-control" name="date" value="{{ request('date') }}">
-            </div>
-
-            <div class="col-md-3">
+   
                 <button type="submit" class="btn btn-primary w-100">Filter</button>
             </div>
         </div>
@@ -75,7 +69,8 @@
     </table>
 
     <!-- Pagination (if applicable) -->
-    {{-- Uncomment below if pagination is used --}}
-    {{-- {{ $rankings->appends(request()->query())->links() }} --}}
+    <div class="d-flex justify-content-center">
+        {{ $rankings->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
+    </div>
 </div>
 @endsection
