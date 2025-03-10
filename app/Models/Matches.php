@@ -5,7 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Favorite; // ✅ Import Favorite model
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Models\Favorite;
+use App\Mail\MatchUpdatedNotification;
 
 class Matches extends Model
 {
@@ -41,11 +44,28 @@ class Matches extends Model
         'moderated_by',
         'created_at',
         'updated_at',
-        'moderator', 
+        'moderator',
         'creator'
     ];
-    
+
     public $timestamps = true;
+
+    // Ensure data types are properly handled
+    protected $casts = [
+        'set1_player1_points' => 'integer',
+        'set1_player2_points' => 'integer',
+        'set2_player1_points' => 'integer',
+        'set2_player2_points' => 'integer',
+        'set3_player1_points' => 'integer',
+        'set3_player2_points' => 'integer',
+        'set1_team1_points' => 'integer',
+        'set1_team2_points' => 'integer',
+        'set2_team1_points' => 'integer',
+        'set2_team2_points' => 'integer',
+        'set3_team1_points' => 'integer',
+        'set3_team2_points' => 'integer',
+    ];
+    
 
     // Relationships
     public function tournament()
@@ -88,32 +108,6 @@ class Matches extends Model
         return $this->belongsTo(Player::class, 'team2_player2_id');
     }
 
-    // Get match details
-    public function getSinglesPlayersAttribute()
-    {
-        return "{$this->player1->name} vs {$this->player2->name}";
-    }
-
-    public function getDoublesPlayersAttribute()
-    {
-        return "{$this->team1Player1->name} & {$this->team1Player2->name} vs {$this->team2Player1->name} & {$this->team2Player2->name}";
-    }
-
-    // Query Scopes
-    public function scopeSingles($query)
-    {
-        return $query->whereNotNull('player1_id')->whereNotNull('player2_id');
-    }
-
-    public function scopeDoubles($query)
-    {
-        return $query->whereNotNull('team1_player1_id')
-                     ->whereNotNull('team1_player2_id')
-                     ->whereNotNull('team2_player1_id')
-                     ->whereNotNull('team2_player2_id');
-    }
-
-    // ✅ Corrected Order of Methods
     public function favorites()
     {
         return $this->morphMany(Favorite::class, 'favoritable');
@@ -123,4 +117,65 @@ class Matches extends Model
     {
         return $this->favorites()->where('user_id', $userId)->exists();
     }
+
+    /**
+     * Hook into model update to send email notifications
+     */
+    protected static function boot()
+{
+    parent::boot();
+
+    static::updating(function ($match) {
+        Log::info("🔄 Match update detected for ID: {$match->id}");
+
+        $original = $match->getOriginal();
+        $columnsToCheck = [
+            'stage', 'match_date', 'match_time',
+            'set1_team1_points', 'set1_team2_points',
+            'set2_team1_points', 'set2_team2_points',
+            'set3_team1_points', 'set3_team2_points'
+        ];
+
+        $changes = [];
+        foreach ($columnsToCheck as $column) {
+            $oldValue = isset($original[$column]) ? (string)$original[$column] : 'N/A';
+            $newValue = isset($match->{$column}) ? (string)$match->{$column} : 'N/A';
+
+            if ($oldValue !== $newValue) {
+                $changes[$column] = [
+                    'old' => $oldValue,
+                    'new' => $newValue
+                ];
+            }
+        }
+
+        if (!empty($changes)) {
+            Log::info("🔔 Significant changes detected for Match ID: {$match->id}", $changes);
+
+            $favoritedByUsers = Favorite::where('favoritable_id', $match->id)
+                ->where('favoritable_type', Matches::class)
+                ->pluck('user_id')
+                ->unique();
+
+            foreach ($favoritedByUsers as $userId) {
+                $user = \App\Models\User::find($userId);
+                if ($user) {
+                    try {
+                        Log::info("📨 Preparing email to send to {$user->email} for Match ID: {$match->id}");
+                        Mail::to($user->email)->queue(new MatchUpdatedNotification($user, $match, $changes));
+                        Log::info("✅ Email queued to: {$user->email}");
+                    } catch (\Exception $e) {
+                        Log::error("❌ Email sending failed for {$user->email}: " . $e->getMessage());
+                    }
+                }
+            }
+        } else {
+            Log::info("🔕 No significant changes detected for Match ID: {$match->id}", [
+                'original' => $original,
+                'new' => $match->getAttributes()
+            ]);
+        }
+    });
+}
+
 }

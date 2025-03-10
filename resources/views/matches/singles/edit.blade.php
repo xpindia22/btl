@@ -22,7 +22,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>#</th>
+                <th>#</th> <!-- ✅ Fetch Match ID from matches table -->
                 <th>Tournament</th>
                 <th>Category</th>
                 <th>Player 1</th>
@@ -40,9 +40,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($matches as $index => $match)
+            @foreach($matches as $match)
                 <tr id="match-{{ $match->id }}">
-                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $match->id }}</td> <!-- ✅ Match ID from matches table -->
                     <td>{{ optional($match->tournament)->name ?? 'N/A' }}</td>
                     <td>{{ optional($match->category)->name ?? 'N/A' }}</td>
                     <td>{{ optional($match->player1)->name ?? 'N/A' }}</td>
@@ -119,6 +119,5 @@ document.querySelectorAll(".update-btn").forEach(button => {
         });
     });
 });
-
 </script>
 @endsection
