@@ -88,12 +88,13 @@
     </a>
 
     <a href="{{ route('players.ranking') }}" class="{{ request()->routeIs('players.ranking') ? 'active' : '' }}">
-        ⭐ Singles Ranking
-    </a>
+    ⭐ Singles Ranking
+</a>
 
-    <a href="{{ route('players.doublesRanking') }}" class="{{ request()->routeIs('players.doublesRanking') ? 'active' : '' }}">
-        ⭐ Doubles Ranking
-    </a>
+<a href="{{ route('players.doublesRanking') }}" class="{{ request()->routeIs('players.doublesRanking') ? 'active' : '' }}">
+    ⭐ Doubles Ranking
+</a>
+
 
     <a href="{{ route('favorites.index') }}" class="btn btn-sm btn-warning">
         ⭐ Favorites

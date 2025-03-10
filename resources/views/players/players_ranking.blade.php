@@ -69,7 +69,8 @@
     </table>
 
     <!-- Pagination (if applicable) -->
-    {{-- Uncomment below if pagination is used --}}
-    {{-- {{ $rankings->appends(request()->query())->links() }} --}}
+    <div class="d-flex justify-content-center">
+        {{ $rankings->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
+    </div>
 </div>
 @endsection

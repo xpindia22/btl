@@ -47,10 +47,20 @@ Route::middleware(['web'])->group(function () {
     Route::get('/players/register', [PlayerController::class, 'create'])->name('players.register');
     Route::post('/players/register', [PlayerController::class, 'register'])->name('players.register.post');
 
-    // Ranking route
-    Route::get('/players/ranking', [PlayerController::class, 'ranking'])->name('players.ranking');
-    // Ranking Doubles
-    Route::get('/players/doubles-ranking', [PlayerController::class, 'doublesRanking'])->name('players.doublesRanking');
+// Choice page for rankings.
+// Choice page for rankings.
+// Choice page for rankings.
+Route::get('/players/ranking', function () {
+    return view('players.ranking_choice');
+})->name('players.ranking_choice');
+
+// Singles ranking page.
+Route::get('/players/singles-ranking', [PlayerController::class, 'ranking'])
+    ->name('players.ranking');
+
+// Doubles ranking page.
+Route::get('/players/doubles-ranking', [PlayerController::class, 'doublesRanking'])
+    ->name('players.doublesRanking');
 
 
     // Player listing

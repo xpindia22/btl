@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Tournament;
 use App\Models\Category;
 
+
+
+
 class PlayerController extends Controller
 {
     public function index()
@@ -118,6 +121,8 @@ class PlayerController extends Controller
         ]);
     }
     
+
+
     public function destroy($uid)
     {
         $player = Player::where('uid', $uid)->firstOrFail();
@@ -138,7 +143,6 @@ class PlayerController extends Controller
         return $nextUid;
     }
     
-    // Updated singles ranking method with pagination
     public function ranking(Request $request)
     {
         $selectedTournament = $request->input('tournament_id');
@@ -186,12 +190,8 @@ class PlayerController extends Controller
             $query->whereDate('matches.match_date', $selectedDate);
         }
     
-        // Paginate the results (10 per page)
-        $rankings = $query->paginate(10);
-        // Compute an offset based on current page for continuous ranking
-        $offset = ($rankings->currentPage() - 1) * $rankings->perPage();
-        $rankings->getCollection()->transform(function($player, $index) use ($offset) {
-            $player->ranking = $offset + $index + 1;
+        $rankings = $query->get()->map(function($player, $index) {
+            $player->ranking = $index + 1;
             return $player;
         });
     
@@ -203,7 +203,6 @@ class PlayerController extends Controller
         ]);
     }
     
-    // Updated doubles ranking method with pagination
     public function doublesRanking(Request $request)
     {
         $selectedTournament = $request->input('tournament_id');
@@ -255,19 +254,12 @@ class PlayerController extends Controller
             $query->whereDate('matches.match_date', $selectedDate);
         }
     
-        // Paginate the results (10 per page)
         $rankings = $query->groupBy('team_name', 'categories.name')
                           ->orderBy('categories.name')
                           ->orderByDesc('total_points')
-                          ->paginate(10);
-    
-        // Optionally, add ranking numbers for doubles
-        $offset = ($rankings->currentPage() - 1) * $rankings->perPage();
-        $rankings->getCollection()->transform(function ($item, $index) use ($offset) {
-            $item->ranking = $offset + $index + 1;
-            return $item;
-        });
+                          ->get();
     
         return view('players.doubles_ranking', compact('rankings', 'tournaments', 'categories', 'playersList'));
     }
-}
+    
+    }
