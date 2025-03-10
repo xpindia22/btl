@@ -50,9 +50,15 @@ class FavoriteController extends Controller
     }
     
 
+
     public function index()
     {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'You must be logged in to view favorites.');
+        }
+    
         $favorites = Auth::user()->favorites()->get();
         return view('dashboard.favorites', compact('favorites'));
     }
+    
 }
