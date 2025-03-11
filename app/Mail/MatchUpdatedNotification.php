@@ -24,8 +24,14 @@ class MatchUpdatedNotification extends Mailable
     }
 
     public function build()
-    {
-        return $this->subject('Match Update Notification')
-                    ->view('emails.match_updated');
-    }
+{
+    return $this->subject('Match Update Notification')
+                ->view('emails.match_updated')
+                ->with([
+                    'user' => $this->user,
+                    'match' => $this->match,
+                    'changes' => $this->changes // ✅ Ensure changes are passed to Blade
+                ]);
+}
+
 }

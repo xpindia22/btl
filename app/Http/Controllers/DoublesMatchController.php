@@ -444,4 +444,16 @@ class DoublesMatchController extends Controller
             ->route('matches.doubles.edit')
             ->with('success', 'Match soft deleted successfully!');
     }
+
+    public function show($id)
+{
+    $match = \App\Models\Matches::find($id);
+
+    if (!$match) {
+        abort(404, 'Match not found');
+    }
+
+    return view('matches.doubles.show', compact('match'));
+}
+
 }

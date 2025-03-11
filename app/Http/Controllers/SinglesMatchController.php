@@ -200,4 +200,16 @@ public function edit()
     
 }
 
+
+public function show($id)
+{
+    $match = \App\Models\Matches::find($id);
+
+    if (!$match) {
+        abort(404, 'Match not found');
+    }
+
+    return view('matches.singles.show', compact('match'));
+}
+
 }

@@ -54,34 +54,30 @@
         <tr>
             <th align="left">Set 1</th>
             <td>
-                {{ $changes['set1_team1_points']['new'] ?? $match->set1_team1_points }} - 
-                {{ $changes['set1_team2_points']['new'] ?? $match->set1_team2_points }}
+                @if(isset($changes['set1_team1_points']) || isset($changes['set1_team2_points']))
+                    <strong>{{ $changes['set1_team1_points']['old'] ?? $match->set1_team1_points }}</strong> - 
+                    <strong>{{ $changes['set1_team2_points']['old'] ?? $match->set1_team2_points }}</strong> ➝ 
+                    <strong>{{ $changes['set1_team1_points']['new'] ?? $match->set1_team1_points }}</strong> - 
+                    <strong>{{ $changes['set1_team2_points']['new'] ?? $match->set1_team2_points }}</strong>
+                @else
+                    {{ $match->set1_team1_points }} - {{ $match->set1_team2_points }}
+                @endif
             </td>
         </tr>
         <tr>
             <th align="left">Set 2</th>
             <td>
-                {{ $changes['set2_team1_points']['new'] ?? $match->set2_team1_points }} - 
-                {{ $changes['set2_team2_points']['new'] ?? $match->set2_team2_points }}
+                @if(isset($changes['set2_team1_points']) || isset($changes['set2_team2_points']))
+                    <strong>{{ $changes['set2_team1_points']['old'] ?? $match->set2_team1_points }}</strong> - 
+                    <strong>{{ $changes['set2_team2_points']['old'] ?? $match->set2_team2_points }}</strong> ➝ 
+                    <strong>{{ $changes['set2_team1_points']['new'] ?? $match->set2_team1_points }}</strong> - 
+                    <strong>{{ $changes['set2_team2_points']['new'] ?? $match->set2_team2_points }}</strong>
+                @else
+                    {{ $match->set2_team1_points }} - {{ $match->set2_team2_points }}
+                @endif
             </td>
         </tr>
         <tr>
             <th align="left">Set 3</th>
             <td>
-                {{ $changes['set3_team1_points']['new'] ?? $match->set3_team1_points }} - 
-                {{ $changes['set3_team2_points']['new'] ?? $match->set3_team2_points }}
-            </td>
-        </tr>
-    </table>
-
-    <p>
-        <a href="{{ url('/matches/' . $match->id) }}" 
-           style="display: inline-block; padding: 10px 15px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
-            View Match Details
-        </a>
-    </p>
-
-    <p>Thank you,</p>
-    <p><strong>Badminton Tournament System</strong></p>
-</body>
-</html>
+               

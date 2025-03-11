@@ -121,7 +121,9 @@ Route::resource('users', UserController::class)->except(['show', 'edit']);
     Route::post('/matches/{id}/restore', [SinglesMatchController::class, 'restore'])->name('matches.restore');
     Route::delete('/matches/{id}/force-delete', [SinglesMatchController::class, 'forceDelete'])->name('matches.forceDelete');
     Route::get('/matches/filtered-players', [SinglesMatchController::class, 'filteredPlayers'])->name('matches.filteredPlayers');
-
+ 
+    Route::get('/singles-matches/{id}', [SinglesMatchController::class, 'show'])->name('singles.matches.show');
+    Route::get('/doubles-matches/{id}', [DoubleMatchController::class, 'show'])->name('doubles.matches.show');    
     // --------------------------
     // SINGLES MATCHES
     // -------------------------
