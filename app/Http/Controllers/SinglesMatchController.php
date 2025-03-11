@@ -189,16 +189,19 @@ class SinglesMatchController extends Controller
     }
 
     // Display Singles Matches for Inline Editing
-public function edit()
-{
-    $matches = MatchModel::with(['tournament', 'category', 'player1', 'player2'])
-    ->orderBy('created_at', 'desc')
-
-        ->paginate(10);
+    public function edit()
+    {
+        $matches = MatchModel::with(['tournament', 'category', 'player1', 'player2'])
+                    ->whereHas('category', function ($q) {
+                        $q->where('name', 'LIKE', '%BS%')
+                          ->orWhere('name', 'LIKE', '%GS%');
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(10);
+        
+        return view('matches.singles.edit', compact('matches'));
+    }
     
-    return view('matches.singles.edit', compact('matches'));
-    
-}
 
 
 public function show($id)
