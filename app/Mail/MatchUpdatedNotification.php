@@ -15,11 +15,13 @@ class MatchUpdatedNotification extends Mailable
     public $changes;
 
     public function __construct($user, $match, $changes)
-    {
-        $this->user = $user;
-        $this->match = $match;
-        $this->changes = $changes;
-    }
+{
+    $this->user = $user;
+    $this->match = $match->fresh(); // ✅ Ensure latest DB values are used
+    $this->changes = $changes;
+}
+
+
 
     public function build()
     {
