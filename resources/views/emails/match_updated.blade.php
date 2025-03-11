@@ -1,30 +1,87 @@
-Hello {{ $user->name }},
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Match Update Notification</title>
+</head>
+<body>
+    <p>Hello {{ $user->name }},</p>
 
-A match you pinned has been updated:
+    <p>A match you pinned has been updated:</p>
 
-**Match ID:** {{ $match->id }}  
-**Tournament:** {{ $match->tournament->name }}  
-**Category:** {{ $match->category->name }}  
-**Stage:** {{ $match->stage }}  
+    <table border="1" cellpadding="8" cellspacing="0" width="100%">
+        <tr>
+            <th align="left">Match ID</th>
+            <td>{{ $match->id }}</td>
+        </tr>
+        <tr>
+            <th align="left">Tournament</th>
+            <td>{{ $match->tournament->name }}</td>
+        </tr>
+        <tr>
+            <th align="left">Category</th>
+            <td>{{ $match->category->name }}</td>
+        </tr>
+        <tr>
+            <th align="left">Stage</th>
+            <td>
+                @if(isset($changes['stage']))
+                    <strong>{{ $changes['stage']['old'] }}</strong> ➝ <strong>{{ $changes['stage']['new'] }}</strong>
+                @else
+                    {{ $match->stage }}
+                @endif
+            </td>
+        </tr>
+        <tr>
+            <th align="left">Date</th>
+            <td>
+                @if(isset($changes['match_date']))
+                    <strong>{{ $changes['match_date']['old'] }}</strong> ➝ <strong>{{ $changes['match_date']['new'] }}</strong>
+                @else
+                    {{ $match->match_date }}
+                @endif
+            </td>
+        </tr>
+        <tr>
+            <th align="left">Time</th>
+            <td>
+                @if(isset($changes['match_time']))
+                    <strong>{{ $changes['match_time']['old'] }}</strong> ➝ <strong>{{ $changes['match_time']['new'] }}</strong>
+                @else
+                    {{ $match->match_time }}
+                @endif
+            </td>
+        </tr>
+        <tr>
+            <th align="left">Set 1</th>
+            <td>
+                {{ $changes['set1_team1_points']['new'] ?? $match->set1_team1_points }} - 
+                {{ $changes['set1_team2_points']['new'] ?? $match->set1_team2_points }}
+            </td>
+        </tr>
+        <tr>
+            <th align="left">Set 2</th>
+            <td>
+                {{ $changes['set2_team1_points']['new'] ?? $match->set2_team1_points }} - 
+                {{ $changes['set2_team2_points']['new'] ?? $match->set2_team2_points }}
+            </td>
+        </tr>
+        <tr>
+            <th align="left">Set 3</th>
+            <td>
+                {{ $changes['set3_team1_points']['new'] ?? $match->set3_team1_points }} - 
+                {{ $changes['set3_team2_points']['new'] ?? $match->set3_team2_points }}
+            </td>
+        </tr>
+    </table>
 
-**Date:** {{ $match->match_date }}  
-**Time:** {{ $match->match_time }}  
+    <p>
+        <a href="{{ url('/matches/' . $match->id) }}" 
+           style="display: inline-block; padding: 10px 15px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
+            View Match Details
+        </a>
+    </p>
 
-**Set 1:** {{ $match->set1_team1_points }} - {{ $match->set1_team2_points }}  
-**Set 2:** {{ $match->set2_team1_points }} - {{ $match->set2_team2_points }}  
-**Set 3:** {{ $match->set3_team1_points }} - {{ $match->set3_team2_points }}  
-
-@if (!empty($changes))
----
-**Updated Fields:**  
-@foreach($changes as $field => $change)
-    @if($field == 'stage')
-        - **Stage:** {{ $change['old'] }} ➝ {{ $change['new'] }}
-    @elseif(strpos($field, 'set') !== false)
-        - **{{ ucfirst(str_replace('_', ' ', $field)) }}:** {{ $change['old'] }} ➝ {{ $change['new'] }}
-    @endif
-@endforeach
-@endif
-
-Thank you,  
-**Badminton Tournament System**
+    <p>Thank you,</p>
+    <p><strong>Badminton Tournament System</strong></p>
+</body>
+</html>

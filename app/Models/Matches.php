@@ -128,18 +128,18 @@ class Matches extends Model
     static::updated(function ($match) {
         Log::info("🔄 Match update detected for ID: {$match->id}");
 
-        $original = $match->getOriginal();
         $columnsToCheck = [
             'stage', 'match_date', 'match_time',
-            'set1_team1_points', 'set1_team2_points',
-            'set2_team1_points', 'set2_team2_points',
-            'set3_team1_points', 'set3_team2_points'
+            'set1_player1_points', 'set1_player2_points',
+            'set2_player1_points', 'set2_player2_points',
+            'set3_player1_points', 'set3_player2_points'
         ];
 
         $changes = [];
+
         foreach ($columnsToCheck as $column) {
-            $oldValue = isset($original[$column]) ? (string)$original[$column] : 'N/A';
-            $newValue = isset($match->{$column}) ? (string)$match->{$column} : 'N/A';
+            $oldValue = (string) $match->getOriginal($column); // Convert old value to string
+            $newValue = (string) $match->{$column};  // Convert new value to string
 
             if ($oldValue !== $newValue) {
                 $changes[$column] = [
@@ -157,36 +157,25 @@ class Matches extends Model
                 ->pluck('user_id')
                 ->unique();
 
-            if ($favoritedByUsers->isEmpty()) {
-                Log::info("🔍 No users have favorited Match ID: {$match->id}, skipping email.");
-                return;
-            }
-
             collect($favoritedByUsers)->each(function ($userId) use ($match, $changes) {
                 $user = \App\Models\User::find($userId);
 
-                if (!$user) {
-                    Log::warning("⚠️ User with ID {$userId} not found, skipping email.");
-                    return;
-                }
-
-                try {
-                    Log::info("📨 Sending email to {$user->email} for Match ID: {$match->id}");
-                    Mail::to($user->email)->queue(new MatchUpdatedNotification($user, $match, $changes));
-                    Log::info("✅ Email successfully queued to: {$user->email}");
-                } catch (\Exception $e) {
-                    Log::error("❌ Email sending failed for {$user->email}: " . $e->getMessage());
+                if ($user) {
+                    try {
+                        Log::info("📨 Sending email to {$user->email} for Match ID: {$match->id}");
+                        Mail::to($user->email)->queue(new MatchUpdatedNotification($user, $match, $changes));
+                        Log::info("✅ Email successfully queued to: {$user->email}");
+                    } catch (\Exception $e) {
+                        Log::error("❌ Email sending failed for {$user->email}: " . $e->getMessage());
+                    }
                 }
             });
-
         } else {
-            Log::info("🔕 No significant changes detected for Match ID: {$match->id}", [
-                'original' => $original,
-                'new' => $match->getAttributes()
-            ]);
+            Log::info("🔕 No significant changes detected for Match ID: {$match->id}");
         }
     });
 }
+
 
 
 }
