@@ -293,7 +293,7 @@ class DoublesMatchController extends Controller
 
         // Fetch results
         
-        $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
+        $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(5);
 
         return view('matches.doubles.index', compact(
             'matches', 'tournaments', 'players',
@@ -390,7 +390,7 @@ class DoublesMatchController extends Controller
             });
         }
 
-        $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(10);
+        $matches = $matchesQuery->orderBy('match_date', 'desc')->paginate(5);
 
         return view('matches.doubles.edit', compact(
             'matches', 'tournaments', 'players',

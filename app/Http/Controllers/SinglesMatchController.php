@@ -152,7 +152,7 @@ class SinglesMatchController extends Controller
     }
 
     // Order by creation date descending so that newest match appears first.
-    $matches = $query->orderBy('created_at', 'desc')->paginate(10);
+    $matches = $query->orderBy('created_at', 'desc')->paginate(5);
 
     return view('matches.singles.index', compact('tournaments', 'players', 'matches'));
 }
@@ -197,7 +197,7 @@ class SinglesMatchController extends Controller
                           ->orWhere('name', 'LIKE', '%GS%');
                     })
                     ->orderBy('created_at', 'desc')
-                    ->paginate(10);
+                    ->paginate(5);
         
         return view('matches.singles.edit', compact('matches'));
     }
