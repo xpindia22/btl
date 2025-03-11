@@ -55,9 +55,6 @@
                     <th>Stage</th>
                     <th>Date</th>
                     <th>Time</th>
-                    <th>Set 1</th>
-                    <th>Set 2</th>
-                    <th>Set 3</th>
                     <th>Winner</th>
                 </tr>
             </thead>
@@ -77,9 +74,6 @@
                             <td>{{ $match->stage ?? 'N/A' }}</td>
                             <td>{{ $match->match_date ?? 'N/A' }}</td>
                             <td>{{ $match->match_time ?? 'N/A' }}</td>
-                            <td>{{ $match->set1_player1_points ?? '0' }} - {{ $match->set1_player2_points ?? '0' }}</td>
-                            <td>{{ $match->set2_player1_points ?? '0' }} - {{ $match->set2_player2_points ?? '0' }}</td>
-                            <td>{{ $match->set3_player1_points ?? '0' }} - {{ $match->set3_player2_points ?? '0' }}</td>
                             <td>
                                 @php
                                     $winner = ($match->player1_score > $match->player2_score) ? optional($match->player1)->name : optional($match->player2)->name;

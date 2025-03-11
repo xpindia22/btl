@@ -7,6 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Matches; // ✅ Correct namespace
 use App\Models\User;
+use Illuminate\Support\Facades\Log; // Add this at the top
 
 class MatchUpdatedNotification extends Mailable
 {
@@ -23,15 +24,21 @@ class MatchUpdatedNotification extends Mailable
         $this->changes = $changes;
     }
 
+
     public function build()
-{
-    return $this->subject('Match Update Notification')
-                ->view('emails.match_updated')
-                ->with([
-                    'user' => $this->user,
-                    'match' => $this->match,
-                    'changes' => $this->changes // ✅ Ensure changes are passed to Blade
-                ]);
-}
+    {
+        Log::info("📧 Email being generated for Match ID: {$this->match->id}", [
+            'user' => $this->user->email,
+            'changes' => $this->changes,
+        ]);
+    
+        return $this->subject('Match Update Notification')
+                    ->view('emails.match_updated')
+                    ->with([
+                        'user' => $this->user,
+                        'match' => $this->match,
+                        'changes' => $this->changes, // Ensure this is passed
+                    ]);
+    }
 
 }

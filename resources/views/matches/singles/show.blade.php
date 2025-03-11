@@ -25,9 +25,9 @@
                     <td>{{ $match->stage }}</td>
                     <td>{{ $match->match_date }}</td>
                     <td>{{ $match->match_time }}</td>
-                    <td>{{ $match->set1_team1_points }} - {{ $match->set1_team2_points }}</td>
-                    <td>{{ $match->set2_team1_points }} - {{ $match->set2_team2_points }}</td>
-                    <td>{{ $match->set3_team1_points }} - {{ $match->set3_team2_points }}</td>
+                    <td>{{ $match->set1_player1_points ?? '0' }} - {{ $match->set1_player2_points ?? '0' }}</td>
+                    <td>{{ $match->set2_player1_points ?? '0' }} - {{ $match->set2_player2_points ?? '0' }}</td>
+                    <td>{{ $match->set3_player1_points ?? '0' }} - {{ $match->set3_player2_points ?? '0' }}</td>
                 </tr>
             </tbody>
         </table>
