@@ -149,6 +149,8 @@ Route::resource('users', UserController::class)->except(['show', 'edit']);
         Route::get('/matches/singles/filtered-players', [SinglesMatchController::class, 'filteredPlayers'])->name('matches.singles.filteredPlayers');
     // Route to view a specific singles match
         Route::get('/matches/singles/{id}', [SinglesMatchController::class, 'show'])->name('matches.singles.show');
+        route::get('matches/singles/{id}', [\App\Http\Controllers\SinglesMatchController::class, 'show'])
+    ->name('matches.singles.show');
 
     
     });

@@ -8,12 +8,16 @@ use App\Models\Matches as MatchModel;
 use App\Models\Tournament;
 use App\Models\Category;
 use App\Models\Player;
+use App\Services\MatchNotificationService;
 
 class SinglesMatchController extends Controller
 {
-    public function __construct()
+    protected $notificationService;
+
+    public function __construct(MatchNotificationService $notificationService)
     {
         $this->middleware('auth');
+        $this->notificationService = $notificationService;
     }
 
     // Lock/unlock Singles tournaments
@@ -108,76 +112,78 @@ class SinglesMatchController extends Controller
             'set3_player2_points' => 'nullable|integer',
         ]);
 
-        MatchModel::create($validated + ['created_by' => Auth::id()]);
+        $match = MatchModel::create($validated + ['created_by' => Auth::id()]);
+
+        // Send email notification using the dedicated service.
+        $this->notificationService->sendMatchCreatedNotification($match);
 
         return redirect()->route('matches.singles.index')->with('success', 'Singles match created successfully.');
     }
 
     // Display Singles Matches
     public function index(Request $request)
-{
-    $tournaments = Tournament::all();
-    $players = Player::all();
+    {
+        $tournaments = Tournament::all();
+        $players = Player::all();
 
-    $query = MatchModel::with(['tournament', 'category', 'player1', 'player2'])
+        $query = MatchModel::with(['tournament', 'category', 'player1', 'player2'])
                 ->whereHas('category', function ($q) {
                     $q->where('name', 'LIKE', '%BS%')
                       ->orWhere('name', 'LIKE', '%GS%');
                 });
 
-    if ($request->filled('filter_tournament') && $request->filter_tournament !== 'all') {
-        $query->where('tournament_id', $request->filter_tournament);
+        if ($request->filled('filter_tournament') && $request->filter_tournament !== 'all') {
+            $query->where('tournament_id', $request->filter_tournament);
+        }
+
+        if ($request->filled('filter_player1') && $request->filter_player1 !== 'all') {
+            $query->where('player1_id', $request->filter_player1);
+        }
+
+        if ($request->filled('filter_player2') && $request->filter_player2 !== 'all') {
+            $query->where('player2_id', $request->filter_player2);
+        }
+
+        if ($request->filled('filter_category') && $request->filter_category !== 'all') {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('name', 'LIKE', $request->filter_category);
+            });
+        }
+
+        if ($request->filled('filter_date')) {
+            $query->whereDate('match_date', $request->filter_date);
+        }
+
+        if ($request->filled('filter_stage') && $request->filter_stage !== 'all') {
+            $query->where('stage', $request->filter_stage);
+        }
+
+        // Order by creation date descending so that newest match appears first.
+        $matches = $query->orderBy('created_at', 'desc')->paginate(5);
+
+        return view('matches.singles.index', compact('tournaments', 'players', 'matches'));
     }
-
-    if ($request->filled('filter_player1') && $request->filter_player1 !== 'all') {
-        $query->where('player1_id', $request->filter_player1);
-    }
-
-    if ($request->filled('filter_player2') && $request->filter_player2 !== 'all') {
-        $query->where('player2_id', $request->filter_player2);
-    }
-
-    if ($request->filled('filter_category') && $request->filter_category !== 'all') {
-        $query->whereHas('category', function ($q) use ($request) {
-            $q->where('name', 'LIKE', $request->filter_category);
-        });
-    }
-
-    if ($request->filled('filter_date')) {
-        $query->whereDate('match_date', $request->filter_date);
-    }
-
-    if ($request->filled('filter_stage') && $request->filter_stage !== 'all') {
-        $query->where('stage', $request->filter_stage);
-    }
-
-    // Order by creation date descending so that newest match appears first.
-    $matches = $query->orderBy('created_at', 'desc')->paginate(5);
-
-    return view('matches.singles.index', compact('tournaments', 'players', 'matches'));
-}
-
 
     // Update Match
     public function update(Request $request, $id)
-{
-    $validated = $request->validate([
-        'stage' => 'required|string',
-        'match_date' => 'required|date',
-        'match_time' => 'required',
-        'set1_player1_points' => 'nullable|integer',
-        'set1_player2_points' => 'nullable|integer',
-        'set2_player1_points' => 'nullable|integer',
-        'set2_player2_points' => 'nullable|integer',
-        'set3_player1_points' => 'nullable|integer',
-        'set3_player2_points' => 'nullable|integer',
-    ]);
+    {
+        $validated = $request->validate([
+            'stage' => 'required|string',
+            'match_date' => 'required|date',
+            'match_time' => 'required',
+            'set1_player1_points' => 'nullable|integer',
+            'set1_player2_points' => 'nullable|integer',
+            'set2_player1_points' => 'nullable|integer',
+            'set2_player2_points' => 'nullable|integer',
+            'set3_player1_points' => 'nullable|integer',
+            'set3_player2_points' => 'nullable|integer',
+        ]);
 
-    $match = MatchModel::findOrFail($id);
-    $match->update($validated);
+        $match = MatchModel::findOrFail($id);
+        $match->update($validated);
 
-    return response()->json(['message' => 'Singles match updated successfully.']);
-}
+        return response()->json(['message' => 'Singles match updated successfully.']);
+    }
 
     // Delete Match
     public function delete($id)
@@ -202,17 +208,14 @@ class SinglesMatchController extends Controller
         return view('matches.singles.edit', compact('matches'));
     }
     
+    public function show($id)
+    {
+        $match = \App\Models\Matches::find($id);
 
+        if (!$match) {
+            abort(404, 'Match not found');
+        }
 
-public function show($id)
-{
-    $match = \App\Models\Matches::find($id);
-
-    if (!$match) {
-        abort(404, 'Match not found');
+        return view('matches.singles.show', compact('match'));
     }
-
-    return view('matches.singles.show', compact('match'));
-}
-
 }

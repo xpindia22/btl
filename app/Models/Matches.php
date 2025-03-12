@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\User; // add this at the top with your other imports
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -258,6 +258,46 @@ protected static function boot()
             Log::info("🔕 No significant changes detected for Match ID: {$match->id}");
         }
     });
+}
+
+
+public function createdBy()
+{
+    return $this->belongsTo(User::class, 'created_by');
+}
+
+
+protected static function booted()
+{
+    static::creating(function ($match) {
+        // If there's an authenticated user and created_by is not already set
+        if (auth()->check() && empty($match->created_by)) {
+            $match->created_by = auth()->id();
+        }
+    });
+}
+
+public function getPlayersAttribute()
+{
+    // For singles match
+    if ($this->player1_id && $this->player2_id) {
+        return collect([$this->player1, $this->player2]);
+    }
+    // For doubles match
+    if (
+        $this->team1_player1_id &&
+        $this->team1_player2_id &&
+        $this->team2_player1_id &&
+        $this->team2_player2_id
+    ) {
+        return collect([
+            $this->team1Player1,
+            $this->team1Player2,
+            $this->team2Player1,
+            $this->team2Player2
+        ]);
+    }
+    return collect();
 }
 
 
