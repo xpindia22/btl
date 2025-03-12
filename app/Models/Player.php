@@ -12,7 +12,8 @@ class Player extends Model
     // If you are not using timestamps for updated_at, you can disable them
     public $timestamps = false;
 
-    protected $fillable = ['uid', 'name', 'dob', 'age', 'sex', 'password'];
+
+    protected $fillable = ['uid', 'name', 'email', 'dob', 'sex'];
 
 public function favorites()
 {

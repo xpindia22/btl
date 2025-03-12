@@ -44,9 +44,11 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="d-flex justify-content-center">
-        {{ $matches->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
-    </div>
+{{-- Pagination --}}
+<div class="d-flex justify-content-center">
+    {{ $players->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
+</div>
+
 </div>
 </div>
 

@@ -10,7 +10,6 @@
                 <th>S No</th>
                 <th>UID</th>
                 <th>Name</th>
-                <th>Email</th>
                 <th>DOB</th>
                 <th>Age</th>
                 <th>Sex</th>
@@ -20,10 +19,9 @@
         <tbody>
             @foreach ($players as $index => $player)
             <tr data-uid="{{ $player->uid }}">
-                <td>{{ $players instanceof \Illuminate\Pagination\LengthAwarePaginator ? $players->firstItem() + $index : $index + 1 }}</td>
+                <td>{{ $index + 1 }}</td>
                 <td class="editable" data-field="uid">{{ $player->uid }}</td>
                 <td class="editable" data-field="name">{{ $player->name }}</td>
-                <td class="editable" data-field="email">{{ $player->email }}</td>
                 <td class="editable" data-field="dob">{{ $player->dob }}</td>
                 <td class="age">{{ \Carbon\Carbon::parse($player->dob)->age }}</td>
                 <td class="editable" data-field="sex">{{ $player->sex }}</td>
@@ -36,17 +34,12 @@
             @endforeach
         </tbody>
     </table>
-
-    {{-- Pagination --}}
-    <div class="d-flex justify-content-center">
-        {{ $players->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
-    </div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const csrfToken = '{{ csrf_token() }}';
-    const baseUrl = "{{ url('players') }}";
+    const baseUrl = "{{ url('players') }}"; // Ensures URL is correct even if hosted in a subfolder
 
     // Turn table cells into input fields for editing
     document.querySelectorAll(".edit-btn").forEach(button => {

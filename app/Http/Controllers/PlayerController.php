@@ -88,13 +88,15 @@ class PlayerController extends Controller
     // ✅ Fix edit function to show all players in a table for inline editing
     public function edit()
     {
-        $players = Player::orderBy('uid', 'desc')->get();
+        $players = Player::paginate(10); // Ensure pagination is enabled
         return view('players.edit', compact('players'));
     }
+    
 
     // ✅ Fix update function for inline editing
     public function update(Request $request, $uid)
     {
+        // Find the player by UID
         $player = Player::where('uid', $uid)->first();
         if (!$player) {
             return response()->json([
@@ -103,20 +105,23 @@ class PlayerController extends Controller
             ], 404);
         }
     
-        // Optionally, validate the input
+        // Validate input, including email
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'dob'  => 'required|date',
-            'sex'  => 'required|string'
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|max:255', // Added email validation
+            'dob'   => 'required|date',
+            'sex'   => 'required|string|max:10',
         ]);
     
+        // Update the player record
         $player->update($validated);
     
         return response()->json([
             'success' => true,
-            'player' => $player
+            'player'  => $player
         ]);
     }
+    
     
     public function destroy($uid)
     {
