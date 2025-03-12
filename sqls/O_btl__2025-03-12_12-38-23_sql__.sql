@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 12, 2025 at 10:41 AM
+-- Generation Time: Mar 12, 2025 at 12:38 PM
 -- Server version: 11.4.3-MariaDB-1
 -- PHP Version: 8.2.24
 
@@ -629,7 +629,7 @@ CREATE TABLE `players` (
   `email` varchar(255) DEFAULT NULL,
   `secondary_email` varchar(255) DEFAULT NULL,
   `dob` date NOT NULL,
-  `age` int(11) NOT NULL,
+  `age` int(11) DEFAULT NULL,
   `sex` enum('M','F') NOT NULL,
   `uid` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
@@ -640,47 +640,48 @@ CREATE TABLE `players` (
   `category_id` int(11) DEFAULT 1,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `secret_question2` varchar(255) DEFAULT NULL,
-  `secret_question3` varchar(255) DEFAULT NULL
+  `secret_question3` varchar(255) DEFAULT NULL,
+  `mobile` varchar(15) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `players`
 --
 
-INSERT INTO `players` (`id`, `name`, `email`, `secondary_email`, `dob`, `age`, `sex`, `uid`, `password`, `secret_question1`, `created_by`, `ip_address`, `updated_at`, `category_id`, `created_at`, `secret_question2`, `secret_question3`) VALUES
-(1, 'Sreesha', 'jamesheartcare@gmail.com', NULL, '2008-01-01', 16, 'F', '100000', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 05:45:50', 0, '2025-01-24 03:01:50', NULL, NULL),
-(2, 'Eric James', 'jamesheartcare@gmail.com', NULL, '2009-05-02', 15, 'M', '100001', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 05:45:50', 0, '2025-01-24 03:01:50', NULL, NULL),
-(3, 'Akshaj Tiwari', 'jamesheartcare@gmail.com', NULL, '2012-01-01', 12, 'M', '100002', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 05:45:50', 0, '2025-01-24 03:01:50', NULL, NULL),
-(4, 'Lakshmita', 'jamesheartcare@gmail.com', NULL, '2011-01-01', 13, 'F', '100004', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 05:45:50', 0, '2025-01-24 03:01:50', NULL, NULL),
-(6, 'Lee Chong Wei', 'jamesheartcare@gmail.com', NULL, '1980-01-03', 44, 'M', '100005', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 05:45:50', 0, '2025-01-24 03:01:50', NULL, NULL),
-(9, 'Lakshaya', 'jamesheartcare@gmail.com', NULL, '2010-01-01', 15, 'F', '100006', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(10, 'Gokulan', 'jamesheartcare@gmail.com', NULL, '1990-01-01', 35, 'M', '100007', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(11, 'Zanpear', 'jamesheartcare@gmail.com', NULL, '1978-05-01', 46, 'M', '100008', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(12, 'Pandyraj', 'jamesheartcare@gmail.com', NULL, '1968-01-01', 57, 'M', '100009', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 20, '2025-01-24 03:01:50', NULL, NULL),
-(13, 'Vijay', 'jamesheartcare@gmail.com', NULL, '1970-01-30', 54, 'M', '100010', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(14, 'Tai Tzu Ying', 'jamesheartcare@gmail.com', NULL, '1998-01-01', 27, 'F', '100011', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(15, 'An Se Young', 'jamesheartcare@gmail.com', NULL, '2000-01-01', 25, 'F', '100012', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(16, 'Okuhara', 'jamesheartcare@gmail.com', NULL, '1998-01-01', 27, 'F', '100013', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(17, 'Anitha Anthony', 'jamesheartcare@gmail.com', NULL, '2008-01-01', 17, 'F', '100014', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(18, 'Carolina Marine', 'jamesheartcare@gmail.com', NULL, '1995-06-06', 29, 'F', '100015', '$2y$12$oAMjJaLvBukk6dDh5aVmu.EgCwKqw.sVGYTkllW6bwqrgCLcKaGzC', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(19, 'PV Sindhu', 'jamesheartcare@gmail.com', NULL, '1995-06-07', 29, 'F', '100016', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(20, 'Victor Axelsen', 'jamesheartcare@gmail.com', NULL, '1995-05-07', 29, 'M', '100017', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(21, 'Lin Dan', 'jamesheartcare@gmail.com', NULL, '1986-02-06', 38, 'M', '100018', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(22, 'Harsh', 'jamesheartcare@gmail.com', NULL, '2008-01-17', 0, 'M', '100019', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, NULL, NULL, '2025-03-12 05:45:50', 1, '2025-01-24 03:01:50', NULL, NULL),
-(24, 'Prince', 'jamesheartcare@gmail.com', NULL, '2007-02-02', 26, 'M', '100020', '$2y$12$DZ/9nkVKOJW1Kk47jyqgseEtolyJR5OP/3xgRxTYSrrGTJFIz0j4e', NULL, NULL, NULL, '2025-03-12 05:45:50', 1, '2025-02-11 12:32:37', NULL, NULL),
-(31, 'Sriman', 'jamesheartcare@gmail.com', NULL, '2009-01-01', 25, 'M', '100026', '$2y$12$VTqpdhQGOSrpNRZBdMhvk.1n64LLWf1lx0vlDv/iShGx7UqjKMJiG', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-01 05:24:10', NULL, NULL),
-(34, 'threefemale', 'jamesheartcare@gmail.com', NULL, '2011-10-18', 13, 'F', '100027', '$2y$12$nq0UqrcoRxyH9kwssmhAk.p6spIDyNmC.yctssqMnaoInD6ZW7Jaa', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-01 05:57:13', NULL, NULL),
-(35, 'Okuhara Japan', 'jamesheartcare@gmail.com', NULL, '2007-09-17', 17, 'F', '100021', '$2y$12$2QpE1/UMQCZG9WRbryeEceHuE6dlgdrpKAzQRgwgk5tTQeQ.xQTWS', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-01 05:58:54', NULL, NULL),
-(36, 'Lakshaya Sen', 'jamesheartcare@gmail.com', NULL, '2010-02-01', 15, 'M', '100023', '$2y$12$jJ6dDbNjh0eqwrnFze25sOXI1.nuZik7ozFEkWiIaGjszsghmqYvG', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-01 06:01:51', NULL, NULL),
-(37, 'Kadambi Srikant', 'jamesheartcare@gmail.com', NULL, '1996-01-30', 29, 'M', '100003', '$2y$12$QPaaOwvZ0W42mlLJ9QrmYe0xDfw4SwTPvgi2iCXyudeSUDoWex/gy', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-01 06:03:33', NULL, NULL),
-(38, 'Sai Praneet', 'jamesheartcare@gmail.com', NULL, '1999-02-08', 26, 'M', '100024', '$2y$12$4sbwhyz4Ara48Wg/Kd.GGeSMv4pxC2D5rQWQ8sQWfXa914htbcija', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-01 06:10:59', NULL, NULL),
-(39, 'Saina Nehwal', 'jamesheartcare@gmail.com', NULL, '1997-06-17', 27, 'F', '100025', '$2y$12$eomoYeQzV5/52LC7mq9c3O0LO4yxxlTt1n5BfzLi0E5bHyFKIQZT.', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-01 06:11:51', NULL, NULL),
-(40, 'Adriana', 'jamesheartcare@gmail.com', NULL, '2007-01-30', 18, 'F', '100028', '$2y$12$vobra7ZhPtLgt9ZzrLTqmuba1ZmRswWjj5cOD0Y955z3dq0HVAzK6', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-01 06:27:05', NULL, NULL),
-(41, 'Preeti Kaur', 'jamesheartcare@gmail.com', NULL, '2007-02-06', 18, 'F', '100029', '$2y$12$Ml1tQUtA67Ro0yfXPvAJke7RVkEmxBp8ZLoXrZHVFkuB7kmthTnWK', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-01 06:35:00', NULL, NULL),
-(42, 'Adrina Thomas', 'jamesheartcare@gmail.com', NULL, '2007-02-01', 18, 'F', '100030', '$2y$12$pqR8B2l3D8x7vVNfiiVj3.QykGnFby38MOikTgqeBsGrcgl9Rt7mO', NULL, NULL, '::1', '2025-03-12 05:45:50', 1, '2025-03-04 11:50:31', NULL, NULL),
-(43, 'Priya', 'jamesheartcare@gmail.com', NULL, '2008-12-29', 16, 'F', '100022', '$2y$12$Wi9dC.LWtfgrK..3SFAKQe89ofRnb/g1zivegd1j1u0y2u4g6sMHC', NULL, NULL, '127.0.0.1', '2025-03-12 05:45:50', 1, '2025-03-04 12:17:02', NULL, NULL),
-(44, 'Bharat', 'jamesheartcare@gmail.com', NULL, '2000-01-11', 25, 'M', '100031', '$2y$12$ak68q4wxLRmDx.5k9PGE6uKrNu9AlB62KqL4s2lna/a7RbIRnfmvy', NULL, NULL, '::1', '2025-03-12 05:45:50', 1, '2025-03-05 05:15:53', NULL, NULL),
-(45, 'VVVx', 'jamesheartcare@gmail.com', 'vvvb1@vvv.com', '2009-02-03', 16, 'F', '100032', '$2y$12$KtelS4z2J.CfJzhMfFFNue1o0h2qfs9JZJsNJImzv8kJMMpksDzkG', '$2y$12$ZN8T79gFyc5mRAktM5gdOe6IPYyHkTvdtSqxSpkhsMHTERv080/1W', NULL, '::1', '2025-03-12 05:45:50', 1, '2025-03-07 06:56:56', '$2y$12$tK6xa7IHLbqcBkxCK4q0yuqupSmPumbVHoxs6REbO/PzwQoeyhWCO', '$2y$12$mlJZ6YKFqqOhRJQxm56pN.ruwxePBNABjLMesxbgAPHNAuRFSy4IW');
+INSERT INTO `players` (`id`, `name`, `email`, `secondary_email`, `dob`, `age`, `sex`, `uid`, `password`, `secret_question1`, `created_by`, `ip_address`, `updated_at`, `category_id`, `created_at`, `secret_question2`, `secret_question3`, `mobile`) VALUES
+(1, 'Sreesha', 'jamesheartcare@gmail.com', NULL, '2008-01-01', 16, 'F', '100000', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 12:22:05', 0, '2025-01-24 03:01:50', NULL, NULL, '999991'),
+(2, 'Eric James', 'ejrb2020@gmail.com', NULL, '2009-05-02', 15, 'M', '100001', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 12:22:05', 0, '2025-01-24 03:01:50', NULL, NULL, '999992'),
+(3, 'Akshaj Tiwari', 'towaripriyanka2005@gmail.com', NULL, '2013-01-22', 12, 'M', '100002', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 12:22:05', 0, '2025-01-24 03:01:50', NULL, NULL, '999993'),
+(4, 'Lakshmita', 'jamesheartcare@gmail.com', NULL, '2011-01-01', 13, 'F', '100004', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 12:22:05', 0, '2025-01-24 03:01:50', NULL, NULL, '999994'),
+(6, 'Lee Chong Wei', 'lee22kk@gmail.com', NULL, '1980-01-03', 44, 'M', '100005', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 1, NULL, '2025-03-12 12:22:05', 0, '2025-01-24 03:01:50', NULL, NULL, '999996'),
+(9, 'Lakshaya', 'jamesheartcare@gmail.com', NULL, '2010-01-01', 15, 'F', '100006', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '999999'),
+(10, 'Gokulan', 'alagargokulan@gmail.com', NULL, '1998-01-01', 35, 'M', '100007', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999910'),
+(11, 'Zanpear', 'jamesheartcare@gmail.com', NULL, '1978-05-01', 46, 'M', '100008', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999911'),
+(12, 'Pandyraj', 'jamesheartcare@gmail.com', NULL, '1968-01-01', 57, 'M', '100009', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 20, '2025-01-24 03:01:50', NULL, NULL, '9999912'),
+(13, 'Vijay', 'jamesheartcare@gmail.com', NULL, '1970-01-30', 54, 'M', '100010', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999913'),
+(14, 'Tai Tzu Ying', 'jamesheartcare@gmail.com', NULL, '1998-01-01', 27, 'F', '100011', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999914'),
+(15, 'An Se Young', 'jamesheartcare@gmail.com', NULL, '2000-01-01', 25, 'F', '100012', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999915'),
+(16, 'Okuhara', 'jamesheartcare@gmail.com', NULL, '1998-01-01', 27, 'F', '100013', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999916'),
+(17, 'Anitha Anthony', 'jamesheartcare@gmail.com', NULL, '2008-01-01', 17, 'F', '100014', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999917'),
+(18, 'Carolina Marine', 'jamesheartcare@gmail.com', NULL, '1995-06-06', 29, 'F', '100015', '$2y$12$oAMjJaLvBukk6dDh5aVmu.EgCwKqw.sVGYTkllW6bwqrgCLcKaGzC', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999918'),
+(19, 'PV Sindhu', 'jamesheartcare@gmail.com', NULL, '1995-06-07', 29, 'F', '100016', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999919'),
+(20, 'Victor Axelsen', 'jamesheartcare@gmail.com', NULL, '1995-05-07', 29, 'M', '100017', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999920'),
+(21, 'Lin Dan', 'jamesheartcare@gmail.com', NULL, '1986-02-06', 38, 'M', '100018', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, 4, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999921'),
+(22, 'Harsh', 'jamesheartcare@gmail.com', NULL, '2008-01-17', 0, 'M', '100019', '$2y$10$2lIVZTjOymQ2m2mqgVHd8OW4KDQmS.pdH5ysk7aGrsL1X6zHNh7Ea', NULL, NULL, NULL, '2025-03-12 12:22:05', 1, '2025-01-24 03:01:50', NULL, NULL, '9999922'),
+(24, 'Prince', 'jamesheartcare@gmail.com', NULL, '2007-02-02', 26, 'M', '100020', '$2y$12$DZ/9nkVKOJW1Kk47jyqgseEtolyJR5OP/3xgRxTYSrrGTJFIz0j4e', NULL, NULL, NULL, '2025-03-12 12:22:05', 1, '2025-02-11 12:32:37', NULL, NULL, '9999924'),
+(31, 'Sriman', 'jamesheartcare@gmail.com', NULL, '2009-01-01', 25, 'M', '100026', '$2y$12$VTqpdhQGOSrpNRZBdMhvk.1n64LLWf1lx0vlDv/iShGx7UqjKMJiG', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-01 05:24:10', NULL, NULL, '9999931'),
+(34, 'threefemale', 'jamesheartcare@gmail.com', NULL, '2011-10-18', 13, 'F', '100027', '$2y$12$nq0UqrcoRxyH9kwssmhAk.p6spIDyNmC.yctssqMnaoInD6ZW7Jaa', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-01 05:57:13', NULL, NULL, '9999934'),
+(35, 'Okuhara Japan', 'jamesheartcare@gmail.com', NULL, '2007-09-17', 17, 'F', '100021', '$2y$12$2QpE1/UMQCZG9WRbryeEceHuE6dlgdrpKAzQRgwgk5tTQeQ.xQTWS', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-01 05:58:54', NULL, NULL, '9999935'),
+(36, 'Lakshaya Sen', 'jamesheartcare@gmail.com', NULL, '2010-02-01', 15, 'M', '100023', '$2y$12$jJ6dDbNjh0eqwrnFze25sOXI1.nuZik7ozFEkWiIaGjszsghmqYvG', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-01 06:01:51', NULL, NULL, '9999936'),
+(37, 'Kadambi Srikant', 'jamesheartcare@gmail.com', NULL, '1996-01-30', 29, 'M', '100003', '$2y$12$QPaaOwvZ0W42mlLJ9QrmYe0xDfw4SwTPvgi2iCXyudeSUDoWex/gy', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-01 06:03:33', NULL, NULL, '9999937'),
+(38, 'Sai Praneet', 'jamesheartcare@gmail.com', NULL, '1999-02-08', 26, 'M', '100024', '$2y$12$4sbwhyz4Ara48Wg/Kd.GGeSMv4pxC2D5rQWQ8sQWfXa914htbcija', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-01 06:10:59', NULL, NULL, '9999938'),
+(39, 'Saina Nehwal', 'jamesheartcare@gmail.com', NULL, '1997-06-17', 27, 'F', '100025', '$2y$12$eomoYeQzV5/52LC7mq9c3O0LO4yxxlTt1n5BfzLi0E5bHyFKIQZT.', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-01 06:11:51', NULL, NULL, '9999939'),
+(40, 'Adriana', 'jamesheartcare@gmail.com', NULL, '2007-01-30', 18, 'F', '100028', '$2y$12$vobra7ZhPtLgt9ZzrLTqmuba1ZmRswWjj5cOD0Y955z3dq0HVAzK6', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-01 06:27:05', NULL, NULL, '9999940'),
+(41, 'Preeti Kaur', 'jamesheartcare@gmail.com', NULL, '2007-02-06', 18, 'F', '100029', '$2y$12$Ml1tQUtA67Ro0yfXPvAJke7RVkEmxBp8ZLoXrZHVFkuB7kmthTnWK', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-01 06:35:00', NULL, NULL, '9999941'),
+(42, 'Adrina Thomas', 'jamesheartcare@gmail.com', NULL, '2007-02-01', 18, 'F', '100030', '$2y$12$pqR8B2l3D8x7vVNfiiVj3.QykGnFby38MOikTgqeBsGrcgl9Rt7mO', NULL, NULL, '::1', '2025-03-12 12:22:05', 1, '2025-03-04 11:50:31', NULL, NULL, '9999942'),
+(43, 'Priya', 'jamesheartcare@gmail.com', NULL, '2008-12-29', 16, 'F', '100022', '$2y$12$Wi9dC.LWtfgrK..3SFAKQe89ofRnb/g1zivegd1j1u0y2u4g6sMHC', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-04 12:17:02', NULL, NULL, '9999943'),
+(44, 'Bharat', 'jamesheartcare@gmail.com', NULL, '2000-01-11', 25, 'M', '100031', '$2y$12$ak68q4wxLRmDx.5k9PGE6uKrNu9AlB62KqL4s2lna/a7RbIRnfmvy', NULL, NULL, '::1', '2025-03-12 12:22:05', 1, '2025-03-05 05:15:53', NULL, NULL, '9999944'),
+(45, 'VVVx', 'jamesheartcare@gmail.com', 'vvvb1@vvv.com', '2009-02-03', 16, 'F', '100032', '$2y$12$KtelS4z2J.CfJzhMfFFNue1o0h2qfs9JZJsNJImzv8kJMMpksDzkG', '$2y$12$ZN8T79gFyc5mRAktM5gdOe6IPYyHkTvdtSqxSpkhsMHTERv080/1W', NULL, '::1', '2025-03-12 12:22:05', 1, '2025-03-07 06:56:56', '$2y$12$tK6xa7IHLbqcBkxCK4q0yuqupSmPumbVHoxs6REbO/PzwQoeyhWCO', '$2y$12$mlJZ6YKFqqOhRJQxm56pN.ruwxePBNABjLMesxbgAPHNAuRFSy4IW', '9999945');
 
 -- --------------------------------------------------------
 
@@ -739,13 +740,13 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 ('9y4LRRlZLIOLeIeRHCQBrlLvvptQc6YNT1lrbAPB', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiSklKODZWUWdSNkxJSFNBcmlrbFhqeWFISm5JdEM5UWxzdGprRTFyVCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1741178619),
 ('aNilAeC1P2jP2RrzYy39i90JeaXLM5Jn1zEjY77d', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidDFMMmtsMlhkMWFRODFobGFjQXplVHV2MUhHblY0S0trN3B5dE9uVCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1741178481),
 ('CWzNXQ0abUEi6a1BdjsWSurZndFlW0A3bEPX2TpD', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiS3N0NllpUlVUaWNTWHpmRFRDT3lQa3JzNXhPbDlxbUFCbjRWT0JSOSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjY6Imh0dHA6Ly9sb2NhbGhvc3QvYnRsL2xvZ2luIjt9fQ==', 1741500268),
+('Dk0EAnKC0IDjh5vLGv6go7HvMKF2tqptLFukz8jv', 4, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiZzdlYkFXU0JkTFpFSnV1RDVzMHVXQWNrQ3JXa25wb0N4UTFIWTZpRiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly9sb2NhbGhvc3QvYnRsL3BsYXllcnMvcmVnaXN0ZXIiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo0O30=', 1741782709),
 ('EGefeV7l7LTYQljKa5OCx6rCQi9z0Ka1sNgGlhvx', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoia1NFMnRHUDZMT3VhbUk3bTNTTmxYRTAyWHFPdE1KZDRHTXZhZ0xjQiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1741178261),
 ('fqKZuDWSE9TGTWiTPegA3MgMRlbLs1OT4xxurwl0', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUk9SRzRKdHNKazB4UzdmR20zeExhajVSNVFsZklMbGFCejVqb3ZsRyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1741178532),
 ('I21kyFbIfkeW0jNHD2U1eqwitoY7ECO6lcRs5e1A', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiR2FyNXJXRU5kMXBzT25NNURQVzhFbEw5YXhVSTdSRFAzeEtjYVJtZyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1741178616),
 ('j2Akqwv7EwuiGfz4A63LjnY8cxlhMDrtxgyEF5Nc', 4, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQ2szVmNJalV4ZVJPQ2hBcE1zdGYwMVVINmhoMFc0M2p0SWlpdEFQOSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MTQ0OiJodHRwOi8vbG9jYWxob3N0L2J0bC9tYXRjaGVzL2RvdWJsZXM/ZmlsdGVyX2NhdGVnb3J5PVhEJmZpbHRlcl9kYXRlPSZmaWx0ZXJfcGxheWVyPWFsbCZmaWx0ZXJfcmVzdWx0cz1hbGwmZmlsdGVyX3N0YWdlPWFsbCZmaWx0ZXJfdG91cm5hbWVudD1hbGwiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo0O30=', 1741176803),
 ('lM3vUrwhUEJFD3r5OlSjkzwHKECVClkwQlxL6Dpy', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YToyOntzOjY6Il90b2tlbiI7czo0MDoic0VsZVdwUWRJSnB2VlphS2xVeVJVeVZySzd3dUhSSlViemZqT0FsWCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1741178488),
 ('UtMVYlSIV5Bo7KYuHcazfcaJ9g0M1OcF2NwgLxfX', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiYmRZaEpzOWZIeU1uZTY3Z3dKZVVZY0hLYks1WjdMMFJZWFdjSVM1SyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9tYXRjaGVzL3NpbmdsZXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo0O3M6MTc6ImxvY2tlZF90b3VybmFtZW50IjtzOjE6IjEiO3M6Mjg6ImxvY2tlZF9zaW5nbGVzX3RvdXJuYW1lbnRfaWQiO3M6MToiMSI7fQ==', 1740746519),
-('uwQD91oRSmYFCEbgqm65a5k0dDywWg53hVe3h0Fq', 4, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiMkp1ajFPU3J2c1p0ZWRub0cyQm5HalNYdFgyQmxWNGdBSWdZWWMwUSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly9sb2NhbGhvc3QvYnRsL21hdGNoZXMvZG91Ymxlcy9lZGl0Ijt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NDtzOjI4OiJsb2NrZWRfc2luZ2xlc190b3VybmFtZW50X2lkIjtzOjE6IjEiO3M6MTc6ImxvY2tlZF90b3VybmFtZW50IjtzOjE6IjEiO30=', 1741775768),
 ('V2hs5yqLe4Edy4KR18PSsfWXsfj0ph1hWCdWTzko', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZE5QY2Q1VFF6WGRueFRFUFI3ZWMxZ2JRaHN4T3lSa3k5U2hTMEdINiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1741178261),
 ('X78bPKEZ8r2hBNS5tHfYQuOkz9da1qBbP6f5HTjE', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRzhSOFZTcGp5eXRNMEpxNThVR0VrSVVYMnlKSFd0SUx4dmVnaVd3NiI7czo3OiJzdWNjZXNzIjtzOjI1OiJZb3UgaGF2ZSBiZWVuIGxvZ2dlZCBvdXQuIjtzOjY6Il9mbGFzaCI7YToyOntzOjM6Im5ldyI7YTowOnt9czozOiJvbGQiO2E6MTp7aTowO3M6Nzoic3VjY2VzcyI7fX19', 1740829639),
 ('YA5SuWevZZEEcKTqh4m7ItucJQ8Qib9qgI3uoA6h', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YToyOntzOjY6Il90b2tlbiI7czo0MDoiNG9RQ3RMUmlHQ0JvZzZPcVRJMWVhTHYyQ0hRUFlpZ2loSG40c1JjdCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1741178488),
@@ -961,7 +962,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `username`, `email`, `dob`, `sex`, `role`, `created_by`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `ip_address`, `created_at`, `updated_at`, `mobile_no`, `last_login`, `profile_picture`, `secondary_email`, `secret_question1`, `secret_question2`, `secret_question3`) VALUES
 (1, 'user', 'user@user.com', '2007-01-09', 'Male', 'user', NULL, NULL, '$2y$12$MsyjI5qJ2gNqZcpOnWU4QOhq1N.7HU2GQbTW9SkqwaQAWZZ1jrpi.', NULL, NULL, NULL, NULL, NULL, '2024-12-28 22:20:28', '2025-03-09 14:12:25', '1111111111', NULL, 'uploads/profiles/1737177818_WhatsApp Image 2025-01-18 at 08.59.27.jpeg', NULL, NULL, NULL, NULL),
 (2, 'admin', 'admin@admin.com', NULL, NULL, 'admin', NULL, NULL, '$2y$10$Vzemd6vNZoJ7tsir9lxqKuBfkPhks/ZL3mB6YRRNKRLg3H8THFdba', NULL, NULL, NULL, NULL, NULL, '2024-12-28 22:41:42', NULL, '7432001215', NULL, 'default.png', NULL, NULL, NULL, NULL),
-(4, 'Robert James', 'xpindia@gmail.com', '1967-06-08', 'Male', 'admin', NULL, NULL, '$2y$12$TDdgHaXHdTld0QpkEFFnHOFZye4.vRNCuT7kuwqHrCqr1ThuRPg1i', NULL, NULL, NULL, 'jV97MtwqxnLhAIOuyK6HDUXRdeg6CIHKGSP5AO5x5muc89Mz0McO7ZfOUwR4', NULL, '2024-12-29 06:40:35', '2025-03-08 10:05:59', '3332222222', NULL, 'default.png', NULL, NULL, NULL, NULL),
+(4, 'Robert James', 'xpindia@gmail.com', '1967-06-08', 'Male', 'admin', NULL, NULL, '$2y$12$TDdgHaXHdTld0QpkEFFnHOFZye4.vRNCuT7kuwqHrCqr1ThuRPg1i', NULL, NULL, NULL, 'CdiXajDBeqwZHpf9yRhgXWlyZonSFDTFxSUZ1f2sdopOv8xaNV0CSYtbQlxt', NULL, '2024-12-29 06:40:35', '2025-03-08 10:05:59', '3332222222', NULL, 'default.png', NULL, NULL, NULL, NULL),
 (5, 'user2', 'user2@jdjdj.com', NULL, NULL, 'user', NULL, NULL, '$2y$10$h2N1Jb3tCQ72X.KWuQaB8eUfBfJa61DULmbLDzMArIlUdtpj4im.m', NULL, NULL, NULL, NULL, NULL, '2024-12-31 09:58:19', NULL, '2222222222', NULL, 'default.png', NULL, NULL, NULL, NULL),
 (6, 'user1', 'asda@sd.asda', NULL, NULL, 'user', NULL, NULL, '$2y$10$630Wk4DbeWyToUcclXn66.2YMBCpUb8/ZwAvZwsbMU72PF3nNWdB2', NULL, NULL, NULL, NULL, NULL, '2025-01-10 00:25:38', NULL, '2222222222', NULL, 'default.png', NULL, NULL, NULL, NULL),
 (7, 'Mr ZZZ', 'zzz@zzz.com', '1995-02-01', 'Male', 'user', NULL, NULL, '$2y$12$uKs3Byi3YmAvEaEsd1erE.dCpyeg7cnGPf450qdbWyrsD4RJR.4n6', NULL, NULL, NULL, 'oKpZX7NIBNzSn03AXCF2xot10hFJ3aiqk4ysUGrg47r599eoIeSrbF7jIfYV', NULL, '2025-01-10 22:23:39', '2025-03-05 22:10:47', '1111111111', NULL, 'default.png', NULL, NULL, NULL, NULL),
@@ -1110,7 +1111,8 @@ ALTER TABLE `personal_access_tokens`
 ALTER TABLE `players`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uid` (`uid`),
-  ADD UNIQUE KEY `uid_2` (`uid`);
+  ADD UNIQUE KEY `uid_2` (`uid`),
+  ADD UNIQUE KEY `mobile` (`mobile`);
 
 --
 -- Indexes for table `player_access`

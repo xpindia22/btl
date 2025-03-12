@@ -6,6 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'App\\Console\\Kernel' => $baseDir . '/app/Console/Kernel.php',
     'App\\Http\\Controllers\\AdminController' => $baseDir . '/app/Http/Controllers/AdminController.php',
     'App\\Http\\Controllers\\AdminPasswordResetController' => $baseDir . '/app/Http/Controllers/AdminPasswordResetController.php',
     'App\\Http\\Controllers\\Auth\\ConfirmPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ConfirmPasswordController.php',
@@ -29,7 +30,12 @@ return array(
     'App\\Http\\Middleware\\AdminMiddleware' => $baseDir . '/app/Http/Middleware/AdminMiddleware.php',
     'App\\Http\\Middleware\\AdminSecondaryAuth' => $baseDir . '/app/Http/Middleware/AdminSecondaryAuth.php',
     'App\\Http\\Middleware\\RoleMiddleware' => $baseDir . '/app/Http/Middleware/RoleMiddleware.php',
+    'App\\Mail\\MatchCreatedMail' => $baseDir . '/app/Mail/MatchCreatedMail.php',
+    'App\\Mail\\MatchPinnedNotification' => $baseDir . '/app/Mail/MatchPinnedNotification.php',
+    'App\\Mail\\MatchUpdatedNotification' => $baseDir . '/app/Mail/MatchUpdatedNotification.php',
     'App\\Mail\\PasswordResetSuccessMail' => $baseDir . '/app/Mail/PasswordResetSuccessMail.php',
+    'App\\Mail\\PlayerNotification' => $baseDir . '/app/Mail/PlayerNotification.php',
+    'App\\Mail\\PlayerPinnedNotification' => $baseDir . '/app/Mail/PlayerPinnedNotification.php',
     'App\\Mail\\ResetPasswordMail' => $baseDir . '/app/Mail/ResetPasswordMail.php',
     'App\\Models\\Category' => $baseDir . '/app/Models/Category.php',
     'App\\Models\\Favorite' => $baseDir . '/app/Models/Favorite.php',
@@ -39,8 +45,10 @@ return array(
     'App\\Models\\Tournament' => $baseDir . '/app/Models/Tournament.php',
     'App\\Models\\User' => $baseDir . '/app/Models/User.php',
     'App\\Observers\\PlayerObserver' => $baseDir . '/app/Observers/PlayerObserver.php',
+    'App\\Policies\\TournamentPolicy' => $baseDir . '/app/Policies/TournamentPolicy.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',
     'App\\Providers\\AuthServiceProvider' => $baseDir . '/app/Providers/AuthServiceProvider.php',
+    'App\\Services\\MatchNotificationService' => $baseDir . '/app/Services/MatchNotificationService.php',
     'Attribute' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
     'Brick\\Math\\BigDecimal' => $vendorDir . '/brick/math/src/BigDecimal.php',
     'Brick\\Math\\BigInteger' => $vendorDir . '/brick/math/src/BigInteger.php',
