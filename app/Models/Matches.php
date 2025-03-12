@@ -121,19 +121,86 @@ class Matches extends Model
     /**
      * Hook into model update to send email notifications
      */
-    protected static function boot()
+//     protected static function boot()
+// {
+//     parent::boot();
+
+//     static::updated(function ($match) {
+//         Log::info("🔄 Match update detected for ID: {$match->id}");
+
+//         $columnsToCheck = [
+//             'stage', 'match_date', 'match_time',
+//             'set1_player1_points', 'set1_player2_points',
+//             'set2_player1_points', 'set2_player2_points',
+//             'set3_player1_points', 'set3_player2_points'
+//         ];
+
+//         $changes = [];
+
+//         foreach ($columnsToCheck as $column) {
+//             $oldValue = (string) $match->getOriginal($column); // Convert old value to string
+//             $newValue = (string) $match->{$column};  // Convert new value to string
+
+//             if ($oldValue !== $newValue) {
+//                 $changes[$column] = [
+//                     'old' => $oldValue,
+//                     'new' => $newValue
+//                 ];
+//             }
+//         }
+
+//         if (!empty($changes)) {
+//             Log::info("🔔 Significant changes detected for Match ID: {$match->id}", $changes);
+
+//             $favoritedByUsers = Favorite::where('favoritable_id', $match->id)
+//                 ->where('favoritable_type', Matches::class)
+//                 ->pluck('user_id')
+//                 ->unique();
+
+//             collect($favoritedByUsers)->each(function ($userId) use ($match, $changes) {
+//                 $user = \App\Models\User::find($userId);
+
+//                 if ($user) {
+//                     try {
+//                         Log::info("📨 Sending email to {$user->email} for Match ID: {$match->id}");
+//                         Mail::to($user->email)->queue(new MatchUpdatedNotification($user, $match, $changes));
+//                         Log::info("✅ Email successfully queued to: {$user->email}");
+//                     } catch (\Exception $e) {
+//                         Log::error("❌ Email sending failed for {$user->email}: " . $e->getMessage());
+//                     }
+//                 }
+//             });
+//         } else {
+//             Log::info("🔕 No significant changes detected for Match ID: {$match->id}");
+//         }
+//     });
+// }
+
+protected static function boot()
 {
     parent::boot();
 
     static::updated(function ($match) {
         Log::info("🔄 Match update detected for ID: {$match->id}");
 
+        // Columns to check for singles match updates.
         $columnsToCheck = [
             'stage', 'match_date', 'match_time',
             'set1_player1_points', 'set1_player2_points',
             'set2_player1_points', 'set2_player2_points',
             'set3_player1_points', 'set3_player2_points'
         ];
+
+        // If this match includes doubles players, add doubles-specific columns.
+        if ($match->team1_player1_id || $match->team1_player2_id || $match->team2_player1_id || $match->team2_player2_id) {
+            $columnsToCheck = array_merge($columnsToCheck, [
+                'team1_player1_id', 'team1_player2_id',
+                'team2_player1_id', 'team2_player2_id',
+                'set1_team1_points', 'set1_team2_points',
+                'set2_team1_points', 'set2_team2_points',
+                'set3_team1_points', 'set3_team2_points'
+            ]);
+        }
 
         $changes = [];
 
@@ -175,7 +242,6 @@ class Matches extends Model
         }
     });
 }
-
 
 
 }

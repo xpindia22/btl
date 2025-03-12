@@ -46,8 +46,15 @@
                             {{ $match->team2Player1->name ?? 'N/A' }} &amp; {{ $match->team2Player2->name ?? 'N/A' }}
                         </td>
                         <td rowspan="2">
-                            <input type="text" name="stage" class="form-control" value="{{ $match->stage }}">
-                        </td>
+    <select name="stage" class="form-control">
+        @foreach(['Pre Quarter Finals', 'Quarter Finals', 'Semifinals', 'Finals'] as $stageOption)
+            <option value="{{ $stageOption }}" {{ $match->stage == $stageOption ? 'selected' : '' }}>
+                {{ $stageOption }}
+            </option>
+        @endforeach
+    </select>
+</td>
+
                         <td rowspan="2">
                             <input type="date" name="match_date" class="form-control" value="{{ $match->match_date }}">
                         </td>
