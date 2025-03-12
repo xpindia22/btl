@@ -405,28 +405,41 @@ class DoublesMatchController extends Controller
     public function update(Request $request, $matchId)
 {
     Log::info("Doubles update called for match ID: " . $matchId);
+    
     $data = $request->validate([
-        'stage' => 'required|string',
-        'match_date' => 'required|date',
-        'match_time' => 'required',
-        'set1_team1_points' => 'nullable|numeric',
-        'set1_team2_points' => 'nullable|numeric',
-        'set2_team1_points' => 'nullable|numeric',
-        'set2_team2_points' => 'nullable|numeric',
-        'set3_team1_points' => 'nullable|numeric',
-        'set3_team2_points' => 'nullable|numeric',
-        'moderator' => 'nullable|string',
-        'creator' => 'nullable|string',
+        'stage'              => 'required|string',
+        'match_date'         => 'required|date',
+        'match_time'         => 'required',
+        'set1_team1_points'  => 'nullable|numeric',
+        'set1_team2_points'  => 'nullable|numeric',
+        'set2_team1_points'  => 'nullable|numeric',
+        'set2_team2_points'  => 'nullable|numeric',
+        'set3_team1_points'  => 'nullable|numeric',
+        'set3_team2_points'  => 'nullable|numeric',
+        'moderator'          => 'nullable|string',
+        'creator'            => 'nullable|string',
     ]);
 
     Log::info("Data received:", $data);
+
     $match = Matches::findOrFail($matchId);
     Log::info("Match before update:", $match->toArray());
+
     $match->update($data);
-    Log::info("Match after update:", $match->fresh()->toArray());
+    $updatedMatch = $match->fresh();
+
+    Log::info("Match after update:", $updatedMatch->toArray());
+    
+    if ($request->expectsJson()) {
+        return response()->json([
+            'message' => 'Match updated successfully.',
+            'match'   => $updatedMatch
+        ]);
+    }
     
     return redirect()->route('matches.doubles.edit')->with('success', 'Match updated successfully.');
 }
+
 
     // ----------------------------------------
     // 9) Soft Delete (DELETE)

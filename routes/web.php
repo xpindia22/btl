@@ -168,6 +168,10 @@ Route::resource('users', UserController::class)->except(['show', 'edit']);
         Route::delete('/{match}/delete', [DoublesMatchController::class, 'softDelete'])->name('matches.doubles.delete');
     // Route to view a specific doubles match
         Route::get('/matches/doubles/{id}', [DoublesMatchController::class, 'show'])->name('matches.doubles.show');
+        Route::put('/matches/doubles/{matchId}/update', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
+
+    
+    
     });
 
     // --------------------------
