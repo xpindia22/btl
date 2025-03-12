@@ -22,11 +22,35 @@ class MatchCreatedMail extends Mailable
     }
 
     /**
+     * Determine if the match is a doubles match.
+     *
+     * @return bool
+     */
+    protected function isDoubles()
+    {
+        return $this->matches->team1_player1_id &&
+               $this->matches->team1_player2_id &&
+               $this->matches->team2_player1_id &&
+               $this->matches->team2_player2_id;
+    }
+
+    /**
      * Build the message.
      */
     public function build()
     {
-        return $this->subject('New Match Created')
-                    ->markdown('emails.match_created');
+        if ($this->isDoubles()) {
+            return $this->subject('New Doubles Match Created')
+                        ->markdown('emails.doubles_match_created')
+                        ->with([
+                            'matchType' => 'doubles'
+                        ]);
+        } else {
+            return $this->subject('New Singles Match Created')
+                        ->markdown('emails.match_created')
+                        ->with([
+                            'matchType' => 'singles'
+                        ]);
+        }
     }
 }

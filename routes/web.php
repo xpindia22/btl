@@ -172,6 +172,10 @@ Route::resource('users', UserController::class)->except(['show', 'edit']);
         Route::get('/matches/doubles/{id}', [DoublesMatchController::class, 'show'])->name('matches.doubles.show');
         Route::put('/matches/doubles/{matchId}/update', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
 
+    route::get('matches/doubles/{id}', [\App\Http\Controllers\DoublesMatchController::class, 'show'])
+    ->name('matches.doubles.show');
+
+
     
     
     });
