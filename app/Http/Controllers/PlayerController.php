@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\Tournament;
 use App\Models\Category;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PlayerNotification;
 
 class PlayerController extends Controller
 {
@@ -39,7 +41,7 @@ class PlayerController extends Controller
         $age = $dob->diffInYears(Carbon::now());
         $uid = $this->getNextAvailableUid();
 
-        Player::create([
+        $player = Player::create([
             'uid' => $uid,
             'name' => $request->name,
             'dob' => $dob,
@@ -48,6 +50,9 @@ class PlayerController extends Controller
             'age' => $age,
             'ip_address' => $request->ip(),
         ]);
+
+        // Send email notification
+        $this->sendPlayerEmailNotification($player, 'created', auth()->user());
 
         return redirect()->route('players.index')->with('success', 'Player registered successfully!');
     }
@@ -72,7 +77,7 @@ class PlayerController extends Controller
         $dob = Carbon::parse($validated['dob']);
         $age = $dob->diffInYears(Carbon::now());
 
-        Player::create([
+        $player = Player::create([
             'uid' => $uid,
             'name' => $validated['name'],
             'dob' => $dob,
@@ -82,21 +87,20 @@ class PlayerController extends Controller
             'ip_address' => request()->ip(),
         ]);
 
+        // Send email notification
+        $this->sendPlayerEmailNotification($player, 'created', auth()->user());
+
         return redirect()->route('players.index')->with('success', 'Player registered successfully!');
     }
 
-    // ✅ Fix edit function to show all players in a table for inline editing
     public function edit()
     {
-        $players = Player::paginate(10); // Ensure pagination is enabled
+        $players = Player::paginate(10);
         return view('players.edit', compact('players'));
     }
-    
 
-    // ✅ Fix update function for inline editing
     public function update(Request $request, $uid)
     {
-        // Find the player by UID
         $player = Player::where('uid', $uid)->first();
         if (!$player) {
             return response()->json([
@@ -104,25 +108,25 @@ class PlayerController extends Controller
                 'message' => 'Player not found'
             ], 404);
         }
-    
-        // Validate input, including email
+
         $validated = $request->validate([
             'name'  => 'required|string|max:255',
-            'email' => 'required|email|max:255', // Added email validation
+            'email' => 'required|email|max:255',
             'dob'   => 'required|date',
             'sex'   => 'required|string|max:10',
         ]);
-    
-        // Update the player record
+
         $player->update($validated);
-    
+
+        // Send email notification
+        $this->sendPlayerEmailNotification($player, 'updated', auth()->user());
+
         return response()->json([
             'success' => true,
             'player'  => $player
         ]);
     }
-    
-    
+
     public function destroy($uid)
     {
         $player = Player::where('uid', $uid)->firstOrFail();
@@ -142,137 +146,25 @@ class PlayerController extends Controller
 
         return $nextUid;
     }
-    
-    // Updated singles ranking method with pagination
-    public function ranking(Request $request)
-    {
-        $selectedTournament = $request->input('tournament_id');
-        $selectedCategory = $request->input('category_id');
-        $selectedPlayer = $request->input('player_id');
-        $selectedDate = $request->input('date');
-    
-        $query = Player::select(
-                'players.id',
-                'players.uid',
-                'players.name',
-                'players.age',
-                'players.sex',
-                'categories.name as category_name',
-                DB::raw('COUNT(matches.id) as matches_played'),
-                DB::raw('COALESCE(SUM(
-                    CASE
-                        WHEN matches.player1_id = players.id THEN matches.set1_player1_points + matches.set2_player1_points + matches.set3_player1_points
-                        WHEN matches.player2_id = players.id THEN matches.set1_player2_points + matches.set2_player2_points + matches.set3_player2_points
-                        ELSE 0
-                    END
-                ), 0) as total_points')
-            )
-            ->leftJoin('matches', function($join) {
-                $join->on('players.id', '=', 'matches.player1_id')
-                    ->orOn('players.id', '=', 'matches.player2_id');
-            })
-            ->leftJoin('categories', 'players.category_id', '=', 'categories.id')
-            ->groupBy('players.id', 'players.uid', 'players.name', 'players.age', 'players.sex', 'categories.name')
-            ->orderByDesc('total_points');
-    
-        if ($selectedTournament) {
-            $query->where('matches.tournament_id', $selectedTournament);
-        }
-    
-        if ($selectedCategory) {
-            $query->where('matches.category_id', $selectedCategory);
-        }
-    
-        if ($selectedPlayer) {
-            $query->where('players.id', $selectedPlayer);
-        }
-    
-        if ($selectedDate) {
-            $query->whereDate('matches.match_date', $selectedDate);
-        }
-    
-        // Paginate the results (10 per page)
-        $rankings = $query->paginate(10);
-        // Compute an offset based on current page for continuous ranking
-        $offset = ($rankings->currentPage() - 1) * $rankings->perPage();
-        $rankings->getCollection()->transform(function($player, $index) use ($offset) {
-            $player->ranking = $offset + $index + 1;
-            return $player;
-        });
-    
-        return view('players.players_ranking', [
-            'rankings' => $rankings,
-            'playersList' => Player::orderBy('name')->get(),
-            'tournaments' => Tournament::orderBy('name')->get(),
-            'categories' => Category::orderBy('name')->get(),
-        ]);
+
+    /**
+     * Send email notification on player creation or update.
+     */
+    private function sendPlayerEmailNotification($player, $action, $modifiedBy)
+{
+    $adminEmail = "xpindia@gmail.com";
+    $creatorEmail = auth()->user()->email ?? null; // Get creator's email
+    $modifierEmail = $modifiedBy->email ?? null; // Get modifier's email
+    $newPlayerEmail = $player->email ?? null; // Get updated player email
+
+    // Include the new email of the player if it's different from the previous email
+    $recipients = array_filter([$creatorEmail, $modifierEmail, $adminEmail, $newPlayerEmail]);
+
+    if (!empty($recipients)) {
+        Mail::to($modifierEmail)
+            ->cc($recipients)
+            ->send(new PlayerNotification($player, $action, $modifiedBy->username));
     }
-    
-    // Updated doubles ranking method with pagination
-    public function doublesRanking(Request $request)
-    {
-        $selectedTournament = $request->input('tournament_id');
-        $selectedCategory = $request->input('category_id');
-        $selectedPlayer = $request->input('player_id');
-        $selectedDate = $request->input('date');
-    
-        $tournaments = Tournament::orderBy('name')->get();
-    
-        $categories = Category::query()
-            ->where('name', 'LIKE', '%BD%')
-            ->orWhere('name', 'LIKE', '%GD%')
-            ->orWhere('name', 'LIKE', '%XD%')
-            ->orderBy('name')
-            ->get();
-    
-        $playersList = Player::orderBy('name')->get();
-    
-        $query = DB::table('matches')
-            ->select(
-                'categories.name as category_name',
-                DB::raw("CONCAT(p1.name, ' / ', p2.name) as team_name"),
-                DB::raw('COUNT(matches.id) as matches_played'),
-                DB::raw('SUM(matches.set1_team1_points + matches.set2_team1_points + matches.set3_team1_points) as total_points')
-            )
-            ->join('categories', 'matches.category_id', '=', 'categories.id')
-            ->join('players as p1', 'matches.team1_player1_id', '=', 'p1.id')
-            ->join('players as p2', 'matches.team1_player2_id', '=', 'p2.id')
-            ->join('tournaments', 'matches.tournament_id', '=', 'tournaments.id');
-    
-        if ($selectedTournament) {
-            $query->where('matches.tournament_id', $selectedTournament);
-        }
-    
-        if ($selectedCategory) {
-            $query->where('matches.category_id', $selectedCategory);
-        }
-    
-        if ($selectedPlayer) {
-            $query->where(function ($query) use ($selectedPlayer) {
-                $query->where('matches.team1_player1_id', $selectedPlayer)
-                      ->orWhere('matches.team1_player2_id', $selectedPlayer)
-                      ->orWhere('matches.team2_player1_id', $selectedPlayer)
-                      ->orWhere('matches.team2_player2_id', $selectedPlayer);
-            });
-        }
-    
-        if ($selectedDate) {
-            $query->whereDate('matches.match_date', $selectedDate);
-        }
-    
-        // Paginate the results (10 per page)
-        $rankings = $query->groupBy('team_name', 'categories.name')
-                          ->orderBy('categories.name')
-                          ->orderByDesc('total_points')
-                          ->paginate(10);
-    
-        // Optionally, add ranking numbers for doubles
-        $offset = ($rankings->currentPage() - 1) * $rankings->perPage();
-        $rankings->getCollection()->transform(function ($item, $index) use ($offset) {
-            $item->ranking = $offset + $index + 1;
-            return $item;
-        });
-    
-        return view('players.doubles_ranking', compact('rankings', 'tournaments', 'categories', 'playersList'));
-    }
+}
+
 }
