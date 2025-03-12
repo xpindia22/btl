@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Mail;
 
+use App\Models\Player;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
 class PlayerNotification extends Mailable
 {
@@ -16,6 +17,10 @@ class PlayerNotification extends Mailable
 
     /**
      * Create a new message instance.
+     *
+     * @param Player $player
+     * @param string $action (e.g. 'registered' or 'updated')
+     * @param mixed $modifiedBy (the user who initiated the action)
      */
     public function __construct($player, $action, $modifiedBy)
     {
@@ -29,12 +34,13 @@ class PlayerNotification extends Mailable
      */
     public function build()
     {
-        return $this->subject("Player {$this->action}: {$this->player->name}")
+        return $this->subject("Player " . ucfirst($this->action) . ": " . $this->player->name)
                     ->view('emails.player_notification')
                     ->with([
-                        'player' => $this->player,
-                        'action' => $this->action,
-                        'modifiedBy' => $this->modifiedBy,
+                        'player'      => $this->player,
+                        'action'      => $this->action,
+                        'modifiedBy'  => $this->modifiedBy,
+                        'adminEmail'  => 'xpindia@gmail.com',
                     ]);
     }
 }

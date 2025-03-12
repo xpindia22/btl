@@ -28,8 +28,6 @@ class PlayerController extends Controller
      */
     public function showRegistrationForm()
     {
-        // For registration, you might want to return a dedicated view.
-        // For now, we use the same as index if that's intended.
         return view('players.register', ['nextUid' => $this->getNextAvailableUid()]);
     }
 
@@ -37,35 +35,36 @@ class PlayerController extends Controller
      * Handle player registration.
      */
     public function register(Request $request)
-{
-    // Automatically generate the UID.
-    $uid = $this->getNextAvailableUid();
+    {
+        // Automatically generate the UID.
+        $uid = $this->getNextAvailableUid();
 
-    // Validate the registration form data.
-    $validated = $request->validate([
-        'name'     => 'required|string|max:255',
-        'email'    => 'required|email|unique:players,email',
-        'mobile'   => 'required|string|max:15|unique:players,mobile',
-        'dob'      => 'required|date',
-        'sex'      => 'required|in:M,F',
-        'password' => 'required|string|min:6|confirmed',
-    ]);
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:players,email',
+            'mobile'   => 'required|string|max:15|unique:players,mobile',
+            'dob'      => 'required|date',
+            'sex'      => 'required|in:M,F',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
 
-    // Create the player, including mobile and a hashed password.
-    $player = Player::create([
-        'uid'        => $uid,
-        'name'       => $validated['name'],
-        'email'      => $validated['email'],
-        'mobile'     => $validated['mobile'],  // Ensure mobile is passed here
-        'dob'        => $validated['dob'],
-        'sex'        => $validated['sex'],
-        'ip_address' => $request->ip(),
-        'password'   => Hash::make($validated['password']),
-    ]);
+        $player = Player::create([
+            'uid'        => $uid,
+            'name'       => $validated['name'],
+            'email'      => $validated['email'],
+            'mobile'     => $validated['mobile'],
+            'dob'        => $validated['dob'],
+            'sex'        => $validated['sex'],
+            'ip_address' => $request->ip(),
+            'password'   => Hash::make($validated['password']),
+        ]);
 
-    return redirect()->route('players.index')->with('success', 'Registration successful!');
-}
+        // Send email notification on registration.
+        // Pass auth()->user() as the initiator. If self-registering, it is the same as the player.
+        $this->sendPlayerEmailNotification($player, 'registered', auth()->user());
 
+        return redirect()->route('players.index')->with('success', 'Registration successful!');
+    }
 
     /**
      * Show the registration form (alternate method).
@@ -82,11 +81,11 @@ class PlayerController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'   => 'required|string|max:255',
-            'email'  => 'required|email|unique:players,email|max:255',
-            'mobile' => 'required|string|max:15|unique:players,mobile',
-            'dob'    => 'required|date',
-            'sex'    => 'required|in:M,F',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:players,email|max:255',
+            'mobile'   => 'required|string|max:15|unique:players,mobile',
+            'dob'      => 'required|date',
+            'sex'      => 'required|in:M,F',
             'password' => 'required|min:6',
         ]);
 
@@ -103,6 +102,8 @@ class PlayerController extends Controller
             'password'   => Hash::make($validated['password']),
             'ip_address' => $request->ip(),
         ]);
+
+        $this->sendPlayerEmailNotification($player, 'registered', auth()->user());
 
         return redirect()->route('players.index')->with('success', 'Player registered successfully!');
     }
@@ -121,55 +122,55 @@ class PlayerController extends Controller
      * Update player details via AJAX.
      */
     public function update(Request $request, $uid)
-{
-    $player = Player::where('uid', $uid)->first();
-    if (!$player) {
+    {
+        $player = Player::where('uid', $uid)->first();
+        if (!$player) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Player not found'
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:players,email,' . $player->id,
+            'mobile'   => 'required|string|max:15|unique:players,mobile,' . $player->id,
+            'dob'      => 'required|date',
+            'sex'      => 'required|in:M,F',
+            'password' => 'nullable|min:6',
+        ]);
+
+        $dob = Carbon::parse($validated['dob']);
+
+        $updateData = [
+            'name'   => $validated['name'],
+            'email'  => $validated['email'],
+            'mobile' => $validated['mobile'],
+            'dob'    => $dob,
+            'sex'    => $validated['sex'],
+        ];
+
+        if (!empty($validated['password'])) {
+            $updateData['password'] = Hash::make($validated['password']);
+        }
+
+        $player->update($updateData);
+
+        // Send email notification on update.
+        $this->sendPlayerEmailNotification($player, 'updated', auth()->user());
+
         return response()->json([
-            'success' => false, 
-            'message' => 'Player not found'
-        ], 404);
+            'success' => true,
+            'player'  => [
+                'uid'    => $player->uid,
+                'name'   => $player->name,
+                'email'  => $player->email,
+                'mobile' => $player->mobile,
+                'dob'    => $player->dob->format('Y-m-d'),
+                'sex'    => $player->sex,
+            ],
+        ]);
     }
-
-    $validated = $request->validate([
-        'name'   => 'required|string|max:255',
-        'email'  => 'required|email|max:255|unique:players,email,' . $player->id,
-        'mobile' => 'required|string|max:15|unique:players,mobile,' . $player->id,
-        'dob'    => 'required|date',
-        'sex'    => 'required|in:M,F',
-        'password' => 'nullable|min:6', // Optional on update
-    ]);
-
-    $dob = \Carbon\Carbon::parse($validated['dob']);
-
-    $updateData = [
-        'name'   => $validated['name'],
-        'email'  => $validated['email'],
-        'mobile' => $validated['mobile'],
-        'dob'    => $dob,
-        'sex'    => $validated['sex'],
-    ];
-
-    if (!empty($validated['password'])) {
-        $updateData['password'] = Hash::make($validated['password']);
-    }
-
-    $player->update($updateData);
-
-    // Return the updated player data with formatted dob
-    return response()->json([
-        'success' => true,
-        'player' => [
-            'uid'   => $player->uid,
-            'name'  => $player->name,
-            'email' => $player->email,
-            'mobile'=> $player->mobile,
-            'dob'   => $player->dob->format('Y-m-d'),
-            'sex'   => $player->sex,
-            // include any other fields you need
-        ],
-    ]);
-}
-
 
     /**
      * Delete a player via AJAX.
@@ -193,20 +194,20 @@ class PlayerController extends Controller
 
     /**
      * Send email notification on player creation or update.
+     *
+     * @param Player $player
+     * @param string $action ('registered' or 'updated')
+     * @param mixed  $modifiedBy
      */
     private function sendPlayerEmailNotification($player, $action, $modifiedBy)
     {
         $adminEmail = "xpindia@gmail.com";
-        $creatorEmail = auth()->user()->email ?? null;
-        $modifierEmail = $modifiedBy->email ?? null;
-        $newPlayerEmail = $player->email ?? null;
+        $initiatorEmail = auth()->user()->email ?? null;
+        $playerEmail = $player->email;
 
-        $recipients = array_filter([$creatorEmail, $modifierEmail, $adminEmail, $newPlayerEmail]);
+        // Create a unique array of recipients
+        $recipients = array_unique(array_filter([$adminEmail, $initiatorEmail, $playerEmail]));
 
-        if (!empty($recipients)) {
-            Mail::to($modifierEmail)
-                ->cc($recipients)
-                ->send(new PlayerNotification($player, $action, $modifiedBy->username));
-        }
+        Mail::to($recipients)->send(new PlayerNotification($player, $action, $modifiedBy->username));
     }
 }
