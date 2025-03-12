@@ -23,7 +23,9 @@
             </thead>
             <tbody>
                 @foreach ($favorites->where('favoritable_type', 'App\Models\Tournament') as $favorite)
-                    @php $tournament = \App\Models\Tournament::find($favorite->favoritable_id); @endphp
+                    @php 
+                        $tournament = \App\Models\Tournament::find($favorite->favoritable_id); 
+                    @endphp
                     @if($tournament)
                         <tr>
                             <td>{{ $tournament->id }}</td>
@@ -42,7 +44,7 @@
             </tbody>
         </table>
 
-        <!-- Pinned Singles Matches -->
+        <!-- Pinned Singles Matches (if category contains 'BS' or 'GS') -->
         <h4 class="mt-4">Pinned Singles Matches</h4>
         <table class="table table-bordered">
             <thead class="table-dark">
@@ -67,7 +69,7 @@
                         $match = \App\Models\Matches::find($favorite->favoritable_id); 
                         $categoryName = $match ? optional($match->category)->name ?? '' : ''; 
                     @endphp
-                    @if($match && !preg_match('/\b(BD|GD|XD)\b/', $categoryName))
+                    @if($match && (stripos($categoryName, 'BS') !== false || stripos($categoryName, 'GS') !== false))
                         <tr>
                             <td>{{ $match->id }}</td>
                             <td>{{ optional($match->tournament)->name ?? 'N/A' }}</td>
@@ -82,7 +84,9 @@
                             <td>{{ $match->set3_player1_points ?? '0' }} - {{ $match->set3_player2_points ?? '0' }}</td>
                             <td>
                                 @php
-                                    $winner = ($match->player1_score > $match->player2_score) ? optional($match->player1)->name : optional($match->player2)->name;
+                                    $winner = ($match->player1_score > $match->player2_score) 
+                                        ? optional($match->player1)->name 
+                                        : optional($match->player2)->name;
                                 @endphp
                                 {{ $winner ?? 'N/A' }}
                             </td>
@@ -92,7 +96,7 @@
             </tbody>
         </table>
 
-        <!-- Pinned Doubles Matches -->
+        <!-- Pinned Doubles Matches (if category contains 'GD', 'BD' or 'XD') -->
         <h4 class="mt-4">Pinned Doubles Matches</h4>
         <table class="table table-bordered">
             <thead class="table-dark">
@@ -117,7 +121,7 @@
                         $match = \App\Models\Matches::find($favorite->favoritable_id); 
                         $categoryName = $match ? optional($match->category)->name ?? '' : ''; 
                     @endphp
-                    @if($match && preg_match('/\b(BD|GD|XD)\b/', $categoryName))
+                    @if($match && (stripos($categoryName, 'GD') !== false || stripos($categoryName, 'BD') !== false || stripos($categoryName, 'XD') !== false))
                         @php
                             // Fetch team players
                             $team1_player1 = optional(\App\Models\Player::find($match->team1_player1_id))->name ?? 'N/A';
@@ -134,7 +138,9 @@
                                               ($match->set2_team2_points > $match->set2_team1_points ? 1 : 0) +
                                               ($match->set3_team2_points > $match->set3_team1_points ? 1 : 0);
 
-                            $winner = $team1_sets_won > $team2_sets_won ? "$team1_player1 & $team1_player2" : "$team2_player1 & $team2_player2";
+                            $winner = $team1_sets_won > $team2_sets_won 
+                                ? "$team1_player1 & $team1_player2" 
+                                : "$team2_player1 & $team2_player2";
                         @endphp
 
                         <tr>
@@ -150,6 +156,38 @@
                             <td>{{ $match->set2_team1_points }} - {{ $match->set2_team2_points }}</td>
                             <td>{{ $match->set3_team1_points }} - {{ $match->set3_team2_points }}</td>
                             <td>{{ $winner ?? 'N/A' }}</td>
+                        </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+
+        <!-- Pinned Players -->
+        <h4 class="mt-4">Pinned Players</h4>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Player Name</th>
+                    <th>Age</th>
+                    <th>Sex</th>
+                    <th>UID</th>
+                    <th>Date Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($favorites->where('favoritable_type', 'App\Models\Player') as $favorite)
+                    @php 
+                        $player = \App\Models\Player::find($favorite->favoritable_id);
+                    @endphp
+                    @if($player)
+                        <tr>
+                            <td>{{ $player->id }}</td>
+                            <td>{{ $player->name }}</td>
+                            <td>{{ $player->age ?? 'N/A' }}</td>
+                            <td>{{ $player->sex ?? 'N/A' }}</td>
+                            <td>{{ $player->uid ?? 'N/A' }}</td>
+                            <td>{{ $player->date_joined ?? $player->created_at ?? 'N/A' }}</td>
                         </tr>
                     @endif
                 @endforeach
