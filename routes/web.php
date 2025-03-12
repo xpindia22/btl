@@ -64,6 +64,7 @@ Route::get('/players/doubles-ranking', [PlayerController::class, 'doublesRanking
 
     // Player listing
     Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
+    Route::get('/players/{uid}/edit', [PlayerController::class, 'edit'])->name('players.edit');
 
     // Player CRUD operations (edit, update, delete)
     Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');

@@ -9,20 +9,32 @@ class Player extends Model
 {
     use HasFactory;
 
-    // If you are not using timestamps for updated_at, you can disable them
+    // Disable timestamps if you're not using them
     public $timestamps = false;
 
+    protected $fillable = [
+        'uid',
+        'name',
+        'email',
+        'mobile',
+        'dob',
+        'sex',
+        'ip_address',
+        'password',
+    ];
 
-    protected $fillable = ['uid', 'name', 'email', 'dob', 'sex'];
+    // Cast the dob field to a date instance (Carbon)
+    protected $casts = [
+        'dob' => 'date',
+    ];
 
-public function favorites()
-{
-    return $this->morphMany(Favorite::class, 'favoritable');
-}
+    public function favorites()
+    {
+        return $this->morphMany(Favorite::class, 'favoritable');
+    }
 
-public function isFavoritedByUser($userId)
-{
-    return $this->favorites()->where('user_id', $userId)->exists();
-}
-
+    public function isFavoritedByUser($userId)
+    {
+        return $this->favorites()->where('user_id', $userId)->exists();
+    }
 }

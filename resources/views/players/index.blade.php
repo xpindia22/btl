@@ -24,8 +24,8 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $player->uid }}</td>
                         <td>{{ $player->name }}</td>
-                        <td>{{ $player->dob }}</td>
-                        <td>{{ $player->age }}</td>
+                        <td>{{ \Carbon\Carbon::parse($player->dob)->format('Y-m-d') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($player->dob)->age }}</td>
                         <td>{{ $player->sex }}</td>
                         <td>{{ date("d-m-Y h:i A", strtotime($player->created_at)) }}</td>
                         <td>
@@ -44,46 +44,8 @@
     </div>
 
     {{-- Pagination --}}
-{{-- Pagination --}}
-<div class="d-flex justify-content-center">
-    {{ $players->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
+    <div class="d-flex justify-content-center">
+        {{ $players->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
+    </div>
 </div>
-
-</div>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".favorite-btn").forEach(button => {
-            button.addEventListener("click", function (event) {
-                event.preventDefault();
-
-                let buttonElement = this;
-                let form = buttonElement.closest(".favorite-form");
-                let itemId = form.dataset.id;
-                let itemType = form.dataset.type;
-                let token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
-
-                fetch("{{ route('favorites.toggle') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": token
-                    },
-                    body: JSON.stringify({
-                        favoritable_id: itemId,
-                        favoritable_type: itemType
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    buttonElement.classList.toggle("btn-success", data.status === "pinned");
-                    buttonElement.classList.toggle("btn-primary", data.status === "unpinned");
-                    buttonElement.innerHTML = data.status === "pinned" ? "⭐ Pinned" : "📌 Pin";
-                })
-                .catch(error => console.error("Error:", error));
-            });
-        });
-    });
-</script>
 @endsection

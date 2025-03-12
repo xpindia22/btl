@@ -11,6 +11,7 @@
                 <th>UID</th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Mobile</th>
                 <th>DOB</th>
                 <th>Age</th>
                 <th>Sex</th>
@@ -24,7 +25,8 @@
                 <td class="editable" data-field="uid">{{ $player->uid }}</td>
                 <td class="editable" data-field="name">{{ $player->name }}</td>
                 <td class="editable" data-field="email">{{ $player->email }}</td>
-                <td class="editable" data-field="dob">{{ $player->dob }}</td>
+                <td class="editable" data-field="mobile">{{ $player->mobile }}</td>
+                <td class="editable" data-field="dob">{{ \Carbon\Carbon::parse($player->dob)->format('Y-m-d') }}</td>
                 <td class="age">{{ \Carbon\Carbon::parse($player->dob)->age }}</td>
                 <td class="editable" data-field="sex">{{ $player->sex }}</td>
                 <td>
