@@ -43,25 +43,10 @@
     </div>
 </div>
 
-{{-- Include SweetAlert2 --}}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const csrfToken = '{{ csrf_token() }}';
     const baseUrl = "{{ url('players') }}";
-
-    // Function to show SweetAlert2 notifications
-    function showNotification(type, message) {
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: type,
-            title: message,
-            showConfirmButton: false,
-            timer: 3000
-        });
-    }
 
     // Turn table cells into input fields for editing
     document.querySelectorAll(".edit-btn").forEach(button => {
@@ -113,14 +98,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     row.querySelector(".age").textContent = newAge;
                     row.querySelector(".edit-btn").style.display = "inline-block";
                     row.querySelector(".save-btn").style.display = "none";
-                    showNotification("success", "Player updated successfully!");
+                    alert("Player updated successfully!");
                 } else {
-                    showNotification("error", "Update failed: " + responseData.message);
+                    alert("Update failed: " + responseData.message);
                 }
             })
             .catch(error => {
                 console.error("Error updating player:", error);
-                showNotification("error", "An error occurred while updating.");
+                alert("An error occurred while updating: " + (error.message || error));
             });
         });
     });
@@ -131,38 +116,27 @@ document.addEventListener("DOMContentLoaded", function () {
             let row = this.closest("tr");
             let uid = row.dataset.uid;
 
-            Swal.fire({
-                title: "Are you sure?",
-                text: "This player will be permanently deleted!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, delete it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`${baseUrl}/${uid}/delete`, {
-                        method: "DELETE",
-                        headers: {
-                            "Accept": "application/json",
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": csrfToken
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(responseData => {
-                        if (responseData.success) {
-                            row.remove();
-                            showNotification("success", "Player deleted successfully!");
-                        } else {
-                            showNotification("error", "Delete failed: " + responseData.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error deleting player:", error);
-                        showNotification("error", "An error occurred while deleting.");
-                    });
+            if (!confirm("Are you sure you want to delete this player?")) return;
+
+            fetch(`${baseUrl}/${uid}/delete`, {
+                method: "DELETE",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken
                 }
+            })
+            .then(response => response.json())
+            .then(responseData => {
+                if (responseData.success) {
+                    row.remove();
+                } else {
+                    alert("Delete failed: " + responseData.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error deleting player:", error);
+                alert("An error occurred while deleting: " + (error.message || error));
             });
         });
     });

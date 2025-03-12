@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Player;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Hash; // ✅ Ensure this line is correct
+ 
+
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use App\Models\Tournament;
-use App\Models\Category;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PlayerNotification;
 
 class PlayerController extends Controller
 {
@@ -26,75 +27,83 @@ class PlayerController extends Controller
         return $this->index();
     }
 
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'dob' => 'required|date',
-            'sex' => 'required|string',
-            'password' => 'required|string|min:6',
-        ]);
+    use Illuminate\Support\Facades\Hash;
 
-        $dob = Carbon::parse($request->dob);
-        $age = $dob->diffInYears(Carbon::now());
-        $uid = $this->getNextAvailableUid();
+public function register(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:players,email|max:255',
+        'mobile' => 'required|string|max:15|unique:players,mobile',
+        'dob' => 'required|date',
+        'sex' => 'required|in:M,F',
+        'password' => 'required|min:6',
+    ]);
 
-        Player::create([
-            'uid' => $uid,
-            'name' => $request->name,
-            'dob' => $dob,
-            'sex' => $request->sex,
-            'password' => Hash::make($request->password),
-            'age' => $age,
-            'ip_address' => $request->ip(),
-        ]);
+    $uid = $this->getNextAvailableUid();
+    $dob = Carbon::parse($validated['dob']);
 
-        return redirect()->route('players.index')->with('success', 'Player registered successfully!');
-    }
+    // Ensure password is hashed and included
+    $player = Player::create([
+        'uid' => $uid,
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'mobile' => $validated['mobile'],
+        'dob' => $dob,
+        'sex' => $validated['sex'],
+        'password' => Hash::make($validated['password']), // ✅ Hash password
+        'ip_address' => $request->ip(),
+    ]);
+
+    return redirect()->route('players.index')->with('success', 'Player registered successfully!');
+}
 
     public function create()
     {
         $nextUid = $this->getNextAvailableUid();
-        $players = Player::orderBy('created_at', 'desc')->get();
-        return view('players.register', compact('nextUid', 'players'));
+        return view('players.register', compact('nextUid'));
     }
 
     public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:players,email|max:255',
+        'mobile' => 'required|string|max:15|unique:players,mobile',
+        'dob' => 'required|date',
+        'sex' => 'required|in:M,F',
+        'password' => 'required|min:6', // Ensure password is required
+    ]);
+
+    $uid = $this->getNextAvailableUid();
+    $dob = Carbon::parse($validated['dob']);
+
+    $player = Player::create([
+        'uid' => $uid,
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'mobile' => $validated['mobile'],
+        'dob' => $dob,
+        'sex' => $validated['sex'],
+        'password' => Hash::make($validated['password']), // Ensure password is hashed
+        'ip_address' => $request->ip(),
+    ]);
+
+    return redirect()->route('players.index')->with('success', 'Player registered successfully!');
+}
+
+    public function edit($uid)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'dob' => 'required|date',
-            'sex' => 'required|in:M,F',
-            'password' => 'required|min:6',
-        ]);
-
-        $uid = $this->getNextAvailableUid();
-        $dob = Carbon::parse($validated['dob']);
-        $age = $dob->diffInYears(Carbon::now());
-
-        Player::create([
-            'uid' => $uid,
-            'name' => $validated['name'],
-            'dob' => $dob,
-            'sex' => $validated['sex'],
-            'password' => Hash::make($validated['password']),
-            'age' => $age,
-            'ip_address' => request()->ip(),
-        ]);
-
-        return redirect()->route('players.index')->with('success', 'Player registered successfully!');
+        $player = Player::where('uid', $uid)->first();
+        if (!$player) {
+            return redirect()->route('players.index')->with('error', 'Player not found.');
+        }
+        return view('players.edit', compact('player'));
     }
 
-    // ✅ Fix edit function to show all players in a table for inline editing
-    public function edit()
-    {
-        $players = Player::orderBy('uid', 'desc')->get();
-        return view('players.edit', compact('players'));
-    }
-
-    // ✅ Fix update function for inline editing
     public function update(Request $request, $uid)
     {
+        // Validate the request data
         $player = Player::where('uid', $uid)->first();
         if (!$player) {
             return response()->json([
@@ -102,22 +111,44 @@ class PlayerController extends Controller
                 'message' => 'Player not found'
             ], 404);
         }
-    
-        // Optionally, validate the input
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'dob'  => 'required|date',
-            'sex'  => 'required|string'
+            'email' => 'required|email|max:255|unique:players,email,' . $player->id,
+            'mobile' => 'required|string|max:15|unique:players,mobile,' . $player->id,
+            'dob' => 'required|date',
+            'sex' => 'required|string|max:10',
+            'password' => 'nullable|min:6', // Password is optional in update
         ]);
-    
-        $player->update($validated);
-    
+
+        // Calculate age from DOB
+        $dob = Carbon::parse($validated['dob']);
+
+        // Update the player record
+        $updateData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'mobile' => $validated['mobile'],
+            'dob' => $dob,
+            'sex' => $validated['sex'],
+        ];
+
+        // Check if password was provided, and hash it
+        if (!empty($validated['password'])) {
+            $updateData['password'] = Hash::make($validated['password']);
+        }
+
+        $player->update($updateData);
+
+        // Send email notification on player update
+        $this->sendPlayerEmailNotification($player, 'updated', auth()->user());
+
         return response()->json([
             'success' => true,
             'player' => $player
         ]);
     }
-    
+
     public function destroy($uid)
     {
         $player = Player::where('uid', $uid)->firstOrFail();
@@ -128,146 +159,27 @@ class PlayerController extends Controller
 
     private function getNextAvailableUid()
     {
-        $usedUids = Player::orderBy('uid')->pluck('uid')->toArray();
-        $nextUid = 100001;
-
-        while (in_array($nextUid, $usedUids)) {
-            $nextUid++;
-        }
-
-        return $nextUid;
+        // Get the highest existing UID and increment it
+        $maxUid = Player::max('uid');
+        return $maxUid ? $maxUid + 1 : 100001;
     }
-    
-    // Updated singles ranking method with pagination
-    public function ranking(Request $request)
+
+    /**
+     * Send email notification on player creation or update.
+     */
+    private function sendPlayerEmailNotification($player, $action, $modifiedBy)
     {
-        $selectedTournament = $request->input('tournament_id');
-        $selectedCategory = $request->input('category_id');
-        $selectedPlayer = $request->input('player_id');
-        $selectedDate = $request->input('date');
-    
-        $query = Player::select(
-                'players.id',
-                'players.uid',
-                'players.name',
-                'players.age',
-                'players.sex',
-                'categories.name as category_name',
-                DB::raw('COUNT(matches.id) as matches_played'),
-                DB::raw('COALESCE(SUM(
-                    CASE
-                        WHEN matches.player1_id = players.id THEN matches.set1_player1_points + matches.set2_player1_points + matches.set3_player1_points
-                        WHEN matches.player2_id = players.id THEN matches.set1_player2_points + matches.set2_player2_points + matches.set3_player2_points
-                        ELSE 0
-                    END
-                ), 0) as total_points')
-            )
-            ->leftJoin('matches', function($join) {
-                $join->on('players.id', '=', 'matches.player1_id')
-                    ->orOn('players.id', '=', 'matches.player2_id');
-            })
-            ->leftJoin('categories', 'players.category_id', '=', 'categories.id')
-            ->groupBy('players.id', 'players.uid', 'players.name', 'players.age', 'players.sex', 'categories.name')
-            ->orderByDesc('total_points');
-    
-        if ($selectedTournament) {
-            $query->where('matches.tournament_id', $selectedTournament);
+        $adminEmail = "xpindia@gmail.com";
+        $creatorEmail = auth()->user()->email ?? null;
+        $modifierEmail = $modifiedBy->email ?? null;
+        $newPlayerEmail = $player->email ?? null;
+
+        $recipients = array_filter([$creatorEmail, $modifierEmail, $adminEmail, $newPlayerEmail]);
+
+        if (!empty($recipients)) {
+            Mail::to($modifierEmail)
+                ->cc($recipients)
+                ->send(new PlayerNotification($player, $action, $modifiedBy->username));
         }
-    
-        if ($selectedCategory) {
-            $query->where('matches.category_id', $selectedCategory);
-        }
-    
-        if ($selectedPlayer) {
-            $query->where('players.id', $selectedPlayer);
-        }
-    
-        if ($selectedDate) {
-            $query->whereDate('matches.match_date', $selectedDate);
-        }
-    
-        // Paginate the results (10 per page)
-        $rankings = $query->paginate(10);
-        // Compute an offset based on current page for continuous ranking
-        $offset = ($rankings->currentPage() - 1) * $rankings->perPage();
-        $rankings->getCollection()->transform(function($player, $index) use ($offset) {
-            $player->ranking = $offset + $index + 1;
-            return $player;
-        });
-    
-        return view('players.players_ranking', [
-            'rankings' => $rankings,
-            'playersList' => Player::orderBy('name')->get(),
-            'tournaments' => Tournament::orderBy('name')->get(),
-            'categories' => Category::orderBy('name')->get(),
-        ]);
-    }
-    
-    // Updated doubles ranking method with pagination
-    public function doublesRanking(Request $request)
-    {
-        $selectedTournament = $request->input('tournament_id');
-        $selectedCategory = $request->input('category_id');
-        $selectedPlayer = $request->input('player_id');
-        $selectedDate = $request->input('date');
-    
-        $tournaments = Tournament::orderBy('name')->get();
-    
-        $categories = Category::query()
-            ->where('name', 'LIKE', '%BD%')
-            ->orWhere('name', 'LIKE', '%GD%')
-            ->orWhere('name', 'LIKE', '%XD%')
-            ->orderBy('name')
-            ->get();
-    
-        $playersList = Player::orderBy('name')->get();
-    
-        $query = DB::table('matches')
-            ->select(
-                'categories.name as category_name',
-                DB::raw("CONCAT(p1.name, ' / ', p2.name) as team_name"),
-                DB::raw('COUNT(matches.id) as matches_played'),
-                DB::raw('SUM(matches.set1_team1_points + matches.set2_team1_points + matches.set3_team1_points) as total_points')
-            )
-            ->join('categories', 'matches.category_id', '=', 'categories.id')
-            ->join('players as p1', 'matches.team1_player1_id', '=', 'p1.id')
-            ->join('players as p2', 'matches.team1_player2_id', '=', 'p2.id')
-            ->join('tournaments', 'matches.tournament_id', '=', 'tournaments.id');
-    
-        if ($selectedTournament) {
-            $query->where('matches.tournament_id', $selectedTournament);
-        }
-    
-        if ($selectedCategory) {
-            $query->where('matches.category_id', $selectedCategory);
-        }
-    
-        if ($selectedPlayer) {
-            $query->where(function ($query) use ($selectedPlayer) {
-                $query->where('matches.team1_player1_id', $selectedPlayer)
-                      ->orWhere('matches.team1_player2_id', $selectedPlayer)
-                      ->orWhere('matches.team2_player1_id', $selectedPlayer)
-                      ->orWhere('matches.team2_player2_id', $selectedPlayer);
-            });
-        }
-    
-        if ($selectedDate) {
-            $query->whereDate('matches.match_date', $selectedDate);
-        }
-    
-        // Paginate the results (10 per page)
-        $rankings = $query->groupBy('team_name', 'categories.name')
-                          ->orderBy('categories.name')
-                          ->orderByDesc('total_points')
-                          ->paginate(10);
-    
-        // Optionally, add ranking numbers for doubles
-        $offset = ($rankings->currentPage() - 1) * $rankings->perPage();
-        $rankings->getCollection()->transform(function ($item, $index) use ($offset) {
-            $item->ranking = $offset + $index + 1;
-            return $item;
-        });
-    
-        return view('players.doubles_ranking', compact('rankings', 'tournaments', 'categories', 'playersList'));
     }
 }

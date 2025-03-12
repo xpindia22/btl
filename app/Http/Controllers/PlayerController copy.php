@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Tournament;
 use App\Models\Category;
 
-
-
-
 class PlayerController extends Controller
 {
     public function index()
@@ -91,13 +88,15 @@ class PlayerController extends Controller
     // ✅ Fix edit function to show all players in a table for inline editing
     public function edit()
     {
-        $players = Player::orderBy('uid', 'desc')->get();
+        $players = Player::paginate(10); // Ensure pagination is enabled
         return view('players.edit', compact('players'));
     }
+    
 
     // ✅ Fix update function for inline editing
     public function update(Request $request, $uid)
     {
+        // Find the player by UID
         $player = Player::where('uid', $uid)->first();
         if (!$player) {
             return response()->json([
@@ -106,23 +105,24 @@ class PlayerController extends Controller
             ], 404);
         }
     
-        // Optionally, validate the input
+        // Validate input, including email
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'dob'  => 'required|date',
-            'sex'  => 'required|string'
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|max:255', // Added email validation
+            'dob'   => 'required|date',
+            'sex'   => 'required|string|max:10',
         ]);
     
+        // Update the player record
         $player->update($validated);
     
         return response()->json([
             'success' => true,
-            'player' => $player
+            'player'  => $player
         ]);
     }
     
-
-
+    
     public function destroy($uid)
     {
         $player = Player::where('uid', $uid)->firstOrFail();
@@ -143,6 +143,7 @@ class PlayerController extends Controller
         return $nextUid;
     }
     
+    // Updated singles ranking method with pagination
     public function ranking(Request $request)
     {
         $selectedTournament = $request->input('tournament_id');
@@ -190,8 +191,12 @@ class PlayerController extends Controller
             $query->whereDate('matches.match_date', $selectedDate);
         }
     
-        $rankings = $query->get()->map(function($player, $index) {
-            $player->ranking = $index + 1;
+        // Paginate the results (10 per page)
+        $rankings = $query->paginate(10);
+        // Compute an offset based on current page for continuous ranking
+        $offset = ($rankings->currentPage() - 1) * $rankings->perPage();
+        $rankings->getCollection()->transform(function($player, $index) use ($offset) {
+            $player->ranking = $offset + $index + 1;
             return $player;
         });
     
@@ -203,6 +208,7 @@ class PlayerController extends Controller
         ]);
     }
     
+    // Updated doubles ranking method with pagination
     public function doublesRanking(Request $request)
     {
         $selectedTournament = $request->input('tournament_id');
@@ -254,12 +260,19 @@ class PlayerController extends Controller
             $query->whereDate('matches.match_date', $selectedDate);
         }
     
+        // Paginate the results (10 per page)
         $rankings = $query->groupBy('team_name', 'categories.name')
                           ->orderBy('categories.name')
                           ->orderByDesc('total_points')
-                          ->get();
+                          ->paginate(10);
+    
+        // Optionally, add ranking numbers for doubles
+        $offset = ($rankings->currentPage() - 1) * $rankings->perPage();
+        $rankings->getCollection()->transform(function ($item, $index) use ($offset) {
+            $item->ranking = $offset + $index + 1;
+            return $item;
+        });
     
         return view('players.doubles_ranking', compact('rankings', 'tournaments', 'categories', 'playersList'));
     }
-    
-    }
+}

@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('content')
@@ -38,6 +37,24 @@
             <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" 
                    value="{{ old('name') }}" required>
             @error('name')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" 
+                   value="{{ old('email') }}" required>
+            @error('email')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="mobile">Mobile Number:</label>
+            <input type="text" name="mobile" id="mobile" class="form-control @error('mobile') is-invalid @enderror" 
+                   value="{{ old('mobile') }}" required>
+            @error('mobile')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>

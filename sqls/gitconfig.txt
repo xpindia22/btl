@@ -1,0 +1,2 @@
+git config --global alias.bbb "branch -v --sort=-committerdate --format='%(color:yellow)%(refname:short)%(color:reset) | %(color:green)%(committerdate:format:%Y-%m-%d %I:%M %p)%(color:reset) | %(color:cyan)%(authorname)%(color:reset) | %(color:magenta)%(subject)%(color:reset)'"
+

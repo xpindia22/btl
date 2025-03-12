@@ -532,6 +532,7 @@ class ComposerStaticInitc48ad68828797abd55f721d8cceec781
     );
 
     public static $classMap = array (
+        'App\\Console\\Kernel' => __DIR__ . '/../..' . '/app/Console/Kernel.php',
         'App\\Http\\Controllers\\AdminController' => __DIR__ . '/../..' . '/app/Http/Controllers/AdminController.php',
         'App\\Http\\Controllers\\AdminPasswordResetController' => __DIR__ . '/../..' . '/app/Http/Controllers/AdminPasswordResetController.php',
         'App\\Http\\Controllers\\Auth\\ConfirmPasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ConfirmPasswordController.php',
@@ -555,7 +556,12 @@ class ComposerStaticInitc48ad68828797abd55f721d8cceec781
         'App\\Http\\Middleware\\AdminMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/AdminMiddleware.php',
         'App\\Http\\Middleware\\AdminSecondaryAuth' => __DIR__ . '/../..' . '/app/Http/Middleware/AdminSecondaryAuth.php',
         'App\\Http\\Middleware\\RoleMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/RoleMiddleware.php',
+        'App\\Mail\\MatchCreatedMail' => __DIR__ . '/../..' . '/app/Mail/MatchCreatedMail.php',
+        'App\\Mail\\MatchPinnedNotification' => __DIR__ . '/../..' . '/app/Mail/MatchPinnedNotification.php',
+        'App\\Mail\\MatchUpdatedNotification' => __DIR__ . '/../..' . '/app/Mail/MatchUpdatedNotification.php',
         'App\\Mail\\PasswordResetSuccessMail' => __DIR__ . '/../..' . '/app/Mail/PasswordResetSuccessMail.php',
+        'App\\Mail\\PlayerNotification' => __DIR__ . '/../..' . '/app/Mail/PlayerNotification.php',
+        'App\\Mail\\PlayerPinnedNotification' => __DIR__ . '/../..' . '/app/Mail/PlayerPinnedNotification.php',
         'App\\Mail\\ResetPasswordMail' => __DIR__ . '/../..' . '/app/Mail/ResetPasswordMail.php',
         'App\\Models\\Category' => __DIR__ . '/../..' . '/app/Models/Category.php',
         'App\\Models\\Favorite' => __DIR__ . '/../..' . '/app/Models/Favorite.php',
@@ -565,8 +571,10 @@ class ComposerStaticInitc48ad68828797abd55f721d8cceec781
         'App\\Models\\Tournament' => __DIR__ . '/../..' . '/app/Models/Tournament.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
         'App\\Observers\\PlayerObserver' => __DIR__ . '/../..' . '/app/Observers/PlayerObserver.php',
+        'App\\Policies\\TournamentPolicy' => __DIR__ . '/../..' . '/app/Policies/TournamentPolicy.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Providers\\AuthServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AuthServiceProvider.php',
+        'App\\Services\\MatchNotificationService' => __DIR__ . '/../..' . '/app/Services/MatchNotificationService.php',
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Brick\\Math\\BigDecimal' => __DIR__ . '/..' . '/brick/math/src/BigDecimal.php',
         'Brick\\Math\\BigInteger' => __DIR__ . '/..' . '/brick/math/src/BigInteger.php',
