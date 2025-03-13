@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Favorite;
 use App\Models\Matches;
 use App\Models\Player;
+use App\Models\Tournament;
 use App\Mail\MatchPinnedNotification;
 use App\Mail\PlayerPinnedNotification;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class FavoriteController extends Controller
     public function toggle(Request $request)
     {
         \Log::info('🔍 Favorite toggle request:', $request->all());
-    
+
         if (!Auth::check()) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
@@ -25,11 +26,11 @@ class FavoriteController extends Controller
             'favoritable_id'   => 'required|integer',
             'favoritable_type' => 'required|in:App\\Models\\Tournament,App\\Models\\Matches,App\\Models\\Category,App\\Models\\Player'
         ]);
-    
+
         \Log::info('✅ Validation Passed:', $validated);
-    
+
         $user = Auth::user();
-    
+
         $existingFavorite = Favorite::where([
             'user_id'           => $user->id,
             'favoritable_id'    => $validated['favoritable_id'],
@@ -70,12 +71,16 @@ class FavoriteController extends Controller
     }
 
     public function index()
-    {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'You must be logged in to view favorites.');
-        }
-    
-        $favorites = Auth::user()->favorites()->get();
-        return view('dashboard.favorites', compact('favorites'));
+{
+    if (!Auth::check()) {
+        return redirect()->route('login')->with('error', 'You must be logged in to view favorites.');
     }
+
+    $favorites = Auth::user()->favorites()
+        ->orderByDesc('favoritable_id') // Sort by favoritable_id instead of the favorite table's id
+        ->get();
+
+    return view('dashboard.favorites', compact('favorites'));
+}
+
 }

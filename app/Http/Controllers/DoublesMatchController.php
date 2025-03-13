@@ -429,75 +429,45 @@ class DoublesMatchController extends Controller
     }
 
     // ----------------------------------------
- // ----------------------------------------
     // 8) Update (PUT)
     // ----------------------------------------
     public function update(Request $request, $matchId)
-    {
-        Log::info("Doubles update called for match ID: " . $matchId);
-        
-        $data = $request->validate([
-            'stage'              => 'required|string',
-            'match_date'         => 'required|date',
-            'match_time'         => 'required',
-            'set1_team1_points'  => 'nullable|numeric',
-            'set1_team2_points'  => 'nullable|numeric',
-            'set2_team1_points'  => 'nullable|numeric',
-            'set2_team2_points'  => 'nullable|numeric',
-            'set3_team1_points'  => 'nullable|numeric',
-            'set3_team2_points'  => 'nullable|numeric'
+{
+    Log::info("Doubles update called for match ID: " . $matchId);
+    
+    $data = $request->validate([
+        'stage'              => 'required|string',
+        'match_date'         => 'required|date',
+        'match_time'         => 'required',
+        'set1_team1_points'  => 'nullable|numeric',
+        'set1_team2_points'  => 'nullable|numeric',
+        'set2_team1_points'  => 'nullable|numeric',
+        'set2_team2_points'  => 'nullable|numeric',
+        'set3_team1_points'  => 'nullable|numeric',
+        'set3_team2_points'  => 'nullable|numeric',
+        'moderator'          => 'nullable|string',
+        'creator'            => 'nullable|string',
+    ]);
+
+    Log::info("Data received:", $data);
+
+    $match = Matches::findOrFail($matchId);
+    Log::info("Match before update:", $match->toArray());
+
+    $match->update($data);
+    $updatedMatch = $match->fresh();
+
+    Log::info("Match after update:", $updatedMatch->toArray());
+    
+    if ($request->expectsJson()) {
+        return response()->json([
+            'message' => 'Match updated successfully.',
+            'match'   => $updatedMatch
         ]);
-
-        Log::info("Data received:", $data);
-
-        $match = Matches::findOrFail($matchId);
-        Log::info("Match before update:", $match->toArray());
-
-        $match->update($data);
-        $updatedMatch = $match->fresh();
-
-        Log::info("Match after update:", $updatedMatch->toArray());
-
-        // Load necessary relationships for email content
-        $updatedMatch->load([
-            'tournament', 
-            'category', 
-            'team1Player1', 
-            'team1Player2', 
-            'team2Player1', 
-            'team2Player2', 
-            'createdBy'
-        ]);
-
-        // Prepare email recipients:
-        $creatorEmail = $updatedMatch->createdBy->email ?? null;
-        $playerEmails = collect([
-            $updatedMatch->team1Player1,
-            $updatedMatch->team1Player2,
-            $updatedMatch->team2Player1,
-            $updatedMatch->team2Player2,
-        ])->filter()->pluck('email')->toArray();
-        $adminEmail = 'xpindia@gmail.com';
-        $recipients = array_filter(array_unique(array_merge([$creatorEmail], $playerEmails, [$adminEmail])));
-
-        if (!empty($recipients)) {
-            Log::info('Sending doubles match update email to recipients:', $recipients);
-            Mail::to($recipients)->send(new MatchCreatedMail($updatedMatch));
-            Log::info('Doubles match update email sent.');
-        } else {
-            Log::warning('No valid email recipients found for match update.');
-        }
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'message' => 'Match updated successfully.',
-                'match'   => $updatedMatch
-            ]);
-        }
-        
-        return redirect()->route('matches.doubles.edit')->with('success', 'Match updated successfully.');
     }
-
+    
+    return redirect()->route('matches.doubles.edit')->with('success', 'Match updated successfully.');
+}
 
 
     // ----------------------------------------
