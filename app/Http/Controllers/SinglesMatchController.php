@@ -158,7 +158,6 @@ class SinglesMatchController extends Controller
             $query->where('stage', $request->filter_stage);
         }
 
-        // Order by creation date descending so that newest match appears first.
         $matches = $query->orderBy('created_at', 'desc')->paginate(5);
 
         return view('matches.singles.index', compact('tournaments', 'players', 'matches'));
@@ -178,10 +177,10 @@ class SinglesMatchController extends Controller
             'set3_player1_points' => 'nullable|integer',
             'set3_player2_points' => 'nullable|integer',
         ]);
-    
-        $match = \App\Models\Matches::findOrFail($id);
+
+        $match = MatchModel::findOrFail($id);
         $match->update($validated);
-    
+
         // Send Email Notification about the Match Update
         try {
             $this->notificationService->sendMatchUpdatedNotification($match);
@@ -189,10 +188,10 @@ class SinglesMatchController extends Controller
         } catch (\Exception $e) {
             \Log::error("❌ Failed to send match update notification: " . $e->getMessage());
         }
-    
+
         return response()->json(['message' => 'Singles match updated successfully.']);
     }
-    
+
     // Delete Match
     public function delete($id)
     {
@@ -212,18 +211,13 @@ class SinglesMatchController extends Controller
                     })
                     ->orderBy('created_at', 'desc')
                     ->paginate(5);
-        
+
         return view('matches.singles.edit', compact('matches'));
     }
-    
+
     public function show($id)
     {
-        $match = \App\Models\Matches::find($id);
-
-        if (!$match) {
-            abort(404, 'Match not found');
-        }
-
+        $match = MatchModel::findOrFail($id);
         return view('matches.singles.show', compact('match'));
     }
 }
