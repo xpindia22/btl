@@ -164,118 +164,130 @@ public function updateUserInline(Request $request, $id)
 
     // ✅ Store User (Create New User & Send Emails)
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'username' => 'required|string|max:255|unique:users,username',
-            'email' => 'required|email|max:255|unique:users,email',
-            'dob' => 'required|date|before:today',
-            'sex' => 'required|in:Male,Female,Other',
-            'mobile_no' => 'nullable|digits:10',
-            'role' => 'required|in:admin,user,visitor,player',
-            'password' => 'required|min:8|confirmed',
-        ]);
-    
-        // ✅ Assign `created_by` to the logged-in user
-        $createdBy = Auth::id() ?? 1; // Default to admin ID 1 if no user is logged in
-    
-        // ✅ Create the new user WITHOUT logging them in
-        $user = User::create([
-            'username' => $validated['username'],
-            'email' => $validated['email'],
-            'dob' => $validated['dob'],
-            'sex' => $validated['sex'],
-            'mobile_no' => $validated['mobile_no'],
-            'role' => $validated['role'],
-            'password' => Hash::make($validated['password']),
-            'created_by' => $createdBy,
-        ]);
-    
-        // ✅ Send Email Notifications (Debugging enabled)
-        try {
-            Mail::to($user->email)
-                ->cc('xpindia@gmail.com')
-                ->send(new UserCreatedMail($user));
-    
-            \Log::info("User Created Email sent to: " . $user->email);
-        } catch (\Exception $e) {
-            \Log::error("Failed to send User Created Email: " . $e->getMessage());
-        }
-    
-        return redirect()->route('users.index')->with('success', 'User created successfully.');
+{
+    $validated = $request->validate([
+        'username' => 'required|string|max:255|unique:users,username',
+        'email' => 'required|email|max:255|unique:users,email',
+        'dob' => 'required|date|before:today',
+        'sex' => 'required|in:Male,Female,Other',
+        'mobile_no' => 'nullable|digits:10',
+        'role' => 'required|in:admin,user,visitor,player',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+    // ✅ Assign `created_by` to the logged-in user
+    $createdBy = Auth::id() ?? 1; // Default to admin ID 1 if no user is logged in
+
+    // ✅ Create the new user
+    $user = User::create([
+        'username' => $validated['username'],
+        'email' => $validated['email'],
+        'dob' => $validated['dob'],
+        'sex' => $validated['sex'],
+        'mobile_no' => $validated['mobile_no'],
+        'role' => $validated['role'],
+        'password' => Hash::make($validated['password']),
+        'created_by' => $createdBy,
+    ]);
+
+    // ✅ Send Email Notifications (To User & Admin)
+    try {
+        Mail::to($user->email)
+            ->cc('xpindia@gmail.com') // ✅ Admin always gets a copy
+            ->send(new UserCreatedMail($user, Auth::user()->username ?? 'Admin'));
+
+        \Log::info("User Created Email sent to: " . $user->email . " & Admin");
+    } catch (\Exception $e) {
+        \Log::error("Failed to send User Created Email: " . $e->getMessage());
     }
+
+    return redirect()->route('users.index')->with('success', 'User created successfully.');
+}
+
     
     // ✅ Update User & Send Emails
     
     public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-    
-        if (Auth::id() !== $user->id && !Auth::user()->isAdmin()) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized action.');
-        }
-    
-        $validated = $request->validate([
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'dob' => 'nullable|date|before:today', // ✅ Allow `dob` to be nullable
-            'sex' => 'required|in:Male,Female,Other',
-            'mobile_no' => 'nullable|digits:10',
-            'role' => 'required|in:admin,user,visitor,player',
-            'moderated_tournaments' => 'nullable|array',
-            'created_tournaments' => 'nullable|array',
-        ]);
-    
-        // ✅ Preserve original DOB if not provided
-        if (empty($validated['dob'])) {
-            $validated['dob'] = $user->dob;
-        }
-    
-        $originalData = $user->getOriginal();
-    
-        $user->update($validated);
-    
-        // ✅ Handle Tournament Assignments
-        $user->moderatedTournaments()->sync($request->input('moderated_tournaments', []));
-        Tournament::whereIn('id', $request->input('created_tournaments', []))->update(['created_by' => $user->id]);
-        Tournament::where('created_by', $user->id)->whereNotIn('id', $request->input('created_tournaments', []))->update(['created_by' => 1]);
-    
-        // ✅ Track Changes for Email
+{
+    $user = User::findOrFail($id);
+
+    if (Auth::id() !== $user->id && !Auth::user()->isAdmin()) {
+        return redirect()->route('dashboard')->with('error', 'Unauthorized action.');
+    }
+
+    $validated = $request->validate([
+        'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+        'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        'dob' => 'nullable|date|before:today',
+        'sex' => 'required|in:Male,Female,Other',
+        'mobile_no' => 'nullable|digits:10',
+        'role' => 'required|in:admin,user,visitor,player',
+        'moderated_tournaments' => 'nullable|array',
+        'created_tournaments' => 'nullable|array',
+    ]);
+
+    $originalData = $user->getOriginal();
+    $user->update($validated);
+
+    // ✅ Force Laravel to detect change even if data is the same
+    if ($user->wasChanged() || !empty($request->input('moderated_tournaments')) || !empty($request->input('created_tournaments'))) {
+        \Log::info("Change detected, preparing email for User: " . $user->email);
+
         $updatedFields = [];
         foreach ($validated as $key => $value) {
             if (isset($originalData[$key]) && $originalData[$key] != $user->$key) {
                 $updatedFields[$key] = ['old' => $originalData[$key], 'new' => $user->$key];
             }
         }
-    
-        // ✅ Send Email If Changes Exist
-        if (!empty($updatedFields)) {
-            try {
-                $updatedBy = Auth::user() ? Auth::user()->username : 'Admin';
-                Mail::to($user->email)->cc('xpindia@gmail.com')->send(new UserEditedMail($user, $updatedBy, $updatedFields));
-    
-                \Log::info("User Edited Email sent to: " . $user->email);
-            } catch (\Exception $e) {
-                \Log::error("Failed to send User Edited Email: " . $e->getMessage());
-            }
+
+        try {
+            $updatedBy = Auth::user() ? Auth::user()->username : 'Admin';
+
+            Mail::to($user->email)
+                ->cc('xpindia@gmail.com') // ✅ Admin always gets a copy
+                ->send(new UserEditedMail($user, $updatedBy, $updatedFields));
+
+            \Log::info("✅ User Edited Email sent to: " . $user->email . " & Admin");
+        } catch (\Exception $e) {
+            \Log::error("❌ Failed to send User Edited Email: " . $e->getMessage());
         }
-    
-        return redirect()->route('users.index')->with('success', 'User updated successfully.');
+    } else {
+        \Log::info("❌ No actual change detected, skipping email.");
     }
+
+    return redirect()->route('users.index')->with('success', 'User updated successfully.');
+}
+
+
 
     // ✅ Delete User
     public function destroy($id)
-    {
-        $user = User::findOrFail($id);
+{
+    $user = User::findOrFail($id);
 
-        if (!Auth::user()->isAdmin()) {
-            return redirect()->route('users.index')->with('error', 'Unauthorized action.');
-        }
+    // ✅ Track deleted user details before deleting
+    $deletedUserDetails = [
+        'ID' => $user->id,
+        'Username' => $user->username,
+        'Email' => $user->email,
+        'Mobile No' => $user->mobile_no ?? 'N/A',
+        'Role' => ucfirst($user->role),
+        'Deleted By' => Auth::user()->username ?? 'Admin'
+    ];
 
-        if ($user->id === Auth::id()) {
-            return redirect()->route('users.index')->with('error', 'You cannot delete yourself.');
-        }
+    $user->delete();
 
-        $user->delete();
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+    // ✅ Send Email Notification to Admin for Deletion
+    try {
+        Mail::to('xpindia@gmail.com') // ✅ Only admin gets notified for deletion
+            ->send(new UserDeletedMail($deletedUserDetails));
+
+        \Log::info("User Deleted Email sent to Admin for User: " . $deletedUserDetails['Username']);
+    } catch (\Exception $e) {
+        \Log::error("Failed to send User Deleted Email: " . $e->getMessage());
     }
+
+    return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+}
+
 }

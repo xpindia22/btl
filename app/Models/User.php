@@ -77,20 +77,19 @@ class User extends Authenticatable
     /**
      * ✅ Get tournaments where the user is a **moderator**.
      */
-    public function moderatedTournaments(): BelongsToMany
-    {
-        return $this->belongsToMany(Tournament::class, 'tournament_moderators', 'user_id', 'tournament_id')
-                    ->distinct();
-    }
+    public function moderatedTournaments()
+{
+    return $this->belongsToMany(Tournament::class, 'tournament_moderators', 'user_id', 'tournament_id')
+                ->distinct();
+}
 
     /**
      * ✅ Get tournaments where the user is the **creator**.
      */
-    public function createdTournaments(): HasMany
-    {
-        return $this->hasMany(Tournament::class, 'created_by');
-    }
-
+    public function createdTournaments()
+{
+    return $this->hasMany(Tournament::class, 'created_by');
+}
     /**
      * ✅ Attribute to get the count of created tournaments.
      */
