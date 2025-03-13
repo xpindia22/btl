@@ -1,6 +1,8 @@
 <?php 
 
 namespace App\Http\Controllers;
+use App\Mail\UserCreatedMail;
+use App\Mail\UserEditedMail; // ✅ Ensure this is imported correctly
 
 use App\Models\Tournament;
 use App\Models\User;
@@ -20,29 +22,38 @@ class UserController extends Controller
 {
     // ✅ Show Users List Based on Role
     public function index(Request $request)
-    {
-        $authUser = Auth::user();
-        $sortColumn = $request->get('sort', 'id'); // Default sorting by ID
-    
-        if ($authUser->isAdmin()) {
-            // ✅ Admin sees all users
-            $users = User::with(['moderatedTournaments', 'createdTournaments'])
-                         ->orderByDesc($sortColumn)
-                         ->paginate(10);
-        } else {
-            // ✅ Regular users see only the users they created (or assigned to admin)
-            $users = User::with(['moderatedTournaments', 'createdTournaments'])
-                         ->where('created_by', $authUser->id)
-                         ->orWhere('created_by', 1) // ✅ Allow viewing users created by admin
-                         ->orderByDesc($sortColumn)
-                         ->paginate(10);
-        }
-    
-        $matches = Matches::paginate(10);
-    
-        return view('users.index', compact('users', 'matches'));
+{
+    $authUser = Auth::user();
+    $sortColumn = $request->get('sort', 'id'); // Default sorting by ID
+    $sortDirection = $request->get('direction', 'desc'); // Default sorting direction
+
+    // Validate sort column to prevent SQL injection
+    $allowedSortColumns = ['id', 'username', 'email', 'role', 'created_tournaments_count', 'moderated_tournaments_count'];
+    if (!in_array($sortColumn, $allowedSortColumns)) {
+        $sortColumn = 'id';
     }
-    
+
+    // Query users based on role
+    $query = User::with(['moderatedTournaments', 'createdTournaments'])
+                 ->withCount(['moderatedTournaments', 'createdTournaments']); // ✅ Get tournament counts
+
+    if (!$authUser->isAdmin()) {
+        // ✅ Regular users see only the users they created (or those created by admin)
+        $query->where(function ($q) use ($authUser) {
+            $q->where('created_by', $authUser->id)
+              ->orWhere('created_by', 1); // ✅ Allow viewing users created by admin
+        });
+    }
+
+    // Apply sorting
+    $users = $query->orderBy($sortColumn, $sortDirection)->paginate(10);
+
+    // Load paginated matches
+    $matches = Matches::paginate(10);
+
+    return view('users.index', compact('users', 'matches', 'sortColumn', 'sortDirection'));
+}
+
 
 public function editUsers()
 {
@@ -192,60 +203,64 @@ public function updateUserInline(Request $request, $id)
 
 
     // ✅ Update User & Send Emails
+    
     public function update(Request $request, $id)
-{
-    $user = User::findOrFail($id);
-
-    if (Auth::id() !== $user->id && !Auth::user()->isAdmin()) {
-        return redirect()->route('dashboard')->with('error', 'Unauthorized action.');
-    }
-
-    $validated = $request->validate([
-        'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-        'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-        'dob' => 'required|date|before:today',
-        'sex' => 'required|in:Male,Female,Other',
-        'mobile_no' => 'nullable|digits:10',
-        'role' => 'required|in:admin,user,visitor,player',
-        'password' => 'nullable|min:8|confirmed', // ✅ Password is optional
-    ]);
-
-    // ✅ Only update password if provided
-    if (!empty($validated['password'])) {
-        $validated['password'] = Hash::make($validated['password']);
-    } else {
-        unset($validated['password']); // ✅ Remove password key if not provided
-    }
-
-    $user->update($validated);
-
-    // ✅ Send Update Notifications
-    $this->sendUserNotification($user, 'updated');
-
-    return redirect()->route('users.index')->with('success', 'User updated successfully.');
-}
-
-
-    // ✅ Send Email Notifications
-    private function sendUserNotification(User $user, $action)
-{
-    $adminEmail = 'xpindia@gmail.com';
-    $moderator = User::find($user->created_by);
-    $moderatorEmail = $moderator ? $moderator->email : null;
-
-    try {
-        Mail::to($user->email)->send(new UserCreatedNotification($user, 'user', $action));
-        Mail::to($adminEmail)->send(new UserCreatedNotification($user, 'admin', $action));
-
-        if ($moderatorEmail && $moderatorEmail !== $adminEmail) {
-            Mail::to($moderatorEmail)->send(new UserCreatedNotification($user, 'moderator', $action));
+    {
+        $user = User::findOrFail($id);
+    
+        if (Auth::id() !== $user->id && !Auth::user()->isAdmin()) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized action.');
         }
-
-        Log::info("✅ Email sent successfully to {$user->email}, Admin, and Moderator.");
-    } catch (\Exception $e) {
-        Log::error("❌ Email sending failed: " . $e->getMessage());
+    
+        $validated = $request->validate([
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'dob' => 'required|date|before:today',
+            'sex' => 'required|in:Male,Female,Other',
+            'mobile_no' => 'nullable|digits:10',
+            'role' => 'required|in:admin,user,visitor,player',
+            'moderated_tournaments' => 'nullable|array', // ✅ Prevents error if checkboxes are empty
+            'created_tournaments' => 'nullable|array',   // ✅ Prevents error if checkboxes are empty
+        ]);
+    
+        $originalData = $user->getOriginal();
+    
+        $user->update($validated);
+    
+        // ✅ Fix: Use `?? []` to prevent errors if the checkbox is not selected
+        $moderatedTournaments = $request->input('moderated_tournaments', []);
+        $createdTournaments = $request->input('created_tournaments', []);
+    
+        // ✅ Sync Moderated Tournaments (Many-to-Many)
+        $user->moderatedTournaments()->sync($moderatedTournaments);
+    
+        // ✅ Update Created Tournaments (One-to-Many)
+        Tournament::whereIn('id', $createdTournaments)->update(['created_by' => $user->id]);
+    
+        // ✅ Handle tournaments where the user was removed as the creator
+        Tournament::where('created_by', $user->id)->whereNotIn('id', $createdTournaments)->update(['created_by' => 1]);
+    
+        // ✅ Track changed fields for email notification
+        $updatedFields = [];
+        foreach ($validated as $key => $value) {
+            if (isset($originalData[$key]) && $originalData[$key] != $user->$key) {
+                $updatedFields[$key] = ['old' => $originalData[$key], 'new' => $user->$key];
+            }
+        }
+    
+        // ✅ Send Email Notification only if something was updated
+        if (!empty($updatedFields)) {
+            $updatedBy = Auth::user() ? Auth::user()->username : 'Admin';
+            Mail::to($user->email)
+                ->cc('xpindia@gmail.com')
+                ->send(new UserEditedMail($user, $updatedBy, $updatedFields));
+        }
+    
+        // ✅ Redirect to users.index instead of showing the user edit page
+        return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
-}
+    
+
 
     // ✅ Delete User
     public function destroy($id)

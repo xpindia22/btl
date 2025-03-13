@@ -1,14 +1,12 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Favorite;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -61,7 +59,7 @@ class User extends Authenticatable
     /**
      * ✅ Get the user who created this user.
      */
-    public function creator(): BelongsTo
+    public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
@@ -69,7 +67,7 @@ class User extends Authenticatable
     /**
      * ✅ Get users created by this user.
      */
-    public function createdUsers(): HasMany
+    public function createdUsers()
     {
         return $this->hasMany(User::class, 'created_by');
     }
@@ -77,7 +75,7 @@ class User extends Authenticatable
     /**
      * ✅ Get tournaments where the user is a **moderator**.
      */
-    public function moderatedTournaments(): BelongsToMany
+    public function moderatedTournaments()
     {
         return $this->belongsToMany(Tournament::class, 'tournament_moderators', 'user_id', 'tournament_id')
                     ->distinct();
@@ -86,31 +84,15 @@ class User extends Authenticatable
     /**
      * ✅ Get tournaments where the user is the **creator**.
      */
-    public function createdTournaments(): HasMany
+    public function createdTournaments()
     {
         return $this->hasMany(Tournament::class, 'created_by');
     }
 
     /**
-     * ✅ Attribute to get the count of created tournaments.
-     */
-    public function getCreatedTournamentsCountAttribute(): int
-    {
-        return $this->createdTournaments()->count();
-    }
-
-    /**
-     * ✅ Attribute to get the count of moderated tournaments.
-     */
-    public function getModeratedTournamentsCountAttribute(): int
-    {
-        return $this->moderatedTournaments()->count();
-    }
-
-    /**
      * ✅ Get matches moderated by this user.
      */
-    public function moderatedMatches(): HasMany
+    public function moderatedMatches()
     {
         return $this->hasMany(Matches::class, 'moderated_by');
     }
@@ -118,7 +100,7 @@ class User extends Authenticatable
     /**
      * 🔥 Check if the user can **moderate a match**.
      */
-    public function canModerateMatch($match): bool
+    public function canModerateMatch($match)
     {
         if ($this->id === $match->moderated_by) {
             return true;
@@ -136,11 +118,11 @@ class User extends Authenticatable
         return false;
     }
 
-    /**
-     * ✅ Get the user's favorites.
-     */
-    public function favorites(): HasMany
-    {
-        return $this->hasMany(Favorite::class, 'user_id');
-    }
+
+
+public function favorites(): HasMany
+{
+    return $this->hasMany(Favorite::class, 'user_id');
+}
+
 }

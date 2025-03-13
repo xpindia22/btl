@@ -41,71 +41,112 @@
                         @method('PUT')
 
                         <td>{{ $user->id }}</td>
-                        <td><input type="text" name="username" value="{{ $user->username }}" class="form-control" required></td>
-                        <td><input type="email" name="email" value="{{ $user->email }}" required class="form-control"></td>
-                        <td><input type="text" name="mobile_no" value="{{ $user->mobile_no }}" class="form-control"></td>
+                        <td><input type="text" name="username" value="{{ old('username', $user->username) }}" class="form-control" required></td>
+                        <td><input type="email" name="email" value="{{ old('email', $user->email) }}" required class="form-control"></td>
+                        <td><input type="text" name="mobile_no" value="{{ old('mobile_no', $user->mobile_no) }}" class="form-control"></td>
 
-                        <td><input type="date" name="dob" value="{{ $user->dob }}" class="form-control"></td>
+                        <td><input type="date" name="dob" value="{{ old('dob', $user->dob) }}" class="form-control"></td>
 
                         <td>
                             <select name="sex" class="form-control">
-                                <option {{ $user->sex == 'Male' ? 'selected' : '' }}>Male</option>
-                                <option {{ $user->sex == 'Female' ? 'selected' : '' }}>Female</option>
-                                <option {{ $user->sex == 'Other' ? 'selected' : '' }}>Other</option>
-                        </select></td>
-
-                        <td>
-                            <select name="role" class="form-control">
-                                <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="user" {{ $user->role == 'user' ? 'selected' : '' }}>User</option>
-                                <option value="visitor" {{ $user->role == 'visitor' ? 'selected' : '' }}>Visitor</option>
-                                <option value="player" {{ $user->role == 'player' ? 'selected' : '' }}>Player</option>
+                                <option value="Male" {{ old('sex', $user->sex) == 'Male' ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ old('sex', $user->sex) == 'Female' ? 'selected' : '' }}>Female</option>
+                                <option value="Other" {{ old('sex', $user->sex) == 'Other' ? 'selected' : '' }}>Other</option>
                             </select>
                         </td>
 
                         <td>
-                            @foreach ($tournaments as $tournament)
-                                <label>
-                                    <input type="checkbox" name="moderated_tournaments[]" value="{{ $tournament->id }}"
-                                    {{ $user->moderatedTournaments->contains($tournament->id) ? 'checked' : '' }}>
-                                    {{ $tournament->name }} ({{ $tournament->year }})
-                                </label><br>
-                            @endforeach
+                            <select name="role" class="form-control">
+                                <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>User</option>
+                                <option value="visitor" {{ old('role', $user->role) == 'visitor' ? 'selected' : '' }}>Visitor</option>
+                                <option value="player" {{ old('role', $user->role) == 'player' ? 'selected' : '' }}>Player</option>
+                            </select>
                         </td>
 
+                        <!-- ✅ Moderated Tournaments -->
                         <td>
-                            @foreach ($tournaments as $tournament)
-                                <label>
-                                    <input type="checkbox" name="created_tournaments[]" value="{{ $tournament->id }}"
-                                        {{ $user->createdTournaments->contains('id', $tournament->id) ? 'checked' : '' }}>
-                                    {{ $tournament->name }} ({{ $tournament->year }})
-                                </label><br>
-                            @endforeach
-
-                            @if ($user->createdTournaments->isEmpty())
-                                <span class="text-danger">xxx (admin)</span>
+                            @if($tournaments->isNotEmpty())
+                                @foreach ($tournaments as $tournament)
+                                    <label>
+                                        <input type="checkbox" name="moderated_tournaments[]" value="{{ $tournament->id }}"
+                                        {{ $user->moderatedTournaments->contains($tournament->id) ? 'checked' : '' }}>
+                                        {{ $tournament->name }} ({{ $tournament->year }})
+                                    </label><br>
+                                @endforeach
+                            @else
+                                <span class="text-muted">No tournaments available</span>
                             @endif
                         </td>
 
+                        <!-- ✅ Created Tournaments -->
+                        <td>
+                            @if($tournaments->isNotEmpty())
+                                @foreach ($tournaments as $tournament)
+                                    <label>
+                                        <input type="checkbox" name="created_tournaments[]" value="{{ $tournament->id }}"
+                                            {{ $user->createdTournaments->contains('id', $tournament->id) ? 'checked' : '' }}>
+                                        {{ $tournament->name }} ({{ $tournament->year }})
+                                    </label><br>
+                                @endforeach
+                            @endif
+
+                            @if ($user->createdTournaments->isEmpty())
+                                <span class="text-danger">N/A (admin)</span>
+                            @endif
+                        </td>
+
+                        <!-- ✅ Actions -->
                         <td>
                             <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                        </td>
                     </form>
 
-                    <form method="POST" action="{{ route('users.destroy', $user->id) }}" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm"
-                            onclick="return confirm('Are you sure?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
+                    <td>
+                        <form method="POST" action="{{ route('users.destroy', $user->id) }}" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
             @endforeach
         </tbody>
     </table>
 
+    <!-- ✅ Pagination -->
     <div class="d-flex justify-content-center">
-        {{ $matches->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
+        {{ $users->appends(request()->query())->links() }}
     </div>
-</div>
+
+    <!-- ✅ Matches Section -->
+    @if(isset($matches) && $matches->isNotEmpty())
+        <h3 class="mt-4">Matches</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Match Name</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($matches as $match)
+                    <tr>
+                        <td>{{ $match->id }}</td>
+                        <td>{{ $match->name }}</td>
+                        <td>{{ $match->date }}</td>
+                        <td>{{ ucfirst($match->status) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-center">
+            {{ $matches->appends(request()->query())->links() }}
+        </div>
+    @endif
 </div>
 @endsection
