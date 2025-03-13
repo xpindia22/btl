@@ -178,13 +178,21 @@ class SinglesMatchController extends Controller
             'set3_player1_points' => 'nullable|integer',
             'set3_player2_points' => 'nullable|integer',
         ]);
-
-        $match = MatchModel::findOrFail($id);
+    
+        $match = \App\Models\Matches::findOrFail($id);
         $match->update($validated);
-
+    
+        // Send Email Notification about the Match Update
+        try {
+            $this->notificationService->sendMatchUpdatedNotification($match);
+            \Log::info("📩 Match Update Notification Sent: Match ID {$match->id}");
+        } catch (\Exception $e) {
+            \Log::error("❌ Failed to send match update notification: " . $e->getMessage());
+        }
+    
         return response()->json(['message' => 'Singles match updated successfully.']);
     }
-
+    
     // Delete Match
     public function delete($id)
     {
