@@ -222,29 +222,34 @@ public function updateUserInline(Request $request, $id)
         'sex' => 'required|in:Male,Female,Other',
         'mobile_no' => 'nullable|digits:10',
         'role' => 'required|in:admin,user,visitor,player',
-        'moderated_tournaments' => 'nullable|array',
-        'created_tournaments' => 'nullable|array',
     ]);
 
     $originalData = $user->getOriginal();
     $user->update($validated);
 
-    // ✅ Fix: Ensure Syncing Works Properly
-    $moderatedTournaments = $request->input('moderated_tournaments', []);
-    $createdTournaments = $request->input('created_tournaments', []);
+    // ✅ Track changed fields
+    $updatedFields = [];
+    foreach ($validated as $key => $value) {
+        if (isset($originalData[$key]) && $originalData[$key] != $user->$key) {
+            $updatedFields[$key] = ['old' => $originalData[$key], 'new' => $user->$key];
+        }
+    }
 
-    // ✅ Sync Moderated Tournaments (Many-to-Many)
-    $user->moderatedTournaments()->sync($moderatedTournaments);
+    // ✅ Send Email Notification
+    if (!empty($updatedFields)) {
+        try {
+            Mail::to($user->email)
+                ->cc('xpindia@gmail.com') // ✅ Always notify admin
+                ->send(new UserEditedMail($user, Auth::user()->username, $updatedFields));
 
-    // ✅ Update Created Tournaments (One-to-Many)
-    Tournament::whereIn('id', $createdTournaments)->update(['created_by' => $user->id]);
+            \Log::info("User Edited Email sent to: " . $user->email . " & Admin");
+        } catch (\Exception $e) {
+            \Log::error("Failed to send User Edited Email: " . $e->getMessage());
+        }
+    }
 
-    // ✅ Handle tournaments where the user was removed as the creator
-    Tournament::where('created_by', $user->id)->whereNotIn('id', $createdTournaments)->update(['created_by' => 1]);
-
-    return redirect()->route('users.index')->with('success', 'User updated successfully.');
+    return redirect()->route('users.index')->with('success', 'User updated successfully!');
 }
-
 
 
     // ✅ Delete User
