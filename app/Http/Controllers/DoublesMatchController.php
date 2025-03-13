@@ -510,7 +510,7 @@ class DoublesMatchController extends Controller
             Log::info("Sending match update email to:", $updateRecipients);
 
             // You can create a new Mailable for update if desired (e.g. MatchUpdatedMail)
-            \Mail::to($updateRecipients)->send(new \App\Mail\MatchCreatedMail($updatedMatch));
+            \Mail::to($updateRecipients)->send(new \App\Mail\MatchUpdateMail($updatedMatch));
 
             Log::info("📩 Match update email sent: Match ID {$updatedMatch->id}");
         } catch (\Exception $e) {
