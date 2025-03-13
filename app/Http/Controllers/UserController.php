@@ -19,18 +19,30 @@ use App\Models\Matches;
 class UserController extends Controller
 {
     // ✅ Show Users List Based on Role
-    public function index()
-{
-    $authUser = Auth::user();
-
-    $users = $authUser->isAdmin()
-        ? User::with(['moderatedTournaments', 'createdTournaments'])->orderBy('id')->paginate(10)
-        : User::where('id', $authUser->id)->paginate(1);
-
-    $matches = Matches::paginate(10); // ✅ Use `Matches` instead of `Match`
-
-    return view('users.index', compact('users', 'matches'));
-}
+    public function index(Request $request)
+    {
+        $authUser = Auth::user();
+        $sortColumn = $request->get('sort', 'id'); // Default sorting by ID
+    
+        if ($authUser->isAdmin()) {
+            // ✅ Admin sees all users
+            $users = User::with(['moderatedTournaments', 'createdTournaments'])
+                         ->orderByDesc($sortColumn)
+                         ->paginate(10);
+        } else {
+            // ✅ Regular users see only the users they created (or assigned to admin)
+            $users = User::with(['moderatedTournaments', 'createdTournaments'])
+                         ->where('created_by', $authUser->id)
+                         ->orWhere('created_by', 1) // ✅ Allow viewing users created by admin
+                         ->orderByDesc($sortColumn)
+                         ->paginate(10);
+        }
+    
+        $matches = Matches::paginate(10);
+    
+        return view('users.index', compact('users', 'matches'));
+    }
+    
 
 public function editUsers()
 {
@@ -38,9 +50,9 @@ public function editUsers()
         return redirect()->route('dashboard')->with('error', 'Unauthorized access!');
     }
 
-    $users = User::with(['moderatedTournaments', 'createdTournaments'])->orderByDesc('id')->paginate(10);
+    $users = User::with(['moderatedTournaments', 'createdTournaments'])->orderByDesc('id')->paginate(10); // ✅ Sorted Desc
     $tournaments = Tournament::orderByDesc('year')->get();
-    $matches = Matches::paginate(10); // ✅ Ensure `Matches` model is used correctly
+    $matches = Matches::paginate(10);
 
     return view('users.edit', compact('users', 'tournaments', 'matches'));
 }
@@ -141,34 +153,43 @@ public function updateUserInline(Request $request, $id)
 
     // ✅ Store User (Create New User & Send Emails)
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'username' => 'required|string|max:255|unique:users,username',
-            'email' => 'required|email|max:255|unique:users,email',
-            'dob' => 'required|date|before:today',
-            'sex' => 'required|in:Male,Female,Other',
-            'mobile_no' => 'nullable|digits:10',
-            'role' => 'required|in:admin,user,visitor,player',
-            'password' => 'required|min:8|confirmed',
-        ]);
+{
+    $validated = $request->validate([
+        'username' => 'required|string|max:255|unique:users,username',
+        'email' => 'required|email|max:255|unique:users,email',
+        'dob' => 'required|date|before:today',
+        'sex' => 'required|in:Male,Female,Other',
+        'mobile_no' => 'nullable|digits:10',
+        'role' => 'required|in:admin,user,visitor,player',
+        'password' => 'required|min:8|confirmed',
+    ]);
 
-        // ✅ Create User
-        $user = User::create([
-            'username' => $validated['username'],
-            'email' => $validated['email'],
-            'dob' => $validated['dob'],
-            'sex' => $validated['sex'],
-            'mobile_no' => $validated['mobile_no'],
-            'role' => $validated['role'],
-            'password' => Hash::make($validated['password']),
-            'created_by' => Auth::id(),
-        ]);
+    // ✅ Assign `created_by` to the logged-in user
+    $createdBy = Auth::id() ?? 1; // Default to admin ID 1 if no user is logged in
 
-        // ✅ Send Email Notifications
-        $this->sendUserNotification($user, 'created');
+    // ✅ Create the new user WITHOUT logging them in
+    $user = User::create([
+        'username' => $validated['username'],
+        'email' => $validated['email'],
+        'dob' => $validated['dob'],
+        'sex' => $validated['sex'],
+        'mobile_no' => $validated['mobile_no'],
+        'role' => $validated['role'],
+        'password' => Hash::make($validated['password']),
+        'created_by' => $createdBy,
+    ]);
 
-        return redirect()->route('users.index')->with('success', 'User created successfully.');
-    }
+    // ✅ Force re-authentication of the creator (to prevent session issues)
+    Auth::loginUsingId($createdBy);
+
+    // ✅ Send Email Notifications
+    $this->sendUserNotification($user, 'created');
+
+    // ✅ Redirect to `/btl/users` while keeping the creator logged in
+    return redirect()->route('users.index')->with('success', 'User created successfully.');
+}
+
+
 
     // ✅ Update User & Send Emails
     public function update(Request $request, $id)
@@ -207,18 +228,24 @@ public function updateUserInline(Request $request, $id)
 
     // ✅ Send Email Notifications
     private function sendUserNotification(User $user, $action)
-    {
-        $adminEmail = 'xpindia@gmail.com';
-        $moderator = User::find($user->created_by);
-        $moderatorEmail = $moderator ? $moderator->email : null;
+{
+    $adminEmail = 'xpindia@gmail.com';
+    $moderator = User::find($user->created_by);
+    $moderatorEmail = $moderator ? $moderator->email : null;
 
+    try {
         Mail::to($user->email)->send(new UserCreatedNotification($user, 'user', $action));
         Mail::to($adminEmail)->send(new UserCreatedNotification($user, 'admin', $action));
 
         if ($moderatorEmail && $moderatorEmail !== $adminEmail) {
             Mail::to($moderatorEmail)->send(new UserCreatedNotification($user, 'moderator', $action));
         }
+
+        Log::info("✅ Email sent successfully to {$user->email}, Admin, and Moderator.");
+    } catch (\Exception $e) {
+        Log::error("❌ Email sending failed: " . $e->getMessage());
     }
+}
 
     // ✅ Delete User
     public function destroy($id)
