@@ -164,44 +164,46 @@ public function updateUserInline(Request $request, $id)
 
     // ✅ Store User (Create New User & Send Emails)
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'username' => 'required|string|max:255|unique:users,username',
-        'email' => 'required|email|max:255|unique:users,email',
-        'dob' => 'required|date|before:today',
-        'sex' => 'required|in:Male,Female,Other',
-        'mobile_no' => 'nullable|digits:10',
-        'role' => 'required|in:admin,user,visitor,player',
-        'password' => 'required|min:8|confirmed',
-    ]);
-
-    // ✅ Assign `created_by` to the logged-in user
-    $createdBy = Auth::id() ?? 1; // Default to admin ID 1 if no user is logged in
-
-    // ✅ Create the new user WITHOUT logging them in
-    $user = User::create([
-        'username' => $validated['username'],
-        'email' => $validated['email'],
-        'dob' => $validated['dob'],
-        'sex' => $validated['sex'],
-        'mobile_no' => $validated['mobile_no'],
-        'role' => $validated['role'],
-        'password' => Hash::make($validated['password']),
-        'created_by' => $createdBy,
-    ]);
-
-    // ✅ Force re-authentication of the creator (to prevent session issues)
-    Auth::loginUsingId($createdBy);
-
-    // ✅ Send Email Notifications
-    $this->sendUserNotification($user, 'created');
-
-    // ✅ Redirect to `/btl/users` while keeping the creator logged in
-    return redirect()->route('users.index')->with('success', 'User created successfully.');
-}
-
-
-
+    {
+        $validated = $request->validate([
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|email|max:255|unique:users,email',
+            'dob' => 'required|date|before:today',
+            'sex' => 'required|in:Male,Female,Other',
+            'mobile_no' => 'nullable|digits:10',
+            'role' => 'required|in:admin,user,visitor,player',
+            'password' => 'required|min:8|confirmed',
+        ]);
+    
+        // ✅ Assign `created_by` to the logged-in user
+        $createdBy = Auth::id() ?? 1; // Default to admin ID 1 if no user is logged in
+    
+        // ✅ Create the new user WITHOUT logging them in
+        $user = User::create([
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'dob' => $validated['dob'],
+            'sex' => $validated['sex'],
+            'mobile_no' => $validated['mobile_no'],
+            'role' => $validated['role'],
+            'password' => Hash::make($validated['password']),
+            'created_by' => $createdBy,
+        ]);
+    
+        // ✅ Send Email Notifications (Debugging enabled)
+        try {
+            Mail::to($user->email)
+                ->cc('xpindia@gmail.com')
+                ->send(new UserCreatedMail($user));
+    
+            \Log::info("User Created Email sent to: " . $user->email);
+        } catch (\Exception $e) {
+            \Log::error("Failed to send User Created Email: " . $e->getMessage());
+        }
+    
+        return redirect()->route('users.index')->with('success', 'User created successfully.');
+    }
+    
     // ✅ Update User & Send Emails
     
     public function update(Request $request, $id)
@@ -215,32 +217,29 @@ public function updateUserInline(Request $request, $id)
         $validated = $request->validate([
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'dob' => 'required|date|before:today',
+            'dob' => 'nullable|date|before:today', // ✅ Allow `dob` to be nullable
             'sex' => 'required|in:Male,Female,Other',
             'mobile_no' => 'nullable|digits:10',
             'role' => 'required|in:admin,user,visitor,player',
-            'moderated_tournaments' => 'nullable|array', // ✅ Prevents error if checkboxes are empty
-            'created_tournaments' => 'nullable|array',   // ✅ Prevents error if checkboxes are empty
+            'moderated_tournaments' => 'nullable|array',
+            'created_tournaments' => 'nullable|array',
         ]);
+    
+        // ✅ Preserve original DOB if not provided
+        if (empty($validated['dob'])) {
+            $validated['dob'] = $user->dob;
+        }
     
         $originalData = $user->getOriginal();
     
         $user->update($validated);
     
-        // ✅ Fix: Use `?? []` to prevent errors if the checkbox is not selected
-        $moderatedTournaments = $request->input('moderated_tournaments', []);
-        $createdTournaments = $request->input('created_tournaments', []);
+        // ✅ Handle Tournament Assignments
+        $user->moderatedTournaments()->sync($request->input('moderated_tournaments', []));
+        Tournament::whereIn('id', $request->input('created_tournaments', []))->update(['created_by' => $user->id]);
+        Tournament::where('created_by', $user->id)->whereNotIn('id', $request->input('created_tournaments', []))->update(['created_by' => 1]);
     
-        // ✅ Sync Moderated Tournaments (Many-to-Many)
-        $user->moderatedTournaments()->sync($moderatedTournaments);
-    
-        // ✅ Update Created Tournaments (One-to-Many)
-        Tournament::whereIn('id', $createdTournaments)->update(['created_by' => $user->id]);
-    
-        // ✅ Handle tournaments where the user was removed as the creator
-        Tournament::where('created_by', $user->id)->whereNotIn('id', $createdTournaments)->update(['created_by' => 1]);
-    
-        // ✅ Track changed fields for email notification
+        // ✅ Track Changes for Email
         $updatedFields = [];
         foreach ($validated as $key => $value) {
             if (isset($originalData[$key]) && $originalData[$key] != $user->$key) {
@@ -248,19 +247,20 @@ public function updateUserInline(Request $request, $id)
             }
         }
     
-        // ✅ Send Email Notification only if something was updated
+        // ✅ Send Email If Changes Exist
         if (!empty($updatedFields)) {
-            $updatedBy = Auth::user() ? Auth::user()->username : 'Admin';
-            Mail::to($user->email)
-                ->cc('xpindia@gmail.com')
-                ->send(new UserEditedMail($user, $updatedBy, $updatedFields));
+            try {
+                $updatedBy = Auth::user() ? Auth::user()->username : 'Admin';
+                Mail::to($user->email)->cc('xpindia@gmail.com')->send(new UserEditedMail($user, $updatedBy, $updatedFields));
+    
+                \Log::info("User Edited Email sent to: " . $user->email);
+            } catch (\Exception $e) {
+                \Log::error("Failed to send User Edited Email: " . $e->getMessage());
+            }
         }
     
-        // ✅ Redirect to users.index instead of showing the user edit page
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
-    
-
 
     // ✅ Delete User
     public function destroy($id)

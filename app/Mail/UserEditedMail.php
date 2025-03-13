@@ -10,16 +10,18 @@ class UserEditedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $user; // Hold user data
-    public $updatedBy; // Hold the updater's info
+    public $user;
+    public $updatedBy;
+    public $updatedFields;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user, $updatedBy)
+    public function __construct(User $user, $updatedBy, $updatedFields)
     {
         $this->user = $user;
         $this->updatedBy = $updatedBy;
+        $this->updatedFields = $updatedFields;
     }
 
     /**
@@ -27,12 +29,14 @@ class UserEditedMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Your Account Details Have Been Updated') // Updated Subject
+        return $this->subject("User {$this->user->username} - Account Updated")
                     ->view('emails.user_edited')
                     ->with([
-                        'username' => $this->user->username,
-                        'email' => $this->user->email,
+                        'user' => $this->user,
                         'updatedBy' => $this->updatedBy,
+                        'updatedFields' => $this->updatedFields,
+                        'moderatedTournaments' => $this->user->moderatedTournaments,
+                        'createdTournaments' => $this->user->createdTournaments,
                     ]);
     }
 }

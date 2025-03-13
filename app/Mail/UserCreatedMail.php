@@ -10,14 +10,16 @@ class UserCreatedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $user; // Hold user data
+    public $user;
+    public $createdBy;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user)
+    public function __construct(User $user, $createdBy)
     {
         $this->user = $user;
+        $this->createdBy = $createdBy;
     }
 
     /**
@@ -25,11 +27,13 @@ class UserCreatedMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('New User Created')
+        return $this->subject('New User ' . $this->user->username . ' Created')
                     ->view('emails.user_created')
                     ->with([
-                        'username' => $this->user->username,
-                        'email' => $this->user->email,
+                        'user' => $this->user,
+                        'createdBy' => $this->createdBy,
+                        'moderatedTournaments' => $this->user->moderatedTournaments,
+                        'createdTournaments' => $this->user->createdTournaments,
                     ]);
     }
 }

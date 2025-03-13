@@ -45,7 +45,10 @@
                         <td><input type="email" name="email" value="{{ old('email', $user->email) }}" required class="form-control"></td>
                         <td><input type="text" name="mobile_no" value="{{ old('mobile_no', $user->mobile_no) }}" class="form-control"></td>
 
-                        <td><input type="date" name="dob" value="{{ old('dob', $user->dob) }}" class="form-control"></td>
+                        <td>
+                         <input type="date" name="dob" value="{{ old('dob', $user->dob) }}" class="form-control" required>
+                        </td>
+
 
                         <td>
                             <select name="sex" class="form-control">
