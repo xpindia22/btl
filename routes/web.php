@@ -86,6 +86,7 @@ Route::middleware(['auth'])->group(function () {
 // Users Routes
 Route::get('/users/edit', [UserController::class, 'editUsers'])->name('users.edit');
 Route::resource('users', UserController::class)->except(['show', 'edit']);
+Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
 
 
 

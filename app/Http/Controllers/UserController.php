@@ -229,31 +229,18 @@ public function updateUserInline(Request $request, $id)
     $originalData = $user->getOriginal();
     $user->update($validated);
 
-    // ✅ Force Laravel to detect change even if data is the same
-    if ($user->wasChanged() || !empty($request->input('moderated_tournaments')) || !empty($request->input('created_tournaments'))) {
-        \Log::info("Change detected, preparing email for User: " . $user->email);
+    // ✅ Fix: Ensure Syncing Works Properly
+    $moderatedTournaments = $request->input('moderated_tournaments', []);
+    $createdTournaments = $request->input('created_tournaments', []);
 
-        $updatedFields = [];
-        foreach ($validated as $key => $value) {
-            if (isset($originalData[$key]) && $originalData[$key] != $user->$key) {
-                $updatedFields[$key] = ['old' => $originalData[$key], 'new' => $user->$key];
-            }
-        }
+    // ✅ Sync Moderated Tournaments (Many-to-Many)
+    $user->moderatedTournaments()->sync($moderatedTournaments);
 
-        try {
-            $updatedBy = Auth::user() ? Auth::user()->username : 'Admin';
+    // ✅ Update Created Tournaments (One-to-Many)
+    Tournament::whereIn('id', $createdTournaments)->update(['created_by' => $user->id]);
 
-            Mail::to($user->email)
-                ->cc('xpindia@gmail.com') // ✅ Admin always gets a copy
-                ->send(new UserEditedMail($user, $updatedBy, $updatedFields));
-
-            \Log::info("✅ User Edited Email sent to: " . $user->email . " & Admin");
-        } catch (\Exception $e) {
-            \Log::error("❌ Failed to send User Edited Email: " . $e->getMessage());
-        }
-    } else {
-        \Log::info("❌ No actual change detected, skipping email.");
-    }
+    // ✅ Handle tournaments where the user was removed as the creator
+    Tournament::where('created_by', $user->id)->whereNotIn('id', $createdTournaments)->update(['created_by' => 1]);
 
     return redirect()->route('users.index')->with('success', 'User updated successfully.');
 }
@@ -289,5 +276,11 @@ public function updateUserInline(Request $request, $id)
 
     return redirect()->route('users.index')->with('success', 'User deleted successfully.');
 }
+
+public function create()
+{
+    return view('users.create'); // ✅ Ensure the file exists at resources/views/users/create.blade.php
+}
+
 
 }

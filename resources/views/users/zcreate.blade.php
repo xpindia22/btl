@@ -28,6 +28,20 @@
             </div>
 
             <div class="form-group">
+                <label for="dob">Date of Birth:</label>
+                <input type="date" name="dob" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="sex">Sex:</label>
+                <select name="sex" class="form-control" required>
+                    <option value="Male" {{ old('sex') == 'Male' ? 'selected' : '' }}>Male</option>
+                    <option value="Female" {{ old('sex') == 'Female' ? 'selected' : '' }}>Female</option>
+                    <option value="Other" {{ old('sex') == 'Other' ? 'selected' : '' }}>Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="mobile_no">Mobile No:</label>
                 <input type="text" name="mobile_no" class="form-control">
             </div>
@@ -43,7 +57,7 @@
                 </select>
             </div>
 
-            <!-- ✅ Ensure created_by is stored properly -->
+            <!-- ✅ Hidden Field to Store Created By (Logged-in User ID) -->
             <input type="hidden" name="created_by" value="{{ auth()->id() }}">
 
             <button type="submit" class="btn btn-primary mt-3">Create User</button>
@@ -58,7 +72,7 @@
 <style>
     /* Center the form container */
     .form-container {
-        max-width: 400px;
+        max-width: 450px;
         margin: 0 auto;
         padding: 20px;
         border: 1px solid #ddd;
@@ -69,6 +83,7 @@
     .form-group {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         margin-bottom: 15px;
     }
     .form-group label {
