@@ -1,8 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container" >
-    <h2>Registered Users --- <a href="{{ route('users.edit', ['user' => $users->first()->id ?? null]) }}">Edit Users</a></h2>
+<div class="container">
+    <h2>Registered Users --- 
+        @if($users->isNotEmpty())
+            <a href="{{ route('users.edit', ['user' => $users->first()->id]) }}">Edit Users</a>
+        @endif
+    </h2>
 
     <table class="table">
         <thead>
@@ -17,12 +21,12 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($users as $user)
+            @forelse ($users as $user)
                 <tr>
                     <td>{{ $user->id }}</td>
                     <td>{{ $user->username }}</td>
                     <td>{{ $user->email }}</td>
-                    <td>{{ $user->mobile_no }}</td>
+                    <td>{{ $user->mobile_no ?? 'N/A' }}</td>
                     <td>{{ ucfirst($user->role) }}</td>
 
                     <td>
@@ -49,13 +53,24 @@
                         @endif
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center text-danger">No users found.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 
     <div class="d-flex justify-content-center">
-        {{ $matches->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
+        {{ $users->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
     </div>
-</div>
+
+    <!-- ✅ Fixes Undefined Variable `$matches` -->
+    @if(isset($matches) && $matches->isNotEmpty())
+        <h3 class="mt-4">Matches</h3>
+        <div class="d-flex justify-content-center">
+            {{ $matches->appends(request()->query())->links('vendor.pagination.semantic-ui') }}
+        </div>
+    @endif
 </div>
 @endsection

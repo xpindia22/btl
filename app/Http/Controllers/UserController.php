@@ -11,24 +11,70 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserCreatedNotification;
+use App\Models\Matches;
+
 
 class UserController extends Controller
 {
     // ✅ Show Users List Based on Role
     public function index()
-    {
-        $authUser = Auth::user();
+{
+    $authUser = Auth::user();
 
-        if ($authUser->isAdmin()) {
-            $users = User::with(['moderatedTournaments', 'createdTournaments'])
-                ->orderBy('id', 'asc')
-                ->paginate(10);
-        } else {
-            $users = User::where('id', $authUser->id)->paginate(1);
-        }
+    $users = $authUser->isAdmin()
+        ? User::with(['moderatedTournaments', 'createdTournaments'])->orderBy('id')->paginate(10)
+        : User::where('id', $authUser->id)->paginate(1);
 
-        return view('users.index', compact('users'));
+    $matches = Matches::paginate(10); // ✅ Use `Matches` instead of `Match`
+
+    return view('users.index', compact('users', 'matches'));
+}
+
+public function editUsers()
+{
+    if (!auth()->user()->isAdmin()) {
+        return redirect()->route('dashboard')->with('error', 'Unauthorized access!');
     }
+
+    $users = User::with(['moderatedTournaments', 'createdTournaments'])->orderByDesc('id')->paginate(10);
+    $tournaments = Tournament::orderByDesc('year')->get();
+    $matches = Matches::paginate(10); // ✅ Ensure `Matches` model is used correctly
+
+    return view('users.edit', compact('users', 'tournaments', 'matches'));
+}
+
+// ✅ Update User Inline via AJAX
+public function updateUserInline(Request $request, $id)
+{
+    $user = User::findOrFail($id);
+
+    if (!Auth::user()->isAdmin()) {
+        return response()->json(['error' => 'Unauthorized action.'], 403);
+    }
+
+    $validated = $request->validate([
+        'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+        'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        'dob' => 'required|date|before:today',
+        'sex' => 'required|in:Male,Female,Other',
+        'mobile_no' => 'nullable|digits:10',
+        'role' => 'required|in:admin,user,visitor,player',
+        'password' => 'nullable|min:8|confirmed', // ✅ Password is optional
+    ]);
+
+    // ✅ Only update password if provided
+    if (!empty($validated['password'])) {
+        $validated['password'] = Hash::make($validated['password']);
+    } else {
+        unset($validated['password']); // ✅ Remove password key if not provided
+    }
+
+    $user->update($validated);
+
+    return response()->json(['success' => 'User updated successfully.']);
+}
 
     // ✅ Show Profile Edit Form for Self-Editing
     public function editProfile()
@@ -36,7 +82,7 @@ class UserController extends Controller
         return view('users.profile', ['user' => Auth::user()]);
     }
 
-    // ✅ Update Own Profile (Name, Age, Sex, Email, Password)
+    // ✅ Update Own Profile (Username, DOB, Sex, Email, Password)
     public function updateProfile(Request $request)
     {
         $request->validate([
@@ -46,34 +92,24 @@ class UserController extends Controller
             'sex' => 'required|string|in:Male,Female,Other',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
-    
+
         try {
             $user = Auth::user();
-            $user->username = $request->username;
-            $user->email = $request->email;
-            $user->dob = $request->dob;
-            $user->sex = $request->sex;
-    
-            // ✅ Update password only if a new password is provided
-            if (!empty($request->password)) {
-                $user->password = Hash::make($request->password);
-            }
-    
-            $user->save();
-    
-            // ✅ Log the successful update
-            \Log::info('Profile updated successfully for user ID: ' . $user->id);
-    
-            // ✅ Redirect back with a success message
+            $user->update([
+                'username' => $request->username,
+                'email' => $request->email,
+                'dob' => $request->dob,
+                'sex' => $request->sex,
+                'password' => $request->password ? Hash::make($request->password) : $user->password,
+            ]);
+
+            Log::info('Profile updated successfully for user ID: ' . $user->id);
             return redirect()->back()->with('success', 'Profile updated successfully.');
         } catch (\Exception $e) {
-            \Log::error('Profile update failed: ' . $e->getMessage());
-    
-            // ❌ Redirect back with an error message
+            Log::error('Profile update failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Profile update failed. Please try again.');
         }
     }
-    
 
     // ✅ Forgot Password - Send Reset Link
     public function forgotPassword()
@@ -88,8 +124,8 @@ class UserController extends Controller
         $status = Password::sendResetLink($request->only('email'));
 
         if ($status === Password::RESET_LINK_SENT) {
-            // ✅ Save reset link for Admins to see
             $token = DB::table('password_resets')->where('email', $request->email)->first()->token;
+
             DB::table('admin_password_resets')->insert([
                 'email' => $request->email,
                 'token' => $token,
@@ -103,43 +139,38 @@ class UserController extends Controller
         return back()->withErrors(['email' => __($status)]);
     }
 
-    // ✅ Admin View for Reset Password Requests
-    public function showPasswordResets()
+    // ✅ Store User (Create New User & Send Emails)
+    public function store(Request $request)
     {
-        if (!auth()->user()->isAdmin()) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access!');
-        }
-
-        $passwordResets = DB::table('admin_password_resets')->orderBy('created_at', 'desc')->get();
-
-        return view('admin.password-resets', compact('passwordResets'));
-    }
-
-    public function editUsers()
-    {
-        // ✅ Ensure only admins can access
-        if (!auth()->user()->isAdmin()) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access!');
-        }
-    
-        // ✅ Fetch users with their relationships
-        $users = User::with(['moderatedTournaments', 'createdTournaments'])
-                    ->orderByDesc('id')
-                    ->paginate(10);
-    
-        // ✅ Fetch tournaments ordered by year descending for selection dropdowns
-        $tournaments = Tournament::orderByDesc('year')->get();
-    
-        // ✅ Return inline editing view with data
-        return view('users.edit', [
-            'users' => $users,
-            'tournaments' => $tournaments
+        $validated = $request->validate([
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|email|max:255|unique:users,email',
+            'dob' => 'required|date|before:today',
+            'sex' => 'required|in:Male,Female,Other',
+            'mobile_no' => 'nullable|digits:10',
+            'role' => 'required|in:admin,user,visitor,player',
+            'password' => 'required|min:8|confirmed',
         ]);
-    }
-    
 
-    // ✅ Update User (For Admin)
-    
+        // ✅ Create User
+        $user = User::create([
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'dob' => $validated['dob'],
+            'sex' => $validated['sex'],
+            'mobile_no' => $validated['mobile_no'],
+            'role' => $validated['role'],
+            'password' => Hash::make($validated['password']),
+            'created_by' => Auth::id(),
+        ]);
+
+        // ✅ Send Email Notifications
+        $this->sendUserNotification($user, 'created');
+
+        return redirect()->route('users.index')->with('success', 'User created successfully.');
+    }
+
+    // ✅ Update User & Send Emails
     public function update(Request $request, $id)
 {
     $user = User::findOrFail($id);
@@ -155,55 +186,49 @@ class UserController extends Controller
         'sex' => 'required|in:Male,Female,Other',
         'mobile_no' => 'nullable|digits:10',
         'role' => 'required|in:admin,user,visitor,player',
-        'password' => 'nullable|min:8|confirmed',
-        'moderated_tournaments' => 'sometimes|array',
-        'created_tournaments' => 'sometimes|array',
+        'password' => 'nullable|min:8|confirmed', // ✅ Password is optional
     ]);
 
-    $user->username  = $validated['username'];
-    $user->email     = $validated['email'];
-    $user->dob       = $validated['dob'];
-    $user->sex       = $validated['sex'];
-    $user->mobile_no = $validated['mobile_no'];
-    $user->role      = $validated['role'];
-
+    // ✅ Only update password if provided
     if (!empty($validated['password'])) {
-        $user->password = Hash::make($validated['password']);
+        $validated['password'] = Hash::make($validated['password']);
+    } else {
+        unset($validated['password']); // ✅ Remove password key if not provided
     }
 
-    $user->save();
+    $user->update($validated);
 
-    // Moderated Tournaments
-    $user->moderatedTournaments()->sync($validated['moderated_tournaments'] ?? []);
-
-    // Created Tournaments
-    $defaultAdminId = User::where('username', 'xxx')->where('role', 'admin')->value('id');
-    Tournament::where('created_by', $user->id)->update(['created_by' => $defaultAdminId]);
-
-    if (!empty($validated['created_tournaments'])) {
-        Tournament::whereIn('id', $validated['created_tournaments'])
-            ->update(['created_by' => $user->id]);
-    }
-
-    $user->load('moderatedTournaments', 'createdTournaments');
+    // ✅ Send Update Notifications
+    $this->sendUserNotification($user, 'updated');
 
     return redirect()->route('users.index')->with('success', 'User updated successfully.');
 }
 
 
+    // ✅ Send Email Notifications
+    private function sendUserNotification(User $user, $action)
+    {
+        $adminEmail = 'xpindia@gmail.com';
+        $moderator = User::find($user->created_by);
+        $moderatorEmail = $moderator ? $moderator->email : null;
 
+        Mail::to($user->email)->send(new UserCreatedNotification($user, 'user', $action));
+        Mail::to($adminEmail)->send(new UserCreatedNotification($user, 'admin', $action));
 
+        if ($moderatorEmail && $moderatorEmail !== $adminEmail) {
+            Mail::to($moderatorEmail)->send(new UserCreatedNotification($user, 'moderator', $action));
+        }
+    }
 
     // ✅ Delete User
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        
+
         if (!Auth::user()->isAdmin()) {
             return redirect()->route('users.index')->with('error', 'Unauthorized action.');
         }
 
-        // Prevent self-delete
         if ($user->id === Auth::id()) {
             return redirect()->route('users.index')->with('error', 'You cannot delete yourself.');
         }
