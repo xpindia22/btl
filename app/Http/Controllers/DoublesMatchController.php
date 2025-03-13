@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Services\MatchNotificationService;
 
-
 class DoublesMatchController extends Controller
 {
     public function __construct()
@@ -54,132 +53,147 @@ class DoublesMatchController extends Controller
     // 2) Store a New Doubles Match
     // ----------------------------------------
     public function storeDoubles(Request $request)
-{
-    Log::info('StoreDoubles function started.');
+    {
+        Log::info('StoreDoubles function started.');
 
-    if (!session('locked_tournament')) {
-        Log::error('Tournament not locked.');
-        return redirect()->back()->withErrors('You must lock a tournament before adding a match.');
-    }
-
-    $lockedTournamentId = session('locked_tournament');
-    Log::info('Tournament locked: ' . $lockedTournamentId);
-
-    // Validate category
-    $category = Category::find($request->input('category_id'));
-    if (!$category) {
-        Log::error('Category not found. ID: ' . $request->input('category_id'));
-        return redirect()->back()->withErrors('Category not found.');
-    }
-
-    Log::info('Category selected: ' . $category->name);
-
-    // Determine if it's mixed doubles
-    $catName = strtoupper($category->name);
-    $isMixed = (strpos($catName, 'XD') !== false) || (strpos($catName, 'MIXED') !== false);
-
-    // Validation rules
-    $rules = [
-        'category_id'         => 'required|exists:categories,id',
-        'stage'               => 'required|string',
-        'date'                => 'required|date',
-        'match_time'          => 'required',
-        'set1_team1_points'   => 'required|integer',
-        'set1_team2_points'   => 'required|integer',
-        'set2_team1_points'   => 'required|integer',
-        'set2_team2_points'   => 'required|integer',
-        'set3_team1_points'   => 'nullable|integer',
-        'set3_team2_points'   => 'nullable|integer',
-    ];
-
-    if ($isMixed) {
-        $rules['team1_male']   = 'required|exists:players,id';
-        $rules['team1_female'] = 'required|exists:players,id';
-        $rules['team2_male']   = 'required|exists:players,id';
-        $rules['team2_female'] = 'required|exists:players,id';
-    } else {
-        $rules['team1_player1'] = 'required|different:team1_player2|exists:players,id';
-        $rules['team1_player2'] = 'required|exists:players,id';
-        $rules['team2_player1'] = 'required|different:team2_player2|exists:players,id';
-        $rules['team2_player2'] = 'required|exists:players,id';
-    }
-
-    Log::info('Applying validation rules.');
-
-    try {
-        $validated = $request->validate($rules);
-        Log::info('Validation passed.', $validated);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        Log::error('Validation failed: ' . json_encode($e->errors()));
-        return redirect()->back()->withErrors($e->errors());
-    }
-
-    try {
-        $match = new Matches();
-        $match->tournament_id       = $lockedTournamentId;
-        $match->category_id         = $validated['category_id'];
-        $match->stage               = $validated['stage'];
-        $match->match_date          = $validated['date'];
-        $match->match_time          = $validated['match_time'];
-        $match->set1_team1_points   = $validated['set1_team1_points'];
-        $match->set1_team2_points   = $validated['set1_team2_points'];
-        $match->set2_team1_points   = $validated['set2_team1_points'];
-        $match->set2_team2_points   = $validated['set2_team2_points'];
-        $match->set3_team1_points   = $validated['set3_team1_points'] ?? null;
-        $match->set3_team2_points   = $validated['set3_team2_points'] ?? null;
-        $match->created_by          = Auth::id();
-
-        // Assign players depending on if it's Mixed Doubles or not
-        if ($isMixed) {
-            $match->team1_player1_id = $validated['team1_male'];
-            $match->team1_player2_id = $validated['team1_female'];
-            $match->team2_player1_id = $validated['team2_male'];
-            $match->team2_player2_id = $validated['team2_female'];
-        } else {
-            $match->team1_player1_id = $validated['team1_player1'];
-            $match->team1_player2_id = $validated['team1_player2'];
-            $match->team2_player1_id = $validated['team2_player1'];
-            $match->team2_player2_id = $validated['team2_player2'];
+        if (!session('locked_tournament')) {
+            Log::error('Tournament not locked.');
+            return redirect()->back()->withErrors('You must lock a tournament before adding a match.');
         }
 
-        Log::info('Match data prepared for insertion.', $match->toArray());
+        $lockedTournamentId = session('locked_tournament');
+        Log::info('Tournament locked: ' . $lockedTournamentId);
 
-        $match->save();
-        Log::info('Match saved successfully.');
+        // Validate category
+        $category = Category::find($request->input('category_id'));
+        if (!$category) {
+            Log::error('Category not found. ID: ' . $request->input('category_id'));
+            return redirect()->back()->withErrors('Category not found.');
+        }
 
-        // Load necessary relationships for email content
-        $match->load([
-            'tournament', 
-            'category', 
-            'team1Player1', 
-            'team1Player2', 
-            'team2Player1', 
-            'team2Player2', 
-            'createdBy'
-        ]);
+        Log::info('Category selected: ' . $category->name);
 
-        // Prepare email recipients:
-        $creatorEmail = $match->createdBy->email;
-        $playerEmails = collect([
-            $match->team1Player1,
-            $match->team1Player2,
-            $match->team2Player1,
-            $match->team2Player2,
-        ])->filter()->pluck('email')->toArray();
-        $adminEmail = 'xpindia@gmail.com';
-        $recipients = array_unique(array_merge([$creatorEmail], $playerEmails, [$adminEmail]));
+        // Determine if it's mixed doubles
+        $catName = strtoupper($category->name);
+        $isMixed = (strpos($catName, 'XD') !== false) || (strpos($catName, 'MIXED') !== false);
 
-        Log::info('Sending doubles match email to recipients:', $recipients);
+        // Validation rules
+        $rules = [
+            'category_id'         => 'required|exists:categories,id',
+            'stage'               => 'required|string',
+            'date'                => 'required|date',
+            'match_time'          => 'required',
+            'set1_team1_points'   => 'required|integer',
+            'set1_team2_points'   => 'required|integer',
+            'set2_team1_points'   => 'required|integer',
+            'set2_team2_points'   => 'required|integer',
+            'set3_team1_points'   => 'nullable|integer',
+            'set3_team2_points'   => 'nullable|integer',
+        ];
 
-        \Mail::to($recipients)->send(new \App\Mail\MatchCreatedMail($match));
-        Log::info('Doubles match email sent.');
+        if ($isMixed) {
+            $rules['team1_male']   = 'required|exists:players,id';
+            $rules['team1_female'] = 'required|exists:players,id';
+            $rules['team2_male']   = 'required|exists:players,id';
+            $rules['team2_female'] = 'required|exists:players,id';
+        } else {
+            $rules['team1_player1'] = 'required|different:team1_player2|exists:players,id';
+            $rules['team1_player2'] = 'required|exists:players,id';
+            $rules['team2_player1'] = 'required|different:team2_player2|exists:players,id';
+            $rules['team2_player2'] = 'required|exists:players,id';
+        }
 
-        return redirect()->route('matches.doubles.index')->with('success', 'Doubles match added!');
-    } catch (\Exception $e) {
-        Log::error('Error saving match: ' . $e->getMessage());
-        return redirect()->back()->withErrors('Failed to save match. Error: ' . $e->getMessage());
+        Log::info('Applying validation rules.');
+
+        try {
+            $validated = $request->validate($rules);
+            Log::info('Validation passed.', $validated);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed: ' . json_encode($e->errors()));
+            return redirect()->back()->withErrors($e->errors());
+        }
+
+        try {
+            $match = new Matches();
+            $match->tournament_id       = $lockedTournamentId;
+            $match->category_id         = $validated['category_id'];
+            $match->stage               = $validated['stage'];
+            $match->match_date          = $validated['date'];
+            $match->match_time          = $validated['match_time'];
+            $match->set1_team1_points   = $validated['set1_team1_points'];
+            $match->set1_team2_points   = $validated['set1_team2_points'];
+            $match->set2_team1_points   = $validated['set2_team1_points'];
+            $match->set2_team2_points   = $validated['set2_team2_points'];
+            $match->set3_team1_points   = $validated['set3_team1_points'] ?? null;
+            $match->set3_team2_points   = $validated['set3_team2_points'] ?? null;
+            $match->created_by          = Auth::id();
+
+            // Assign players depending on if it's Mixed Doubles or not
+            if ($isMixed) {
+                $match->team1_player1_id = $validated['team1_male'];
+                $match->team1_player2_id = $validated['team1_female'];
+                $match->team2_player1_id = $validated['team2_male'];
+                $match->team2_player2_id = $validated['team2_female'];
+            } else {
+                $match->team1_player1_id = $validated['team1_player1'];
+                $match->team1_player2_id = $validated['team1_player2'];
+                $match->team2_player1_id = $validated['team2_player1'];
+                $match->team2_player2_id = $validated['team2_player2'];
+            }
+
+            Log::info('Match data prepared for insertion.', $match->toArray());
+
+            $match->save();
+            Log::info('Match saved successfully.');
+
+            // Load necessary relationships for email content
+            $match->load([
+                'tournament', 
+                'category', 
+                'team1Player1', 
+                'team1Player2', 
+                'team2Player1', 
+                'team2Player2', 
+                'createdBy'
+            ]);
+
+            // NEW CODE for moderators
+            // Fetch all moderators assigned to the tournament
+            $moderators = $match->tournament
+                ->moderators()
+                ->pluck('email')
+                ->toArray();
+
+            // Prepare email recipients
+            $creatorEmail = $match->createdBy->email;
+            $playerEmails = collect([
+                $match->team1Player1,
+                $match->team1Player2,
+                $match->team2Player1,
+                $match->team2Player2,
+            ])->filter()->pluck('email')->toArray();
+
+            $adminEmail = 'xpindia@gmail.com';
+
+            // Merge them all
+            $recipients = array_unique(array_merge(
+                [$creatorEmail],
+                $playerEmails,
+                $moderators,  // add moderators here
+                [$adminEmail]
+            ));
+
+            Log::info('Sending doubles match email to recipients:', $recipients);
+
+            \Mail::to($recipients)->send(new \App\Mail\MatchCreatedMail($match));
+            Log::info('Doubles match email sent.');
+
+            return redirect()->route('matches.doubles.index')->with('success', 'Doubles match added!');
+        } catch (\Exception $e) {
+            Log::error('Error saving match: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Failed to save match. Error: ' . $e->getMessage());
+        }
     }
-}
 
     // ----------------------------------------
     // 3) Get Players for Doubles Match Based on Category
@@ -248,7 +262,7 @@ class DoublesMatchController extends Controller
 
         $matchesQuery = Matches::with([
             'tournament', 'category',
-            'team1Player1', 'team1Player2', 
+            'team1Player1', 'team1Player2',
             'team2Player1', 'team2Player2'
         ])->whereNull('deleted_at');
 
@@ -320,8 +334,6 @@ class DoublesMatchController extends Controller
             });
         }
 
-        // Fetch results
-        
         $matches = $matchesQuery->orderBy('id', 'desc')->paginate(5);
 
         return view('matches.doubles.index', compact(
@@ -432,43 +444,88 @@ class DoublesMatchController extends Controller
     // 8) Update (PUT)
     // ----------------------------------------
     public function update(Request $request, $matchId)
-{
-    Log::info("Doubles update called for match ID: " . $matchId);
-    
-    $data = $request->validate([
-        'stage'              => 'required|string',
-        'match_date'         => 'required|date',
-        'match_time'         => 'required',
-        'set1_team1_points'  => 'nullable|numeric',
-        'set1_team2_points'  => 'nullable|numeric',
-        'set2_team1_points'  => 'nullable|numeric',
-        'set2_team2_points'  => 'nullable|numeric',
-        'set3_team1_points'  => 'nullable|numeric',
-        'set3_team2_points'  => 'nullable|numeric',
-        'moderator'          => 'nullable|string',
-        'creator'            => 'nullable|string',
-    ]);
-
-    Log::info("Data received:", $data);
-
-    $match = Matches::findOrFail($matchId);
-    Log::info("Match before update:", $match->toArray());
-
-    $match->update($data);
-    $updatedMatch = $match->fresh();
-
-    Log::info("Match after update:", $updatedMatch->toArray());
-    
-    if ($request->expectsJson()) {
-        return response()->json([
-            'message' => 'Match updated successfully.',
-            'match'   => $updatedMatch
+    {
+        Log::info("Doubles update called for match ID: " . $matchId);
+        
+        $data = $request->validate([
+            'stage'              => 'required|string',
+            'match_date'         => 'required|date',
+            'match_time'         => 'required',
+            'set1_team1_points'  => 'nullable|numeric',
+            'set1_team2_points'  => 'nullable|numeric',
+            'set2_team1_points'  => 'nullable|numeric',
+            'set2_team2_points'  => 'nullable|numeric',
+            'set3_team1_points'  => 'nullable|numeric',
+            'set3_team2_points'  => 'nullable|numeric',
+            'moderator'          => 'nullable|string',
+            'creator'            => 'nullable|string',
         ]);
-    }
-    
-    return redirect()->route('matches.doubles.edit')->with('success', 'Match updated successfully.');
-}
 
+        Log::info("Data received:", $data);
+
+        $match = Matches::findOrFail($matchId);
+        Log::info("Match before update:", $match->toArray());
+
+        $match->update($data);
+        $updatedMatch = $match->fresh();
+
+        Log::info("Match after update:", $updatedMatch->toArray());
+
+        // NEW CODE for update email
+        try {
+            // Load relationships
+            $updatedMatch->load([
+                'tournament',
+                'category',
+                'team1Player1',
+                'team1Player2',
+                'team2Player1',
+                'team2Player2',
+                'createdBy'
+            ]);
+
+            // Grab moderator emails
+            $moderators = $updatedMatch->tournament
+                ->moderators()
+                ->pluck('email')
+                ->toArray();
+
+            $creatorEmail = $updatedMatch->createdBy->email;
+            $playerEmails = collect([
+                $updatedMatch->team1Player1,
+                $updatedMatch->team1Player2,
+                $updatedMatch->team2Player1,
+                $updatedMatch->team2Player2,
+            ])->filter()->pluck('email')->toArray();
+
+            $adminEmail = 'xpindia@gmail.com';
+
+            $updateRecipients = array_unique(array_merge(
+                [$creatorEmail],
+                $playerEmails,
+                $moderators,
+                [$adminEmail]
+            ));
+
+            Log::info("Sending match update email to:", $updateRecipients);
+
+            // You can create a new Mailable for update if desired (e.g. MatchUpdatedMail)
+            \Mail::to($updateRecipients)->send(new \App\Mail\MatchCreatedMail($updatedMatch));
+
+            Log::info("📩 Match update email sent: Match ID {$updatedMatch->id}");
+        } catch (\Exception $e) {
+            Log::error("❌ Failed to send match update notification: " . $e->getMessage());
+        }
+        
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Match updated successfully.',
+                'match'   => $updatedMatch
+            ]);
+        }
+        
+        return redirect()->route('matches.doubles.edit')->with('success', 'Match updated successfully.');
+    }
 
     // ----------------------------------------
     // 9) Soft Delete (DELETE)
@@ -488,14 +545,13 @@ class DoublesMatchController extends Controller
     }
 
     public function show($id)
-{
-    $match = \App\Models\Matches::find($id);
+    {
+        $match = \App\Models\Matches::find($id);
 
-    if (!$match) {
-        abort(404, 'Match not found');
+        if (!$match) {
+            abort(404, 'Match not found');
+        }
+
+        return view('matches.doubles.show', compact('match'));
     }
-
-    return view('matches.doubles.show', compact('match'));
-}
-
 }
