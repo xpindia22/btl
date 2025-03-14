@@ -89,17 +89,17 @@
         <div class="links">
             <!-- Dashboard -->
             <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="bi bi-star-fill" style="color: #FF69B4;"></i> Dashboard
+            <i class="bi bi-star-fill" style="color:rgb(107, 166, 111);"></i> Dashboard
             </a>
 
             <!-- Singles Ranking -->
             <a href="{{ route('players.ranking') }}" class="{{ request()->routeIs('players.ranking') ? 'active' : '' }}">
-                <i class="bi bi-star-fill text-info"></i> Singles Ranking
+            <i class="bi bi-star-fill" style="color: #FF69B4;"></i> Singles Ranking
             </a>
 
             <!-- Doubles Ranking -->
             <a href="{{ route('players.doublesRanking') }}" class="{{ request()->routeIs('players.doublesRanking') ? 'active' : '' }}">
-                <i class="bi bi-star-fill text-info"></i> Doubles Ranking
+            <i class="bi bi-star-fill" style="color: #FF69B4;"></i> Doubles Ranking
             </a>
 
             <!-- Favorites (for admin, moderator, user) -->
@@ -116,7 +116,7 @@
                 <i class="bi bi-star-fill" style="color: red;"></i> Admin Zone
                 </a>
                     <div class="dropdown-content">
-                        <a href="{{ url('users/create') }}">Create User</a>
+                        <a href="{{ url('users/register') }}">Create User</a>
                         <a href="{{ url('tournaments/manage') }}">Manage Tournaments & Add Moderator</a>
                         <a href="{{ route('admin.edit_players') }}">Edit Player</a>
                         <a href="{{ route('categories.create') }}">Insert Category</a>
