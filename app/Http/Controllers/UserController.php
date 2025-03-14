@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Mail\UserCreatedMail;
 use App\Mail\UserEditedMail; // ✅ Ensure this is imported correctly
+use App\Mail\UserDeletedMail; // ✅ Ensure this is imported
 
 use App\Models\Tournament;
 use App\Models\User;
@@ -286,7 +287,9 @@ public function updateUserInline(Request $request, $id)
 }
 
     // ✅ Delete User
-    public function destroy($id)
+ 
+
+public function destroy($id)
 {
     $user = User::findOrFail($id);
 
@@ -314,11 +317,4 @@ public function updateUserInline(Request $request, $id)
 
     return redirect()->route('users.index')->with('success', 'User deleted successfully.');
 }
-
-public function create()
-{
-    return view('users.create'); // ✅ Ensure the file exists at resources/views/users/create.blade.php
-}
-
-
 }

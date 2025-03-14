@@ -532,6 +532,7 @@ class ComposerStaticInitc48ad68828797abd55f721d8cceec781
     );
 
     public static $classMap = array (
+        'App\\Console\\Commands\\ListResourceFiles' => __DIR__ . '/../..' . '/app/Console/Commands/ListResourceFiles.php',
         'App\\Console\\Kernel' => __DIR__ . '/../..' . '/app/Console/Kernel.php',
         'App\\Http\\Controllers\\AdminController' => __DIR__ . '/../..' . '/app/Http/Controllers/AdminController.php',
         'App\\Http\\Controllers\\AdminPasswordResetController' => __DIR__ . '/../..' . '/app/Http/Controllers/AdminPasswordResetController.php',
@@ -558,13 +559,18 @@ class ComposerStaticInitc48ad68828797abd55f721d8cceec781
         'App\\Http\\Middleware\\RoleMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/RoleMiddleware.php',
         'App\\Mail\\MatchCreatedMail' => __DIR__ . '/../..' . '/app/Mail/MatchCreatedMail.php',
         'App\\Mail\\MatchPinnedNotification' => __DIR__ . '/../..' . '/app/Mail/MatchPinnedNotification.php',
+        'App\\Mail\\MatchUpdateMail' => __DIR__ . '/../..' . '/app/Mail/MatchUpdateMail.php',
         'App\\Mail\\MatchUpdated' => __DIR__ . '/../..' . '/app/Mail/MatchUpdated.php',
         'App\\Mail\\MatchUpdatedNotification' => __DIR__ . '/../..' . '/app/Mail/MatchUpdatedNotification.php',
         'App\\Mail\\PasswordResetSuccessMail' => __DIR__ . '/../..' . '/app/Mail/PasswordResetSuccessMail.php',
         'App\\Mail\\PlayerNotification' => __DIR__ . '/../..' . '/app/Mail/PlayerNotification.php',
         'App\\Mail\\PlayerPinnedNotification' => __DIR__ . '/../..' . '/app/Mail/PlayerPinnedNotification.php',
         'App\\Mail\\ResetPasswordMail' => __DIR__ . '/../..' . '/app/Mail/ResetPasswordMail.php',
+        'App\\Mail\\TournamentUpdated' => __DIR__ . '/../..' . '/app/Mail/TournamentUpdated.php',
+        'App\\Mail\\UserCreatedMail' => __DIR__ . '/../..' . '/app/Mail/UserCreatedMail.php',
         'App\\Mail\\UserCreatedNotification' => __DIR__ . '/../..' . '/app/Mail/UserCreatedNotification.php',
+        'App\\Mail\\UserDeletedMail' => __DIR__ . '/../..' . '/app/Mail/UserDeletedMail.php',
+        'App\\Mail\\UserEditedMail' => __DIR__ . '/../..' . '/app/Mail/UserEditedMail.php',
         'App\\Models\\Category' => __DIR__ . '/../..' . '/app/Models/Category.php',
         'App\\Models\\Favorite' => __DIR__ . '/../..' . '/app/Models/Favorite.php',
         'App\\Models\\Matches' => __DIR__ . '/../..' . '/app/Models/Matches.php',
