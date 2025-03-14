@@ -169,7 +169,7 @@ public function assignCategories(Request $request, $id)
     return redirect()->route('tournaments.edit')->with('success', 'Tournament updated successfully.');
 }
 
-    // Delete a tournament
+    // Delete a tournament.
     public function destroy($id)
 {
     $tournament = DB::table('tournaments')->where('id', $id)->first();
