@@ -286,7 +286,7 @@ public function updateUserInline(Request $request, $id)
     }
 }
 
-    // ✅ Delete User
+    // ✅ Delete User.
  
 
 public function destroy($id)
