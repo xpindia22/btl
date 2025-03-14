@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Mail\PlayerDeleted;
 
 use App\Models\Player;
 use Illuminate\Http\Request;
@@ -176,12 +177,31 @@ class PlayerController extends Controller
      * Delete a player via AJAX.
      */
     public function destroy($uid)
-    {
-        $player = Player::where('uid', $uid)->firstOrFail();
-        $player->delete();
+{
+    $player = Player::where('uid', $uid)->firstOrFail();
+    $deletedPlayerEmail = $player->email; // Get the email before deleting
+    $deletedPlayerName = $player->name;
+    
+    // Capture the user who performed the deletion
+    $deletedBy = auth()->user();
+    $deletedByEmail = $deletedBy->email ?? null;
+    $deletedByUsername = $deletedBy->username ?? 'System';
 
-        return response()->json(['success' => true]);
-    }
+    // Admin Email
+    $adminEmail = "xpindia@gmail.com";
+
+    // Delete the player
+    $player->delete();
+
+    // Prepare recipient list
+    $recipients = array_unique(array_filter([$adminEmail, $deletedByEmail, $deletedPlayerEmail]));
+
+    // Send email notification
+    Mail::to($recipients)->send(new PlayerDeleted($deletedPlayerName, $deletedByUsername));
+
+    return response()->json(['success' => true]);
+}
+
 
     /**
      * Helper method to generate the next available UID.

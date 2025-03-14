@@ -77,22 +77,18 @@
             <option value="Finals">Finals</option>
         </select>
 
-        <label for="date">Match Date:</label>
-<input type="date" name="date" id="date" required>
+        <label for="match_date">Match Date:</label>
+<input type="date" name="match_date" id="match_date" required>
 
 <label for="match_time">Match Time:</label>
 <input type="time" name="match_time" id="match_time" required>
 
 <script>
-  window.onload = function() {
+document.addEventListener("DOMContentLoaded", function () {
     const now = new Date();
-    // Set today's date
-    document.getElementById('date').valueAsDate = now;
-    // Format current time as HH:MM
-    document.getElementById('match_time').value = now
-      .toTimeString()
-      .slice(0, 5);
-  };
+    document.getElementById('match_date').valueAsDate = now;
+    document.getElementById('match_time').value = now.toTimeString().slice(0, 5);
+});
 </script>
 
         {{-- Set Scores --}}

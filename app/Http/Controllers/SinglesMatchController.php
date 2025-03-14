@@ -99,27 +99,37 @@ class SinglesMatchController extends Controller
         $validated = $request->validate([
             'tournament_id' => 'required|exists:tournaments,id',
             'category_id' => 'required|exists:categories,id',
-            'match_date' => 'required|date',
-            'match_time' => 'required',
+            'match_date' => 'required|date', // Correct field name
+            'match_time' => 'required', // Correct field name
             'player1_id' => 'required|exists:players,id',
             'player2_id' => 'required|exists:players,id|different:player1_id',
             'stage' => 'required|string',
-            'set1_player1_points' => 'nullable|integer',
-            'set1_player2_points' => 'nullable|integer',
-            'set2_player1_points' => 'nullable|integer',
-            'set2_player2_points' => 'nullable|integer',
-            'set3_player1_points' => 'nullable|integer',
-            'set3_player2_points' => 'nullable|integer',
+            'set1_player1_points' => 'nullable|integer|min:0',
+            'set1_player2_points' => 'nullable|integer|min:0',
+            'set2_player1_points' => 'nullable|integer|min:0',
+            'set2_player2_points' => 'nullable|integer|min:0',
+            'set3_player1_points' => 'nullable|integer|min:0',
+            'set3_player2_points' => 'nullable|integer|min:0',
         ]);
-
-        $match = MatchModel::create($validated + ['created_by' => Auth::id()]);
-
-        // Send email notification using the dedicated service.
-        $this->notificationService->sendMatchCreatedNotification($match);
-
-        return redirect()->route('matches.singles.index')->with('success', 'Singles match created successfully.');
+    
+        // Log request for debugging
+        \Log::info('Match Data:', $validated);
+    
+        try {
+            // Save match
+            $match = MatchModel::create($validated + ['created_by' => Auth::id()]);
+    
+            // Send email notification
+            $this->notificationService->sendMatchCreatedNotification($match);
+    
+            return redirect()->route('matches.singles.index')
+                             ->with('success', 'Singles match created successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Error creating match: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to create the match. Please try again.']);
+        }
     }
-
+    
     // Display Singles Matches
     public function index(Request $request)
     {
