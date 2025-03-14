@@ -15,6 +15,8 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\PaymentController;
+
 
 
 // --------------------------------------------------
@@ -230,6 +232,24 @@ Route::get('reset-password', function () {
   
      Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
      
-// Redirects
+    
+    //payments
+    
 
+     // Player Routes
+     Route::get('/payments/{tournament_id}/{category_id}', [PaymentController::class, 'showPaymentPage'])->name('payments.pay');
+     Route::post('/payments/store', [PaymentController::class, 'storePayment'])->name('payments.store');
+     
+     // Admin Routes
+     Route::get('/admin/payments', [PaymentController::class, 'adminViewPayments'])->name('admin.payments');
+     Route::put('/admin/payments/{id}', [PaymentController::class, 'updatePaymentStatus'])->name('admin.payments.update');
+     
+     Route::post('/tournament/{tournament_id}/add-player', [TournamentController::class, 'addPlayerToTournament'])
+     ->name('tournament.add-player')
+     ->middleware('auth');
+     
+     Route::get('/tournament/{tournament_id}/add-players', [TournamentController::class, 'showPlayerSelection'])
+     ->name('tournament.show-player-selection')
+     ->middleware('auth');
+  
  

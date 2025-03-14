@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Mail\TournamentNotification;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Payment;
+use App\Mail\PaymentNotificationMail;
 
 class TournamentController extends Controller
 {
@@ -188,6 +190,36 @@ public function assignCategories(Request $request, $id)
         ->send(new TournamentNotification($tournamentData, 'deleted', $initiator));
 
     return redirect()->route('tournaments.edit')->with('success', 'Tournament deleted successfully.');
+}
+
+
+public function addPlayerToTournament(Request $request, $tournament_id)
+    {
+        $tournament = Tournament::findOrFail($tournament_id);
+        $player = User::findOrFail($request->player_id);
+
+        // Check if player is already added
+        if ($player->tournaments->contains($tournament->id)) {
+            return redirect()->back()->with('error', 'Player is already registered.');
+        }
+
+        // Add player to tournament
+        $player->tournaments()->attach($tournament->id);
+
+        // If tournament has a fee, send payment email
+        if ($tournament->tournament_fee > 0) {
+            Mail::to($player->email)->send(new PaymentNotificationMail($player, $tournament));
+        }
+
+        return redirect()->back()->with('success', 'Player added to tournament successfully.');
+    }
+
+    public function showPlayerSelection($tournament_id)
+{
+    $tournament = Tournament::findOrFail($tournament_id);
+    $players = User::where('role', 'player')->get(); // Fetch all registered players
+
+    return view('tournaments.player_selection', compact('tournament', 'players'));
 }
 
 }
