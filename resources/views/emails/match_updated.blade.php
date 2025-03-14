@@ -52,13 +52,12 @@
             </td>
         </tr>
     </table>
-
     <p>
-        <a href="{{ url('/favorites') }}" 
-           style="display: inline-block; padding: 10px 15px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
-            View Your Favorites
-        </a>
-    </p>
+    <a href="{{ route('matches.doubles.show', $match->id) }}"
+       style="display: inline-block; padding: 10px 15px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
+        View This Updated Match
+    </a>
+</p>
 
     <p>Thank you,</p>
     <p><strong>Badminton Tournament System</strong></p>
