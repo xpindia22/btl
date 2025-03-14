@@ -89,7 +89,7 @@
         <div class="links">
             <!-- Dashboard -->
             <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="bi bi-star-fill text-primary"></i> Dashboard
+            <i class="bi bi-star-fill" style="color: #FF69B4;"></i> Dashboard
             </a>
 
             <!-- Singles Ranking -->
