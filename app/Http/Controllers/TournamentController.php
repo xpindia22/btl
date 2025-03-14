@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\TournamentNotification;
+use Illuminate\Support\Facades\Mail;
 
 class TournamentController extends Controller
 {
@@ -58,13 +60,11 @@ class TournamentController extends Controller
         'moderators' => 'array',
     ]);
 
-    // Insert Tournament
     $tournamentId = DB::table('tournaments')->insertGetId([
         'name'       => $request->tournament_name,
         'created_by' => Auth::id(),
     ]);
 
-    // Insert Selected Categories
     foreach ($request->input('categories', []) as $categoryId) {
         DB::table('tournament_categories')->insert([
             'tournament_id' => $tournamentId,
@@ -72,7 +72,6 @@ class TournamentController extends Controller
         ]);
     }
 
-    // Insert Selected Moderators
     foreach ($request->input('moderators', []) as $moderatorId) {
         DB::table('tournament_moderators')->insert([
             'tournament_id' => $tournamentId,
@@ -80,8 +79,17 @@ class TournamentController extends Controller
         ]);
     }
 
+    $tournament = (object) ['id' => $tournamentId, 'name' => $request->tournament_name];
+    $initiator = Auth::user()->username;
+    $adminEmail = "xpindia@gmail.com";
+    $initiatorEmail = Auth::user()->email;
+
+    Mail::to([$adminEmail, $initiatorEmail])
+        ->send(new TournamentNotification($tournament, 'created', $initiator));
+
     return redirect()->route('tournaments.index')->with('success', 'Tournament created successfully.');
 }
+
 public function assignCategories(Request $request, $id)
 {
     DB::table('tournament_categories')->where('tournament_id', $id)->delete();
@@ -150,13 +158,36 @@ public function assignCategories(Request $request, $id)
         ]);
     }
 
+    $tournament = (object) ['id' => $id, 'name' => $request->input('name')];
+    $initiator = Auth::user()->username;
+    $adminEmail = "xpindia@gmail.com";
+    $initiatorEmail = Auth::user()->email;
+
+    Mail::to([$adminEmail, $initiatorEmail])
+        ->send(new TournamentNotification($tournament, 'updated', $initiator));
+
     return redirect()->route('tournaments.edit')->with('success', 'Tournament updated successfully.');
 }
 
     // Delete a tournament
     public function destroy($id)
-    {
-        DB::table('tournaments')->where('id', $id)->delete();
-        return redirect()->route('tournaments.edit')->with('success', 'Tournament deleted successfully.');
+{
+    $tournament = DB::table('tournaments')->where('id', $id)->first();
+    if (!$tournament) {
+        return redirect()->route('tournaments.edit')->with('error', 'Tournament not found.');
     }
+
+    DB::table('tournaments')->where('id', $id)->delete();
+
+    $tournamentData = (object) ['id' => $id, 'name' => $tournament->name];
+    $initiator = Auth::user()->username;
+    $adminEmail = "xpindia@gmail.com";
+    $initiatorEmail = Auth::user()->email;
+
+    Mail::to([$adminEmail, $initiatorEmail])
+        ->send(new TournamentNotification($tournamentData, 'deleted', $initiator));
+
+    return redirect()->route('tournaments.edit')->with('success', 'Tournament deleted successfully.');
+}
+
 }
