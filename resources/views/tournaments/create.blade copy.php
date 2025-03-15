@@ -16,7 +16,6 @@
 
     <form method="POST" action="{{ route('tournaments.store') }}">
         @csrf
-
         <div class="form-group">
             <label for="tournament_name">Tournament Name:</label>
             <input type="text" name="tournament_name" id="tournament_name" class="form-control" required>
@@ -24,7 +23,7 @@
 
         <div class="form-group">
             <label for="categories">Select Categories:</label>
-            <select name="categories[]" id="categories" class="form-control" multiple required>
+            <select name="categories[]" id="categories" class="form-control" multiple>
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                 @endforeach
@@ -40,12 +39,6 @@
                 @endforeach
             </select>
             <small>Hold Ctrl (Windows) or Cmd (Mac) to select multiple moderators.</small>
-        </div>
-
-        <div class="form-group">
-            <label for="tournament_fee">Participation Fee (₹):</label>
-            <input type="number" name="tournament_fee" id="tournament_fee" class="form-control" step="0.01" min="0" value="0" required>
-            <small>Enter 0 if the tournament is free.</small>
         </div>
 
         <button type="submit" class="btn btn-success">Create</button>

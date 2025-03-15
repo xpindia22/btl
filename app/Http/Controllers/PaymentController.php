@@ -1,9 +1,14 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Payment;
+use App\Models\Tournament;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PaymentReceivedMail;
 
 class PaymentController extends Controller
 {
@@ -31,12 +36,29 @@ class PaymentController extends Controller
             'tournament_id' => $request->tournament_id,
             'category_id' => $request->category_id,
             'amount' => $request->amount,
-            'payment_method' => 'UPI', // Default UPI
+            'payment_method' => 'UPI',
             'transaction_id' => $request->transaction_id,
             'status' => 'Pending',
         ]);
 
-        return redirect()->route('payments.status')->with('success', 'Payment submitted, pending verification.');
+        // Fetch tournament details
+        $tournament = Tournament::find($request->tournament_id);
+        $creator = User::find($tournament->created_by);
+        $adminEmail = 'xpindia@gmail.com';
+        $moderator = User::find($tournament->moderated_by);
+
+        // Send email notifications
+        if ($creator) {
+            Mail::to($creator->email)->send(new PaymentReceivedMail($payment));
+        }
+
+        if ($moderator) {
+            Mail::to($moderator->email)->send(new PaymentReceivedMail($payment));
+        }
+
+        Mail::to($adminEmail)->send(new PaymentReceivedMail($payment));
+
+        return redirect()->route('dashboard')->with('success', 'Payment submitted, pending verification.');
     }
 
     // Admin View: Verify Payments
