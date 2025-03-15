@@ -14,7 +14,7 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>Tournament ID</th>
                 <th>Name</th>
                 <th>Created By</th>
                 <th>Categories</th>

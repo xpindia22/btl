@@ -15,6 +15,8 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\PaymentController;
+
 
 
 // --------------------------------------------------
@@ -125,7 +127,7 @@ Route::get('/users/create', [UserController::class, 'create'])->name('users.crea
     Route::get('/matches/filtered-players', [SinglesMatchController::class, 'filteredPlayers'])->name('matches.filteredPlayers');
  
     Route::get('/singles-matches/{id}', [SinglesMatchController::class, 'show'])->name('singles.matches.show');
-    Route::get('/doubles-matches/{id}', [DoubleMatchController::class, 'show'])->name('doubles.matches.show');    
+    Route::get('/doubles-matches/{id}', [DoublesMatchController::class, 'show'])->name('doubles.matches.show');    
     // --------------------------
     // SINGLES MATCHES
     // -------------------------
@@ -175,11 +177,7 @@ Route::get('/users/create', [UserController::class, 'create'])->name('users.crea
         Route::put('/matches/doubles/{matchId}/update', [DoublesMatchController::class, 'update'])->name('matches.doubles.update');
 
     route::get('matches/doubles/{id}', [\App\Http\Controllers\DoublesMatchController::class, 'show'])
-    ->name('matches.doubles.show');
-
-
-    
-    
+    ->name('matches.doubles.show');    
     });
 
     // --------------------------
@@ -198,8 +196,7 @@ Route::get('/users/create', [UserController::class, 'create'])->name('users.crea
 // RESULTS
 // --------------------------------------------------
 Route::prefix('results')->group(function () {
-    Route::get('/singles', [MatchController::class, 'showSinglesResults'])->name('results.singles');
-    Route::get('/doubles', [MatchController::class, 'showDoublesResults'])->name('results.doubles');
+ 
 });
 
 // --------------------------------------------------
@@ -235,3 +232,24 @@ Route::get('reset-password', function () {
   
      Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
      
+    
+    //payments
+    
+
+     // Player Routes
+     Route::get('/payments/{tournament_id}/{category_id}', [PaymentController::class, 'showPaymentPage'])->name('payments.pay');
+     Route::post('/payments/store', [PaymentController::class, 'storePayment'])->name('payments.store');
+     
+     // Admin Routes
+     Route::get('/admin/payments', [PaymentController::class, 'adminViewPayments'])->name('admin.payments');
+     Route::put('/admin/payments/{id}', [PaymentController::class, 'updatePaymentStatus'])->name('admin.payments.update');
+     
+     Route::post('/tournament/{tournament_id}/add-player', [TournamentController::class, 'addPlayerToTournament'])
+     ->name('tournament.add-player')
+     ->middleware('auth');
+     
+     Route::get('/tournament/{tournament_id}/add-players', [TournamentController::class, 'showPlayerSelection'])
+     ->name('tournament.show-player-selection')
+     ->middleware('auth');
+  
+ 

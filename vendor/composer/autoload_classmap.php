@@ -6,6 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'App\\Console\\Commands\\ListResourceFiles' => $baseDir . '/app/Console/Commands/ListResourceFiles.php',
     'App\\Console\\Kernel' => $baseDir . '/app/Console/Kernel.php',
     'App\\Http\\Controllers\\AdminController' => $baseDir . '/app/Http/Controllers/AdminController.php',
     'App\\Http\\Controllers\\AdminPasswordResetController' => $baseDir . '/app/Http/Controllers/AdminPasswordResetController.php',
@@ -32,13 +33,18 @@ return array(
     'App\\Http\\Middleware\\RoleMiddleware' => $baseDir . '/app/Http/Middleware/RoleMiddleware.php',
     'App\\Mail\\MatchCreatedMail' => $baseDir . '/app/Mail/MatchCreatedMail.php',
     'App\\Mail\\MatchPinnedNotification' => $baseDir . '/app/Mail/MatchPinnedNotification.php',
+    'App\\Mail\\MatchUpdateMail' => $baseDir . '/app/Mail/MatchUpdateMail.php',
     'App\\Mail\\MatchUpdated' => $baseDir . '/app/Mail/MatchUpdated.php',
     'App\\Mail\\MatchUpdatedNotification' => $baseDir . '/app/Mail/MatchUpdatedNotification.php',
     'App\\Mail\\PasswordResetSuccessMail' => $baseDir . '/app/Mail/PasswordResetSuccessMail.php',
     'App\\Mail\\PlayerNotification' => $baseDir . '/app/Mail/PlayerNotification.php',
     'App\\Mail\\PlayerPinnedNotification' => $baseDir . '/app/Mail/PlayerPinnedNotification.php',
     'App\\Mail\\ResetPasswordMail' => $baseDir . '/app/Mail/ResetPasswordMail.php',
+    'App\\Mail\\TournamentUpdated' => $baseDir . '/app/Mail/TournamentUpdated.php',
+    'App\\Mail\\UserCreatedMail' => $baseDir . '/app/Mail/UserCreatedMail.php',
     'App\\Mail\\UserCreatedNotification' => $baseDir . '/app/Mail/UserCreatedNotification.php',
+    'App\\Mail\\UserDeletedMail' => $baseDir . '/app/Mail/UserDeletedMail.php',
+    'App\\Mail\\UserEditedMail' => $baseDir . '/app/Mail/UserEditedMail.php',
     'App\\Models\\Category' => $baseDir . '/app/Models/Category.php',
     'App\\Models\\Favorite' => $baseDir . '/app/Models/Favorite.php',
     'App\\Models\\Matches' => $baseDir . '/app/Models/Matches.php',

@@ -116,35 +116,47 @@
         </select>
 
         <label for="date">Match Date:</label>
-        <input type="date" name="date" id="date" required>
+<input type="date" name="date" id="date" required>
 
-        <label for="match_time">Match Time:</label>
-        <input type="time" name="match_time" id="match_time" required>
+<label for="match_time">Match Time:</label>
+<input type="time" name="match_time" id="match_time" required>
+
+<script>
+  window.onload = function() {
+    const now = new Date();
+    // Set today's date
+    document.getElementById('date').valueAsDate = now;
+    // Format current time as HH:MM
+    document.getElementById('match_time').value = now
+      .toTimeString()
+      .slice(0, 5);
+  };
+</script>
 
         <!-- Set Scores for Doubles Matches -->
         <h3>Set Scores</h3>
         <fieldset>
             <legend>Set 1</legend>
             <label for="set1_team1_points">Team 1 Points:</label>
-            <input type="number" name="set1_team1_points" id="set1_team1_points" required>
+            <input type="number" name="set1_team1_points" id="set1_team1_points" value="0" required>
             <label for="set1_team2_points">Team 2 Points:</label>
-            <input type="number" name="set1_team2_points" id="set1_team2_points" required>
+            <input type="number" name="set1_team2_points" id="set1_team2_points" value="0"  required>
         </fieldset>
 
         <fieldset>
             <legend>Set 2</legend>
             <label for="set2_team1_points">Team 1 Points:</label>
-            <input type="number" name="set2_team1_points" id="set2_team1_points" required>
+            <input type="number" name="set2_team1_points" id="set2_team1_points" value="0"  required>
             <label for="set2_team2_points">Team 2 Points:</label>
-            <input type="number" name="set2_team2_points" id="set2_team2_points" required>
+            <input type="number" name="set2_team2_points" id="set2_team2_points" value="0"  required>
         </fieldset>
 
         <fieldset>
             <legend>Set 3 (Optional)</legend>
             <label for="set3_team1_points">Team 1 Points:</label>
-            <input type="number" name="set3_team1_points" id="set3_team1_points">
+            <input type="number" name="set3_team1_points" id="set3_team1_points" value="0" >
             <label for="set3_team2_points">Team 2 Points:</label>
-            <input type="number" name="set3_team2_points" id="set3_team2_points">
+            <input type="number" name="set3_team2_points" id="set3_team2_points" value="0" >
         </fieldset>
 
         <button type="submit" class="btn btn-primary">Create Doubles Match</button>

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
@@ -7,27 +8,21 @@ use Illuminate\Queue\SerializesModels;
 
 class UserDeletedMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels; // ✅ This is a trait
 
     public $deletedUserDetails;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct($deletedUserDetails)
     {
         $this->deletedUserDetails = $deletedUserDetails;
     }
 
-    /**
-     * Build the message.
-     */
     public function build()
     {
-        return $this->subject("User {$this->deletedUserDetails['Username']} Deleted")
+        return $this->subject("User Deleted: {$this->deletedUserDetails['Username']}")
                     ->view('emails.user_deleted')
                     ->with([
-                        'deletedUserDetails' => $this->deletedUserDetails
+                        'deletedUserDetails' => $this->deletedUserDetails,
                     ]);
     }
 }

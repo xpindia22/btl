@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Mail\UserCreatedMail;
 use App\Mail\UserEditedMail; // ✅ Ensure this is imported correctly
+use App\Mail\UserDeletedMail; // ✅ Ensure this is imported
 
 use App\Models\Tournament;
 use App\Models\User;
@@ -222,33 +223,73 @@ public function updateUserInline(Request $request, $id)
         'sex' => 'required|in:Male,Female,Other',
         'mobile_no' => 'nullable|digits:10',
         'role' => 'required|in:admin,user,visitor,player',
-        'moderated_tournaments' => 'nullable|array',
-        'created_tournaments' => 'nullable|array',
+        'moderated_tournaments' => 'array', // ✅ Ensure array input
+        'created_tournaments' => 'array',   // ✅ Ensure array input
     ]);
 
-    $originalData = $user->getOriginal();
-    $user->update($validated);
+    DB::beginTransaction();
 
-    // ✅ Fix: Ensure Syncing Works Properly
-    $moderatedTournaments = $request->input('moderated_tournaments', []);
-    $createdTournaments = $request->input('created_tournaments', []);
+    try {
+        // Store Original Data Before Update
+        $originalData = $user->getOriginal();
 
-    // ✅ Sync Moderated Tournaments (Many-to-Many)
-    $user->moderatedTournaments()->sync($moderatedTournaments);
+        // ✅ Update User Basic Information
+        $user->update($validated);
 
-    // ✅ Update Created Tournaments (One-to-Many)
-    Tournament::whereIn('id', $createdTournaments)->update(['created_by' => $user->id]);
+        // ✅ Update Moderated Tournaments
+        DB::table('tournament_moderators')->where('user_id', $user->id)->delete();
+        if (!empty($request->input('moderated_tournaments', []))) {
+            foreach ($request->input('moderated_tournaments') as $tournamentId) {
+                DB::table('tournament_moderators')->insert([
+                    'tournament_id' => $tournamentId,
+                    'user_id'       => $user->id,
+                ]);
+            }
+        }
 
-    // ✅ Handle tournaments where the user was removed as the creator
-    Tournament::where('created_by', $user->id)->whereNotIn('id', $createdTournaments)->update(['created_by' => 1]);
+        // ✅ Update Created Tournaments
+        DB::table('tournaments')->where('created_by', $user->id)->update(['created_by' => null]); // Remove old assignments
+        if (!empty($request->input('created_tournaments', []))) {
+            DB::table('tournaments')->whereIn('id', $request->input('created_tournaments'))->update([
+                'created_by' => $user->id,
+            ]);
+        }
 
-    return redirect()->route('users.index')->with('success', 'User updated successfully.');
+        DB::commit();
+
+        // ✅ Track Changes
+        $updatedFields = [];
+        foreach ($validated as $key => $value) {
+            if (isset($originalData[$key]) && $originalData[$key] != $user->$key) {
+                $updatedFields[$key] = ['old' => $originalData[$key], 'new' => $user->$key];
+            }
+        }
+
+        // ✅ Send Email Notification on Changes
+        if (!empty($updatedFields)) {
+            try {
+                Mail::to($user->email)
+                    ->cc('xpindia@gmail.com') // ✅ Notify Admin
+                    ->send(new UserEditedMail($user, Auth::user()->username, $updatedFields));
+
+                \Log::info("User Edited Email sent to: " . $user->email . " & Admin");
+            } catch (\Exception $e) {
+                \Log::error("Failed to send User Edited Email: " . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('users.index')->with('success', 'User updated successfully!');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error("User update failed: " . $e->getMessage());
+        return redirect()->route('users.index')->with('error', 'User update failed.');
+    }
 }
 
+    // ✅ Delete User.
+ 
 
-
-    // ✅ Delete User
-    public function destroy($id)
+public function destroy($id)
 {
     $user = User::findOrFail($id);
 
@@ -276,11 +317,4 @@ public function updateUserInline(Request $request, $id)
 
     return redirect()->route('users.index')->with('success', 'User deleted successfully.');
 }
-
-public function create()
-{
-    return view('users.create'); // ✅ Ensure the file exists at resources/views/users/create.blade.php
-}
-
-
 }

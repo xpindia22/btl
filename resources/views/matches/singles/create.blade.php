@@ -78,10 +78,18 @@
         </select>
 
         <label for="match_date">Match Date:</label>
-        <input type="date" name="match_date" required>
+<input type="date" name="match_date" id="match_date" required>
 
-        <label for="match_time">Match Time (HH:MM):</label>
-        <input type="time" name="match_time" required>
+<label for="match_time">Match Time:</label>
+<input type="time" name="match_time" id="match_time" required>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const now = new Date();
+    document.getElementById('match_date').valueAsDate = now;
+    document.getElementById('match_time').value = now.toTimeString().slice(0, 5);
+});
+</script>
 
         {{-- Set Scores --}}
         <label for="set1_player1_points">Set 1 Score (Player 1):</label>

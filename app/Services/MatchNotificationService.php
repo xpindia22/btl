@@ -3,10 +3,11 @@
 namespace App\Services;
 
 use App\Mail\MatchCreatedMail;
-use App\Mail\MatchUpdatedNotification; // ✅ Use the existing notification
+use App\Mail\MatchUpdatedNotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Models\Matches;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class MatchNotificationService
@@ -42,19 +43,8 @@ class MatchNotificationService
         }
 
         $user = Auth::user(); // Logged-in user who made the update
-        $creatorEmail = optional($match->createdBy)->email;
-        $playerEmails = [$match->player1->email, $match->player2->email];
-        $adminEmail   = 'xpindia@gmail.com';
 
-        // Remove empty/null values and duplicates
-        $recipients = array_unique(array_filter(array_merge([$creatorEmail], $playerEmails, [$adminEmail])));
-
-        if (!empty($recipients)) {
-            Mail::to($recipients)->queue(new MatchUpdatedNotification($user, $match, $changes));
-            Log::info("📩 Match Update Notification Sent to: " . implode(", ", $recipients));
-        } else {
-            Log::warning("⚠ No valid email recipients for match update notification.");
-        }
+        $this->sendMatchNotification($match, new MatchUpdatedNotification($user, $match, $changes), "Match Updated");
     }
 
     /**
@@ -67,12 +57,24 @@ class MatchNotificationService
      */
     private function sendMatchNotification($match, $mailInstance, $logMessage)
     {
-        $creatorEmail = optional($match->createdBy)->email;
-        $playerEmails = [$match->player1->email, $match->player2->email];
-        $adminEmail   = 'xpindia@gmail.com';
+        // Get admin users
+        $admins = User::where('role', 'admin')->pluck('email')->toArray();
 
-        // Remove null/empty values and duplicates
-        $recipients = array_unique(array_filter(array_merge([$creatorEmail], $playerEmails, [$adminEmail])));
+        // Get match creator
+        $creatorEmail = optional($match->createdBy)->email;
+
+        // Get players involved in the match (handles singles & doubles)
+        $playerEmails = [];
+        if (!empty($match->player1)) $playerEmails[] = $match->player1->email;
+        if (!empty($match->player2)) $playerEmails[] = $match->player2->email;
+        if (!empty($match->player3)) $playerEmails[] = $match->player3->email;
+        if (!empty($match->player4)) $playerEmails[] = $match->player4->email;
+
+        // Get moderators assigned to the tournament
+        $moderators = $match->tournament->moderators()->pluck('email')->toArray();
+
+        // Merge all recipients and remove duplicates
+        $recipients = array_filter(array_unique(array_merge($admins, [$creatorEmail], $playerEmails, $moderators)));
 
         if (!empty($recipients)) {
             Mail::to($recipients)->queue($mailInstance);
