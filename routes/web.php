@@ -36,8 +36,8 @@ Route::controller(LoginController::class)->group(function () {
 });
 
 Route::controller(UserRegisterController::class)->group(function () {
-    Route::get('/register', 'showRegistrationForm')->name('users.create');
-    Route::post('/register', 'register');
+    Route::get('/users/create', [UserRegisterController::class, 'showRegistrationForm'])->name('users.create');
+Route::post('/users/create', [UserRegisterController::class, 'register'])->name('users.store'); // ✅ Add this
 });
 
 // --------------------------------------------------
@@ -66,7 +66,7 @@ Route::get('/players/doubles-ranking', [PlayerController::class, 'doublesRanking
 
     // Player listing
     Route::get('/players', [PlayerController::class, 'index'])->name('players.index');
-    Route::get('/players/{uid}/edit', [PlayerController::class, 'edit'])->name('players.edit');
+    Route::get('/players/{uid}/edit', [PlayerController::class, 'edit'])->name('players.editid');
 
     // Player CRUD operations (edit, update, delete)
     Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
