@@ -5,7 +5,7 @@
     <h1>Insert Category</h1>
 
     @if($errors->any())
-       <div class="alert alert-danger">
+       <div class="alert alert-danger">  
          <ul>
             @foreach($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -45,6 +45,22 @@
                    <option value="Mixed" {{ old('sex') == 'Mixed' ? 'selected' : '' }}>Mixed Doubles</option>
               </select>
          </div>
+         
+         <!-- Paid Category Option -->
+         <div class="form-group">
+              <label for="is_paid">Is this category paid?</label>
+              <select name="is_paid" id="is_paid" required onchange="toggleAmountInput()">
+                   <option value="0" {{ old('is_paid') == '0' ? 'selected' : '' }}>No</option>
+                   <option value="1" {{ old('is_paid') == '1' ? 'selected' : '' }}>Yes</option>
+              </select>
+         </div>
+         
+         <!-- Amount Input (Only for Paid Categories) -->
+         <div class="form-group" id="amount_group" style="display: none;">
+              <label for="amount">Category Fee:</label>
+              <input type="number" name="amount" id="amount" step="0.01" value="{{ old('amount') }}">
+         </div>
+         
          <button type="submit" class="btn btn-primary">Add Category</button>
     </form>
 </div>
@@ -65,6 +81,20 @@
              ageLimit2Group.style.display = 'none';
          }
     }
-    document.addEventListener('DOMContentLoaded', toggleAgeInputs);
+    
+    function toggleAmountInput() {
+        const isPaid = document.getElementById('is_paid').value;
+        const amountGroup = document.getElementById('amount_group');
+        if (isPaid === '1') {
+            amountGroup.style.display = 'block';
+        } else {
+            amountGroup.style.display = 'none';
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleAgeInputs();
+        toggleAmountInput();
+    });
 </script>
 @endsection

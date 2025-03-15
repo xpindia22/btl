@@ -52,6 +52,9 @@ class DoublesMatchController extends Controller
     // ----------------------------------------
     // 2) Store a New Doubles Match
     // ----------------------------------------
+    // ----------------------------------------
+    // Store Doubles Match and Handle Payments
+    // ----------------------------------------
     public function storeDoubles(Request $request)
     {
         Log::info('StoreDoubles function started.');
@@ -83,10 +86,10 @@ class DoublesMatchController extends Controller
             'stage'               => 'required|string',
             'date'                => 'required|date',
             'match_time'          => 'required',
-            'set1_team1_points'   => 'required|integer',
-            'set1_team2_points'   => 'required|integer',
-            'set2_team1_points'   => 'required|integer',
-            'set2_team2_points'   => 'required|integer',
+            'set1_team1_points'   => 'nullable|integer',
+            'set1_team2_points'   => 'nullable|integer',
+            'set2_team1_points'   => 'nullable|integer',
+            'set2_team2_points'   => 'nullable|integer',
             'set3_team1_points'   => 'nullable|integer',
             'set3_team2_points'   => 'nullable|integer',
         ];
@@ -114,21 +117,21 @@ class DoublesMatchController extends Controller
         }
 
         try {
-            $match = new Matches();
+            $match = new MatchModel();
             $match->tournament_id       = $lockedTournamentId;
             $match->category_id         = $validated['category_id'];
             $match->stage               = $validated['stage'];
             $match->match_date          = $validated['date'];
             $match->match_time          = $validated['match_time'];
-            $match->set1_team1_points   = $validated['set1_team1_points'];
-            $match->set1_team2_points   = $validated['set1_team2_points'];
-            $match->set2_team1_points   = $validated['set2_team1_points'];
-            $match->set2_team2_points   = $validated['set2_team2_points'];
+            $match->set1_team1_points   = $validated['set1_team1_points'] ?? null;
+            $match->set1_team2_points   = $validated['set1_team2_points'] ?? null;
+            $match->set2_team1_points   = $validated['set2_team1_points'] ?? null;
+            $match->set2_team2_points   = $validated['set2_team2_points'] ?? null;
             $match->set3_team1_points   = $validated['set3_team1_points'] ?? null;
             $match->set3_team2_points   = $validated['set3_team2_points'] ?? null;
             $match->created_by          = Auth::id();
 
-            // Assign players depending on if it's Mixed Doubles or not
+            // Assign players
             if ($isMixed) {
                 $match->team1_player1_id = $validated['team1_male'];
                 $match->team1_player2_id = $validated['team1_female'];
@@ -146,47 +149,29 @@ class DoublesMatchController extends Controller
             $match->save();
             Log::info('Match saved successfully.');
 
-            // Load necessary relationships for email content
-            $match->load([
-                'tournament', 
-                'category', 
-                'team1Player1', 
-                'team1Player2', 
-                'team2Player1', 
-                'team2Player2', 
-                'createdBy'
-            ]);
+            // Handle Payments
+            $tournament = Tournament::findOrFail($lockedTournamentId);
+            if ($tournament->tournament_fee > 0) {
+                $players = [
+                    Player::findOrFail($match->team1_player1_id),
+                    Player::findOrFail($match->team1_player2_id),
+                    Player::findOrFail($match->team2_player1_id),
+                    Player::findOrFail($match->team2_player2_id),
+                ];
 
-            // NEW CODE for moderators
-            // Fetch all moderators assigned to the tournament
-            $moderators = $match->tournament
-                ->moderators()
-                ->pluck('email')
-                ->toArray();
+                foreach ($players as $player) {
+                    Payment::create([
+                        'user_id' => $player->id,
+                        'tournament_id' => $tournament->id,
+                        'amount' => $tournament->tournament_fee,
+                        'payment_method' => 'UPI',
+                        'transaction_id' => null,
+                        'status' => 'Pending',
+                    ]);
 
-            // Prepare email recipients
-            $creatorEmail = $match->createdBy->email;
-            $playerEmails = collect([
-                $match->team1Player1,
-                $match->team1Player2,
-                $match->team2Player1,
-                $match->team2Player2,
-            ])->filter()->pluck('email')->toArray();
-
-            $adminEmail = 'xpindia@gmail.com';
-
-            // Merge them all
-            $recipients = array_unique(array_merge(
-                [$creatorEmail],
-                $playerEmails,
-                $moderators,  // add moderators here
-                [$adminEmail]
-            ));
-
-            Log::info('Sending doubles match email to recipients:', $recipients);
-
-            \Mail::to($recipients)->send(new \App\Mail\MatchCreatedMail($match));
-            Log::info('Doubles match email sent.');
+                    Mail::to($player->email)->send(new PaymentNotificationMail($player, $tournament));
+                }
+            }
 
             return redirect()->route('matches.doubles.index')->with('success', 'Doubles match added!');
         } catch (\Exception $e) {

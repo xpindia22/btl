@@ -1,9 +1,3 @@
-@if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
-
 @extends('layouts.app')
 
 @section('content')
@@ -27,7 +21,7 @@
 
     {{-- Tournament Lock/Unlock --}}
     <form method="POST" action="{{ route('matches.lockTournament') }}">
-    @csrf
+        @csrf
         <label for="tournament_id">Select Tournament:</label>
         <select name="tournament_id" required>
             <option value="">Select Tournament</option>
@@ -49,15 +43,19 @@
     {{-- Create Match Form --}}
     <form method="POST" action="{{ route('matches.singles.store') }}">
         @csrf
-        <input type="hidden" name="tournament_id" value="{{ $lockedTournament->id }}">
-
         <label for="category_id">Category:</label>
-        <select name="category_id" id="category_id" required>
-            <option value="">Select Category</option>
-            @foreach($categories as $cat)
-                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-            @endforeach
-        </select>
+<select name="category_id" id="category_id" required>
+    <option value="">Select Category</option>
+    @if(isset($lockedTournament) && $lockedTournament->categories && $lockedTournament->categories->count() > 0)
+        @foreach($lockedTournament->categories as $cat)
+            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+        @endforeach
+    @else
+        <option value="" disabled>No categories available</option>
+    @endif
+</select>
+
+
 
         <label for="player1_id">Player 1:</label>
         <select name="player1_id" id="player1_id" required>
@@ -78,18 +76,18 @@
         </select>
 
         <label for="match_date">Match Date:</label>
-<input type="date" name="match_date" id="match_date" required>
+        <input type="date" name="match_date" id="match_date" required>
 
-<label for="match_time">Match Time:</label>
-<input type="time" name="match_time" id="match_time" required>
+        <label for="match_time">Match Time:</label>
+        <input type="time" name="match_time" id="match_time" required>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const now = new Date();
-    document.getElementById('match_date').valueAsDate = now;
-    document.getElementById('match_time').value = now.toTimeString().slice(0, 5);
-});
-</script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const now = new Date();
+                document.getElementById('match_date').valueAsDate = now;
+                document.getElementById('match_time').value = now.toTimeString().slice(0, 5);
+            });
+        </script>
 
         {{-- Set Scores --}}
         <label for="set1_player1_points">Set 1 Score (Player 1):</label>
@@ -114,7 +112,6 @@ document.addEventListener("DOMContentLoaded", function () {
     </form>
     @endif
 </div>
-
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

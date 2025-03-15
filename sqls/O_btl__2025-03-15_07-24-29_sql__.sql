@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 12, 2025 at 03:30 PM
+-- Generation Time: Mar 15, 2025 at 07:24 AM
 -- Server version: 11.4.3-MariaDB-1
 -- PHP Version: 8.2.24
 
@@ -496,7 +496,13 @@ INSERT INTO `matches` (`id`, `tournament_id`, `category_id`, `pool`, `player1_id
 (225, 1, 21, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-12', '12:00:00', 6, 11, 12, 13, 21, 2, 2, 21, 21, 2, NULL, NULL, NULL, NULL, '2025-03-12 06:30:13', '2025-03-12 06:30:13'),
 (226, 1, 12, NULL, 35, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-12', '16:00:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-12 10:30:14', '2025-03-12 10:30:14'),
 (227, 1, 16, NULL, 1, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-12', '16:02:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-12 10:32:20', '2025-03-12 10:32:20'),
-(228, 1, 15, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-12', '16:03:00', 35, 9, 39, 42, 21, 2, 2, 21, 2, 21, NULL, NULL, NULL, NULL, '2025-03-12 10:33:22', '2025-03-12 10:36:08');
+(228, 1, 15, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-12', '16:03:00', 35, 9, 39, 42, 21, 2, 2, 21, 2, 21, NULL, NULL, NULL, NULL, '2025-03-12 10:33:22', '2025-03-12 10:36:08'),
+(229, 1, 1, NULL, 2, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-15', '10:40:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-15 05:11:36', '2025-03-15 05:11:36'),
+(230, 29, 1, NULL, 2, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-15', '11:55:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-15 06:25:36', '2025-03-15 06:25:36'),
+(231, 1, 1, NULL, 2, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-15', '12:08:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-15 06:39:14', '2025-03-15 06:39:14'),
+(232, 1, 1, NULL, 2, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-15', '12:09:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-15 06:48:15', '2025-03-15 06:48:15'),
+(233, 1, 1, NULL, 2, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-15', '12:09:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-15 06:48:59', '2025-03-15 06:48:59'),
+(234, 1, 1, NULL, 2, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, NULL, 'Pre Quarter Finals', '2025-03-15', '12:23:00', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2025-03-15 06:53:27', '2025-03-15 06:53:27');
 
 -- --------------------------------------------------------
 
@@ -554,7 +560,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (24, '2025_03_05_065136_add_expires_at_to_admin_password_resets', 17),
 (25, '2025_03_06_111245_add_expires_at_to_password_resets_table', 18),
 (26, '2025_03_07_114047_add_security_fields_to_users', 19),
-(27, '2025_03_07_120108_add_security_fields_to_players', 20);
+(27, '2025_03_07_120108_add_security_fields_to_players', 20),
+(28, '2025_03_14_191521_add_tournament_fee_to_tournaments', 21),
+(29, '2025_03_14_191703_add_tournament_fee_to_tournaments', 21),
+(30, '2025_03_15_105520_add_category_fee_to_tournament_categories', 21);
 
 -- --------------------------------------------------------
 
@@ -681,7 +690,7 @@ INSERT INTO `players` (`id`, `name`, `email`, `secondary_email`, `dob`, `age`, `
 (42, 'Adrina Thomas', 'jamesheartcare@gmail.com', NULL, '2007-02-01', 18, 'F', '100030', '$2y$12$pqR8B2l3D8x7vVNfiiVj3.QykGnFby38MOikTgqeBsGrcgl9Rt7mO', NULL, NULL, '::1', '2025-03-12 12:22:05', 1, '2025-03-04 11:50:31', NULL, NULL, '9999942'),
 (43, 'Priya', 'jamesheartcare@gmail.com', NULL, '2008-12-29', 16, 'F', '100022', '$2y$12$Wi9dC.LWtfgrK..3SFAKQe89ofRnb/g1zivegd1j1u0y2u4g6sMHC', NULL, NULL, '127.0.0.1', '2025-03-12 12:22:05', 1, '2025-03-04 12:17:02', NULL, NULL, '9999943'),
 (44, 'Bharat', 'jamesheartcare@gmail.com', NULL, '2000-01-11', 25, 'M', '100031', '$2y$12$ak68q4wxLRmDx.5k9PGE6uKrNu9AlB62KqL4s2lna/a7RbIRnfmvy', NULL, NULL, '::1', '2025-03-12 12:22:05', 1, '2025-03-05 05:15:53', NULL, NULL, '9999944'),
-(45, 'VVVxxx', 'jamesheartcarae@gmail.com', 'vvvb1@vvv.com', '2009-02-03', 16, 'F', '100032', '$2y$12$KtelS4z2J.CfJzhMfFFNue1o0h2qfs9JZJsNJImzv8kJMMpksDzkG', '$2y$12$ZN8T79gFyc5mRAktM5gdOe6IPYyHkTvdtSqxSpkhsMHTERv080/1W', NULL, '::1', '2025-03-12 14:27:21', 1, '2025-03-07 06:56:56', '$2y$12$tK6xa7IHLbqcBkxCK4q0yuqupSmPumbVHoxs6REbO/PzwQoeyhWCO', '$2y$12$mlJZ6YKFqqOhRJQxm56pN.ruwxePBNABjLMesxbgAPHNAuRFSy4IW', '9999945'),
+(45, 'Lee Min Yu', 'jameshearztcarae@gmail.com', 'vvvb1@vvv.com', '2009-02-03', 16, 'F', '100032', '$2y$12$KtelS4z2J.CfJzhMfFFNue1o0h2qfs9JZJsNJImzv8kJMMpksDzkG', '$2y$12$ZN8T79gFyc5mRAktM5gdOe6IPYyHkTvdtSqxSpkhsMHTERv080/1W', NULL, '::1', '2025-03-15 03:58:08', 1, '2025-03-07 06:56:56', '$2y$12$tK6xa7IHLbqcBkxCK4q0yuqupSmPumbVHoxs6REbO/PzwQoeyhWCO', '$2y$12$mlJZ6YKFqqOhRJQxm56pN.ruwxePBNABjLMesxbgAPHNAuRFSy4IW', '9999945'),
 (46, 'Deepshikha', 'Deepshikha@dsda.com', NULL, '2009-01-17', NULL, 'F', '100033', '$2y$12$zRqNBfe7UgmsGm/fULlHZuLByan.fk1BfaWiYLi1uKbnDBVWo3Mg2', NULL, NULL, '::1', '2025-03-12 15:00:30', 1, '2025-03-12 14:37:36', NULL, NULL, '9999946'),
 (47, 'Jessie James', 'jjames2k13@gmail.com', NULL, '1974-10-15', NULL, 'F', '100034', '$2y$12$nfkFTo/GvoRBNZu/p0y92eht/uJJBOO.jaRyC31bKbcukcuVlu9Ke', NULL, NULL, '::1', '2025-03-12 15:25:27', 1, '2025-03-12 15:25:27', NULL, NULL, '9815900702');
 
@@ -753,7 +762,8 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 ('V2hs5yqLe4Edy4KR18PSsfWXsfj0ph1hWCdWTzko', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZE5QY2Q1VFF6WGRueFRFUFI3ZWMxZ2JRaHN4T3lSa3k5U2hTMEdINiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1741178261),
 ('X78bPKEZ8r2hBNS5tHfYQuOkz9da1qBbP6f5HTjE', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRzhSOFZTcGp5eXRNMEpxNThVR0VrSVVYMnlKSFd0SUx4dmVnaVd3NiI7czo3OiJzdWNjZXNzIjtzOjI1OiJZb3UgaGF2ZSBiZWVuIGxvZ2dlZCBvdXQuIjtzOjY6Il9mbGFzaCI7YToyOntzOjM6Im5ldyI7YTowOnt9czozOiJvbGQiO2E6MTp7aTowO3M6Nzoic3VjY2VzcyI7fX19', 1740829639),
 ('YA5SuWevZZEEcKTqh4m7ItucJQ8Qib9qgI3uoA6h', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YToyOntzOjY6Il90b2tlbiI7czo0MDoiNG9RQ3RMUmlHQ0JvZzZPcVRJMWVhTHYyQ0hRUFlpZ2loSG40c1JjdCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1741178488),
-('YlJaV8NIoXoxqcdqfJjkj37CIDNgifvBxYisExfG', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiU3FsMkNuT21HVVZTZFo0Y3BZRGRwWWdnTlBKQkV5dnZPNkhYSURsNyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1741178533);
+('YlJaV8NIoXoxqcdqfJjkj37CIDNgifvBxYisExfG', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiU3FsMkNuT21HVVZTZFo0Y3BZRGRwWWdnTlBKQkV5dnZPNkhYSURsNyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1741178533),
+('Z1BOee4vyh1ZcOs9N8AamaO4Oz98My5huKe6U8Hw', 4, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36', 'YTo3OntzOjY6Il90b2tlbiI7czo0MDoic21FcGQ3dnIxU05MRHV2QUVxdmlmY21WZzgzMEs1Wnp5M29ib01WdCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDM6Imh0dHA6Ly9sb2NhbGhvc3QvYnRsL21hdGNoZXMvc2luZ2xlcy9jcmVhdGUiO31zOjM6InVybCI7YTowOnt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NDtzOjE3OiJsb2NrZWRfdG91cm5hbWVudCI7czoyOiIyOSI7czoyODoibG9ja2VkX3NpbmdsZXNfdG91cm5hbWVudF9pZCI7czoyOiIyOSI7fQ==', 1742023435);
 
 -- --------------------------------------------------------
 
@@ -764,6 +774,7 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 CREATE TABLE `tournaments` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
+  `tournament_fee` decimal(10,2) NOT NULL DEFAULT 0.00,
   `created_by` int(11) DEFAULT NULL,
   `year` int(11) NOT NULL DEFAULT year(curdate()),
   `moderated_by` int(11) DEFAULT NULL,
@@ -776,22 +787,25 @@ CREATE TABLE `tournaments` (
 -- Dumping data for table `tournaments`
 --
 
-INSERT INTO `tournaments` (`id`, `name`, `created_by`, `year`, `moderated_by`, `created_at`, `updated_at`, `ip_address`) VALUES
-(1, 'ABPL3', 4, 2024, 4, '2025-02-08 11:57:49', '2025-02-23 22:41:04', NULL),
-(2, 'Super Series 2024', 2, 2024, 4, '2025-02-08 11:57:49', '2025-02-22 06:42:40', NULL),
-(3, 'Winter Series', 4, 2024, 4, '2025-02-08 11:57:49', '2025-02-23 22:41:04', NULL),
-(6, 'ACE Championship', 1, 2025, 4, '2025-02-08 11:57:49', '2025-03-09 14:12:25', NULL),
-(7, 'xxxxsx', NULL, 2025, 1, '2025-02-08 11:57:49', '2025-03-08 10:02:09', NULL),
-(13, 'uuuuh', 1, 2025, NULL, '2025-02-08 11:57:49', '2025-03-09 14:12:25', NULL),
-(14, 'xxxxaa', 4, 2025, NULL, '2025-02-08 11:57:49', '2025-02-23 22:41:04', NULL),
-(17, 'zzz', NULL, 2025, NULL, '2025-02-08 11:57:49', '2025-03-08 10:02:09', NULL),
-(18, 'zzzz', 7, 2025, NULL, '2025-02-08 11:57:49', '2025-02-08 11:57:49', NULL),
-(20, 'zlara25', 7, 2025, NULL, '2025-02-08 19:38:45', '2025-02-08 19:38:45', NULL),
-(22, 'Test 2025', 4, 2025, NULL, '2025-02-21 05:57:22', '2025-02-23 22:41:04', NULL),
-(23, 'TestMarch2025', 4, 2025, NULL, '2025-03-09 14:54:22', '2025-03-09 14:54:22', NULL),
-(24, 'test33', 4, 2025, NULL, '2025-03-09 15:41:59', '2025-03-09 15:41:59', NULL),
-(25, 'mmm', 4, 2025, NULL, '2025-03-09 15:46:59', '2025-03-09 15:46:59', NULL),
-(26, 'Hello', 4, 2025, NULL, '2025-03-09 15:52:32', '2025-03-09 15:52:32', NULL);
+INSERT INTO `tournaments` (`id`, `name`, `tournament_fee`, `created_by`, `year`, `moderated_by`, `created_at`, `updated_at`, `ip_address`) VALUES
+(1, 'ABPL3', 0.00, 4, 2024, 4, '2025-02-08 11:57:49', '2025-02-23 22:41:04', NULL),
+(2, 'Super Series 2024', 0.00, 2, 2024, 4, '2025-02-08 11:57:49', '2025-02-22 06:42:40', NULL),
+(3, 'Winter Series', 0.00, 4, 2024, 4, '2025-02-08 11:57:49', '2025-02-23 22:41:04', NULL),
+(6, 'ACE Championship', 0.00, 1, 2025, 4, '2025-02-08 11:57:49', '2025-03-09 14:12:25', NULL),
+(7, 'xxxxsx', 0.00, NULL, 2025, 1, '2025-02-08 11:57:49', '2025-03-08 10:02:09', NULL),
+(13, 'uuuuh', 0.00, 1, 2025, NULL, '2025-02-08 11:57:49', '2025-03-09 14:12:25', NULL),
+(14, 'xxxxaa', 0.00, 4, 2025, NULL, '2025-02-08 11:57:49', '2025-02-23 22:41:04', NULL),
+(17, 'zzz', 0.00, NULL, 2025, NULL, '2025-02-08 11:57:49', '2025-03-08 10:02:09', NULL),
+(18, 'zzzz', 0.00, 7, 2025, NULL, '2025-02-08 11:57:49', '2025-02-08 11:57:49', NULL),
+(20, 'zlara25', 0.00, 7, 2025, NULL, '2025-02-08 19:38:45', '2025-02-08 19:38:45', NULL),
+(22, 'Test 2025', 0.00, 4, 2025, NULL, '2025-02-21 05:57:22', '2025-02-23 22:41:04', NULL),
+(23, 'TestMarch2025', 0.00, 4, 2025, NULL, '2025-03-09 14:54:22', '2025-03-09 14:54:22', NULL),
+(24, 'test33', 0.00, 4, 2025, NULL, '2025-03-09 15:41:59', '2025-03-09 15:41:59', NULL),
+(25, 'mmm', 0.00, 4, 2025, NULL, '2025-03-09 15:46:59', '2025-03-09 15:46:59', NULL),
+(26, 'Hello', 0.00, 4, 2025, NULL, '2025-03-09 15:52:32', '2025-03-09 15:52:32', NULL),
+(27, 'PaidTournament123', 0.00, 4, 2025, NULL, '2025-03-15 04:42:13', '2025-03-15 04:42:13', NULL),
+(28, 'Paid2', 0.00, 4, 2025, NULL, '2025-03-15 05:53:46', '2025-03-15 05:53:46', NULL),
+(29, 'paid3', 0.00, 4, 2025, NULL, '2025-03-15 06:23:14', '2025-03-15 06:23:14', NULL);
 
 -- --------------------------------------------------------
 
@@ -802,89 +816,121 @@ INSERT INTO `tournaments` (`id`, `name`, `created_by`, `year`, `moderated_by`, `
 CREATE TABLE `tournament_categories` (
   `id` int(11) NOT NULL,
   `tournament_id` int(11) NOT NULL,
-  `category_id` int(11) NOT NULL
+  `category_id` int(11) NOT NULL,
+  `category_fee` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `is_paid` tinyint(1) DEFAULT 0,
+  `fee` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tournament_categories`
 --
 
-INSERT INTO `tournament_categories` (`id`, `tournament_id`, `category_id`) VALUES
-(16, 6, 4),
-(32, 3, 1),
-(33, 3, 11),
-(34, 3, 20),
-(94, 7, 1),
-(97, 13, 18),
-(98, 14, 11),
-(100, 14, 11),
-(101, 14, 11),
-(102, 14, 11),
-(103, 14, 11),
-(104, 14, 1),
-(105, 14, 11),
-(106, 14, 14),
-(107, 17, 11),
-(108, 17, 12),
-(109, 17, 13),
-(110, 17, 15),
-(111, 17, 15),
-(115, 18, 25),
-(116, 18, 26),
-(117, 18, 27),
-(146, 22, 1),
-(147, 22, 2),
-(148, 22, 3),
-(149, 22, 4),
-(150, 22, 6),
-(151, 22, 7),
-(152, 22, 8),
-(153, 22, 11),
-(154, 22, 12),
-(155, 22, 13),
-(156, 22, 14),
-(157, 22, 15),
-(158, 22, 16),
-(159, 22, 17),
-(160, 22, 18),
-(161, 22, 19),
-(162, 22, 20),
-(163, 22, 21),
-(164, 22, 22),
-(165, 22, 23),
-(166, 22, 25),
-(167, 22, 26),
-(168, 22, 27),
-(169, 22, 28),
-(170, 22, 29),
-(171, 22, 30),
-(172, 22, 31),
-(173, 22, 32),
-(227, 1, 1),
-(228, 1, 2),
-(229, 1, 3),
-(230, 1, 4),
-(231, 1, 11),
-(232, 1, 13),
-(233, 1, 14),
-(234, 1, 15),
-(235, 1, 17),
-(236, 1, 20),
-(237, 1, 21),
-(238, 1, 26),
-(239, 1, 32),
-(240, 2, 1),
-(241, 2, 4),
-(244, 26, 1),
-(245, 26, 2),
-(246, 26, 3),
-(247, 26, 4),
-(248, 26, 11),
-(249, 26, 12),
-(250, 26, 13),
-(251, 26, 14),
-(252, 26, 20),
-(253, 26, 23);
+INSERT INTO `tournament_categories` (`id`, `tournament_id`, `category_id`, `category_fee`, `is_paid`, `fee`) VALUES
+(16, 6, 4, 0.00, 0, 0.00),
+(32, 3, 1, 0.00, 0, 0.00),
+(33, 3, 11, 0.00, 0, 0.00),
+(34, 3, 20, 0.00, 0, 0.00),
+(94, 7, 1, 0.00, 0, 0.00),
+(97, 13, 18, 0.00, 0, 0.00),
+(98, 14, 11, 0.00, 0, 0.00),
+(100, 14, 11, 0.00, 0, 0.00),
+(101, 14, 11, 0.00, 0, 0.00),
+(102, 14, 11, 0.00, 0, 0.00),
+(103, 14, 11, 0.00, 0, 0.00),
+(104, 14, 1, 0.00, 0, 0.00),
+(105, 14, 11, 0.00, 0, 0.00),
+(106, 14, 14, 0.00, 0, 0.00),
+(107, 17, 11, 0.00, 0, 0.00),
+(108, 17, 12, 0.00, 0, 0.00),
+(109, 17, 13, 0.00, 0, 0.00),
+(110, 17, 15, 0.00, 0, 0.00),
+(111, 17, 15, 0.00, 0, 0.00),
+(115, 18, 25, 0.00, 0, 0.00),
+(116, 18, 26, 0.00, 0, 0.00),
+(117, 18, 27, 0.00, 0, 0.00),
+(146, 22, 1, 0.00, 0, 0.00),
+(147, 22, 2, 0.00, 0, 0.00),
+(148, 22, 3, 0.00, 0, 0.00),
+(149, 22, 4, 0.00, 0, 0.00),
+(150, 22, 6, 0.00, 0, 0.00),
+(151, 22, 7, 0.00, 0, 0.00),
+(152, 22, 8, 0.00, 0, 0.00),
+(153, 22, 11, 0.00, 0, 0.00),
+(154, 22, 12, 0.00, 0, 0.00),
+(155, 22, 13, 0.00, 0, 0.00),
+(156, 22, 14, 0.00, 0, 0.00),
+(157, 22, 15, 0.00, 0, 0.00),
+(158, 22, 16, 0.00, 0, 0.00),
+(159, 22, 17, 0.00, 0, 0.00),
+(160, 22, 18, 0.00, 0, 0.00),
+(161, 22, 19, 0.00, 0, 0.00),
+(162, 22, 20, 0.00, 0, 0.00),
+(163, 22, 21, 0.00, 0, 0.00),
+(164, 22, 22, 0.00, 0, 0.00),
+(165, 22, 23, 0.00, 0, 0.00),
+(166, 22, 25, 0.00, 0, 0.00),
+(167, 22, 26, 0.00, 0, 0.00),
+(168, 22, 27, 0.00, 0, 0.00),
+(169, 22, 28, 0.00, 0, 0.00),
+(170, 22, 29, 0.00, 0, 0.00),
+(171, 22, 30, 0.00, 0, 0.00),
+(172, 22, 31, 0.00, 0, 0.00),
+(173, 22, 32, 0.00, 0, 0.00),
+(227, 1, 1, 0.00, 0, 0.00),
+(228, 1, 2, 0.00, 0, 0.00),
+(229, 1, 3, 0.00, 0, 0.00),
+(230, 1, 4, 0.00, 0, 0.00),
+(231, 1, 11, 0.00, 0, 0.00),
+(232, 1, 13, 0.00, 0, 0.00),
+(233, 1, 14, 0.00, 0, 0.00),
+(234, 1, 15, 0.00, 0, 0.00),
+(235, 1, 17, 0.00, 0, 0.00),
+(236, 1, 20, 0.00, 0, 0.00),
+(237, 1, 21, 0.00, 0, 0.00),
+(238, 1, 26, 0.00, 0, 0.00),
+(239, 1, 32, 0.00, 0, 0.00),
+(240, 2, 1, 0.00, 0, 0.00),
+(241, 2, 4, 0.00, 0, 0.00),
+(244, 26, 1, 0.00, 0, 0.00),
+(245, 26, 2, 0.00, 0, 0.00),
+(246, 26, 3, 0.00, 0, 0.00),
+(247, 26, 4, 0.00, 0, 0.00),
+(248, 26, 11, 0.00, 0, 0.00),
+(249, 26, 12, 0.00, 0, 0.00),
+(250, 26, 13, 0.00, 0, 0.00),
+(251, 26, 14, 0.00, 0, 0.00),
+(252, 26, 20, 0.00, 0, 0.00),
+(253, 26, 23, 0.00, 0, 0.00),
+(254, 27, 1, 0.00, 0, 0.00),
+(255, 27, 2, 0.00, 0, 0.00),
+(256, 27, 3, 0.00, 0, 0.00),
+(257, 27, 4, 0.00, 0, 0.00),
+(258, 27, 6, 0.00, 0, 0.00),
+(259, 27, 7, 0.00, 0, 0.00),
+(260, 27, 8, 0.00, 0, 0.00),
+(261, 27, 11, 0.00, 0, 0.00),
+(262, 27, 12, 0.00, 0, 0.00),
+(263, 27, 13, 0.00, 0, 0.00),
+(264, 27, 14, 0.00, 0, 0.00),
+(265, 27, 15, 0.00, 0, 0.00),
+(266, 27, 16, 0.00, 0, 0.00),
+(267, 27, 17, 0.00, 0, 0.00),
+(268, 27, 18, 0.00, 0, 0.00),
+(269, 27, 19, 0.00, 0, 0.00),
+(270, 27, 20, 0.00, 0, 0.00),
+(271, 27, 21, 0.00, 0, 0.00),
+(272, 27, 22, 0.00, 0, 0.00),
+(273, 27, 23, 0.00, 0, 0.00),
+(274, 27, 25, 0.00, 0, 0.00),
+(275, 27, 26, 0.00, 0, 0.00),
+(276, 27, 27, 0.00, 0, 0.00),
+(277, 27, 28, 0.00, 0, 0.00),
+(278, 27, 29, 0.00, 0, 0.00),
+(279, 27, 30, 0.00, 0, 0.00),
+(280, 27, 31, 0.00, 0, 0.00),
+(281, 27, 32, 0.00, 0, 0.00),
+(312, 29, 1, 0.00, 0, 0.00);
 
 -- --------------------------------------------------------
 
@@ -924,7 +970,8 @@ INSERT INTO `tournament_moderators` (`id`, `tournament_id`, `user_id`) VALUES
 (46, 26, 42),
 (47, 26, 43),
 (45, 26, 44),
-(49, 26, 53);
+(49, 26, 53),
+(51, 27, 4);
 
 -- --------------------------------------------------------
 
@@ -965,7 +1012,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `username`, `email`, `dob`, `sex`, `role`, `created_by`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `ip_address`, `created_at`, `updated_at`, `mobile_no`, `last_login`, `profile_picture`, `secondary_email`, `secret_question1`, `secret_question2`, `secret_question3`) VALUES
 (1, 'user', 'user@user.com', '2007-01-09', 'Male', 'user', NULL, NULL, '$2y$12$MsyjI5qJ2gNqZcpOnWU4QOhq1N.7HU2GQbTW9SkqwaQAWZZ1jrpi.', NULL, NULL, NULL, NULL, NULL, '2024-12-28 22:20:28', '2025-03-09 14:12:25', '1111111111', NULL, 'uploads/profiles/1737177818_WhatsApp Image 2025-01-18 at 08.59.27.jpeg', NULL, NULL, NULL, NULL),
 (2, 'admin', 'admin@admin.com', NULL, NULL, 'admin', NULL, NULL, '$2y$10$Vzemd6vNZoJ7tsir9lxqKuBfkPhks/ZL3mB6YRRNKRLg3H8THFdba', NULL, NULL, NULL, NULL, NULL, '2024-12-28 22:41:42', NULL, '7432001215', NULL, 'default.png', NULL, NULL, NULL, NULL),
-(4, 'Robert James', 'xpindia@gmail.com', '1967-06-08', 'Male', 'admin', NULL, NULL, '$2y$12$TDdgHaXHdTld0QpkEFFnHOFZye4.vRNCuT7kuwqHrCqr1ThuRPg1i', NULL, NULL, NULL, '5GCW9C2I77ItEagSC66qHGn8yRg5VXHoMsZACcNqaDtIXjfzE4svWW0iMIz5', NULL, '2024-12-29 06:40:35', '2025-03-08 10:05:59', '3332222222', NULL, 'default.png', NULL, NULL, NULL, NULL),
+(4, 'Robert James', 'xpindia@gmail.com', '1967-06-08', 'Male', 'admin', NULL, NULL, '$2y$12$TDdgHaXHdTld0QpkEFFnHOFZye4.vRNCuT7kuwqHrCqr1ThuRPg1i', NULL, NULL, NULL, 'LJ7EKVolkFEI4D62nXyjfY2CdWqXLrEM4hNSUdqlu83Dt2xeaxQpbHtXjGPS', NULL, '2024-12-29 06:40:35', '2025-03-08 10:05:59', '3332222222', NULL, 'default.png', NULL, NULL, NULL, NULL),
 (5, 'user2', 'user2@jdjdj.com', NULL, NULL, 'user', NULL, NULL, '$2y$10$h2N1Jb3tCQ72X.KWuQaB8eUfBfJa61DULmbLDzMArIlUdtpj4im.m', NULL, NULL, NULL, NULL, NULL, '2024-12-31 09:58:19', NULL, '2222222222', NULL, 'default.png', NULL, NULL, NULL, NULL),
 (6, 'user1', 'asda@sd.asda', NULL, NULL, 'user', NULL, NULL, '$2y$10$630Wk4DbeWyToUcclXn66.2YMBCpUb8/ZwAvZwsbMU72PF3nNWdB2', NULL, NULL, NULL, NULL, NULL, '2025-01-10 00:25:38', NULL, '2222222222', NULL, 'default.png', NULL, NULL, NULL, NULL),
 (7, 'Mr ZZZ', 'zzz@zzz.com', '1995-02-01', 'Male', 'user', NULL, NULL, '$2y$12$uKs3Byi3YmAvEaEsd1erE.dCpyeg7cnGPf450qdbWyrsD4RJR.4n6', NULL, NULL, NULL, 'oKpZX7NIBNzSn03AXCF2xot10hFJ3aiqk4ysUGrg47r599eoIeSrbF7jIfYV', NULL, '2025-01-10 22:23:39', '2025-03-05 22:10:47', '1111111111', NULL, 'default.png', NULL, NULL, NULL, NULL),
@@ -986,7 +1033,9 @@ INSERT INTO `users` (`id`, `username`, `email`, `dob`, `sex`, `role`, `created_b
 (52, 'xxcdx', 'xxcdd@xxcdd.com', NULL, NULL, 'visitor', NULL, NULL, '$2y$12$xmUUP0wxOs1CpHj6kWEhEuVy2rEWSSrzx0/OB9b41lKBq2O2QFgjm', NULL, NULL, NULL, NULL, NULL, '2025-02-10 07:47:29', '2025-02-21 05:42:14', '2211777777', '2025-02-10 13:17:29', NULL, NULL, NULL, NULL, NULL),
 (53, 'zzzuserx', 'zzzuser@zzzuser.com', NULL, NULL, 'admin', 7, NULL, '$2y$12$bmIJs.jtPS3UgzobzsKrMu/Y6sV4jWvAIVfK5/SfWUpLtBJUyj.Pu', NULL, NULL, NULL, NULL, NULL, '2025-02-21 23:11:43', '2025-02-21 23:12:04', '1111111111', '2025-02-22 10:11:43', NULL, NULL, NULL, NULL, NULL),
 (55, 'Mandeep', 'mmm@mmm.com', NULL, NULL, 'user', NULL, NULL, '$2y$12$YEZ4K/s/aRcuhivS9IBJ5ODjjUYr5NqCRYZeyr8kt457NgE.7cH.O', NULL, NULL, NULL, NULL, NULL, '2025-03-04 23:33:42', '2025-03-04 23:33:42', '2222222222', '2025-03-05 10:33:42', NULL, NULL, NULL, NULL, NULL),
-(56, 'TesteightMarch', 'fdfsd@asasd.asd', '2008-01-29', 'Male', 'user', NULL, NULL, '$2y$12$dHSUPrJSapPakivktxh/DuVlo6MtswK/uYzsgaFiKiwK1ahc3m2mK', NULL, NULL, NULL, NULL, NULL, '2025-03-08 05:30:07', '2025-03-08 10:00:42', '2222222221', '2025-03-08 11:00:07', NULL, NULL, NULL, NULL, NULL);
+(56, 'TesteightMarch', 'fdfsd@asasd.asd', '2008-01-29', 'Male', 'user', NULL, NULL, '$2y$12$dHSUPrJSapPakivktxh/DuVlo6MtswK/uYzsgaFiKiwK1ahc3m2mK', NULL, NULL, NULL, NULL, NULL, '2025-03-08 05:30:07', '2025-03-08 10:00:42', '2222222221', '2025-03-08 11:00:07', NULL, NULL, NULL, NULL, NULL),
+(57, 'OfficeUser', 'dsd@sdasd.asda', '2000-11-11', 'Male', 'user', 4, NULL, '$2y$12$fyE7E5kQbdyaImd.Q3Hb9uXha875vx4o07XQ7RqVYVUVjvjj0oEkO', NULL, NULL, NULL, NULL, NULL, '2025-03-15 03:19:17', '2025-03-15 03:19:17', '2222222223', '2025-03-15 08:49:17', NULL, NULL, NULL, NULL, NULL),
+(58, 'Creator', 'dsd!se@fs.ssd', '2000-11-11', 'Male', 'user', 4, NULL, '$2y$12$WJyW5kckDnFzSUTZeYsEoO11eGk4iK0hrGcL.YvxpOlHUTcmYjft2', NULL, NULL, NULL, NULL, NULL, '2025-03-15 03:41:44', '2025-03-15 03:41:44', '3333333336', '2025-03-15 09:11:44', NULL, NULL, NULL, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -1215,7 +1264,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `matches`
 --
 ALTER TABLE `matches`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=229;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=235;
 
 --
 -- AUTO_INCREMENT for table `match_details`
@@ -1227,7 +1276,7 @@ ALTER TABLE `match_details`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -1251,25 +1300,25 @@ ALTER TABLE `player_access`
 -- AUTO_INCREMENT for table `tournaments`
 --
 ALTER TABLE `tournaments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `tournament_categories`
 --
 ALTER TABLE `tournament_categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=254;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=313;
 
 --
 -- AUTO_INCREMENT for table `tournament_moderators`
 --
 ALTER TABLE `tournament_moderators`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- Constraints for dumped tables

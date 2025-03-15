@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Log;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -93,14 +94,15 @@ class SinglesMatchController extends Controller
         return response()->json($players);
     }
 
-    // Store Singles Match
+
+    // Store Singles Match and Handle Payments
     public function store(Request $request)
     {
         $validated = $request->validate([
             'tournament_id' => 'required|exists:tournaments,id',
             'category_id' => 'required|exists:categories,id',
-            'match_date' => 'required|date', // Correct field name
-            'match_time' => 'required', // Correct field name
+            'match_date' => 'required|date',
+            'match_time' => 'required',
             'player1_id' => 'required|exists:players,id',
             'player2_id' => 'required|exists:players,id|different:player1_id',
             'stage' => 'required|string',
@@ -111,24 +113,78 @@ class SinglesMatchController extends Controller
             'set3_player1_points' => 'nullable|integer|min:0',
             'set3_player2_points' => 'nullable|integer|min:0',
         ]);
-    
-        // Log request for debugging
-        \Log::info('Match Data:', $validated);
-    
+
         try {
-            // Save match
+            // Save the match
             $match = MatchModel::create($validated + ['created_by' => Auth::id()]);
-    
-            // Send email notification
+
+            // Send match created email notification
             $this->notificationService->sendMatchCreatedNotification($match);
-    
+
+            // Fetch category fee details
+            $tournamentCategory = \DB::table('tournament_categories')
+                ->where('tournament_id', $request->tournament_id)
+                ->where('category_id', $request->category_id)
+                ->first();
+
+            if (!$tournamentCategory) {
+                Log::error("❌ Tournament category not found! Tournament ID: {$request->tournament_id}, Category ID: {$request->category_id}");
+                return back()->withErrors(['error' => 'Tournament category data missing.']);
+            }
+
+            Log::info("✅ Tournament Category Data -> is_paid: {$tournamentCategory->is_paid}, Fee: {$tournamentCategory->fee}");
+
+            // If the category is marked as paid, process payments
+            if ($tournamentCategory->is_paid == 1 && $tournamentCategory->fee > 0) {
+                $categoryFee = $tournamentCategory->fee;
+                $players = Player::whereIn('id', [$request->player1_id, $request->player2_id])->get();
+
+                foreach ($players as $player) {
+                    // Check if payment record already exists for this player
+                    $existingPayment = Payment::where([
+                        'user_id' => $player->id,
+                        'tournament_id' => $request->tournament_id,
+                        'amount' => $categoryFee,
+                        'status' => 'Pending'
+                    ])->first();
+
+                    if (!$existingPayment) {
+                        // Create pending payment record
+                        Payment::create([
+                            'user_id' => $player->id,
+                            'tournament_id' => $request->tournament_id,
+                            'amount' => $categoryFee,
+                            'payment_method' => 'UPI',
+                            'transaction_id' => null,
+                            'status' => 'Pending',
+                        ]);
+
+                        // Send email to player for pending payment
+                        Mail::to($player->email)->send(new PaymentPendingNotification($player, $categoryFee));
+
+                        Log::info("📧 Payment pending email sent to {$player->email} for category ID: {$request->category_id}");
+                    } else {
+                        Log::info("ℹ️ Payment record already exists for {$player->email}, skipping.");
+                    }
+                }
+
+                // Send notification to admin about pending payments
+                Mail::to("xpindia@gmail.com")->send(new PaymentPendingNotification(null, $categoryFee, true));
+
+                Log::info("📩 Admin notified about pending payments for tournament ID: {$request->tournament_id}");
+            } else {
+                Log::info("ℹ️ Category ID {$request->category_id} is free, no payment email needed.");
+            }
+
             return redirect()->route('matches.singles.index')
-                             ->with('success', 'Singles match created successfully.');
+                ->with('success', 'Singles match created successfully.');
+
         } catch (\Exception $e) {
-            \Log::error('Error creating match: ' . $e->getMessage());
+            Log::error('❌ Error creating match: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Failed to create the match. Please try again.']);
         }
     }
+
     
     // Display Singles Matches
     public function index(Request $request)

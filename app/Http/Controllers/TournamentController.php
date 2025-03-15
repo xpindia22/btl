@@ -55,42 +55,50 @@ class TournamentController extends Controller
 
     // Store a new tournament
     public function store(Request $request)
-{
-    $request->validate([
-        'tournament_name' => 'required|string|max:255|unique:tournaments,name',
-        'categories' => 'array',
-        'moderators' => 'array',
-    ]);
-
-    $tournamentId = DB::table('tournaments')->insertGetId([
-        'name'       => $request->tournament_name,
-        'created_by' => Auth::id(),
-    ]);
-
-    foreach ($request->input('categories', []) as $categoryId) {
-        DB::table('tournament_categories')->insert([
-            'tournament_id' => $tournamentId,
-            'category_id'   => $categoryId,
+    {
+        $request->validate([
+            'tournament_name' => 'required|string|max:255|unique:tournaments,name',
+            'categories' => 'nullable|array',
+            'moderators' => 'nullable|array',
         ]);
-    }
-
-    foreach ($request->input('moderators', []) as $moderatorId) {
-        DB::table('tournament_moderators')->insert([
-            'tournament_id' => $tournamentId,
-            'user_id'       => $moderatorId,
+    
+        $tournamentId = DB::table('tournaments')->insertGetId([
+            'name'       => $request->tournament_name,
+            'created_by' => Auth::id(),
         ]);
+    
+        if ($request->has('categories')) {
+            foreach ($request->input('categories', []) as $categoryId => $categoryData) {
+                DB::table('tournament_categories')->insert([
+                    'tournament_id' => $tournamentId,
+                    'category_id'   => $categoryId,
+                    'is_paid'       => isset($categoryData['is_paid']) ? (int) $categoryData['is_paid'] : 0,
+                    'fee'           => isset($categoryData['fee']) ? (float) $categoryData['fee'] : 0.00,
+                ]);
+            }
+        }
+    
+        if ($request->has('moderators')) {
+            foreach ($request->input('moderators', []) as $moderatorId) {
+                DB::table('tournament_moderators')->insert([
+                    'tournament_id' => $tournamentId,
+                    'user_id'       => $moderatorId,
+                ]);
+            }
+        }
+    
+        // Prepare email notification
+        $tournament = (object) ['id' => $tournamentId, 'name' => $request->tournament_name];
+        $initiator = Auth::user()->username;
+        $adminEmail = "xpindia@gmail.com";
+        $initiatorEmail = Auth::user()->email;
+    
+        Mail::to([$adminEmail, $initiatorEmail])
+            ->send(new TournamentNotification($tournament, 'created', $initiator));
+    
+        return redirect()->route('tournaments.index')->with('success', 'Tournament created successfully.');
     }
-
-    $tournament = (object) ['id' => $tournamentId, 'name' => $request->tournament_name];
-    $initiator = Auth::user()->username;
-    $adminEmail = "xpindia@gmail.com";
-    $initiatorEmail = Auth::user()->email;
-
-    Mail::to([$adminEmail, $initiatorEmail])
-        ->send(new TournamentNotification($tournament, 'created', $initiator));
-
-    return redirect()->route('tournaments.index')->with('success', 'Tournament created successfully.');
-}
+    
 
 public function assignCategories(Request $request, $id)
 {
