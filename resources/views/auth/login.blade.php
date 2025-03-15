@@ -55,7 +55,7 @@
                     <a href="{{ route('password.request') }}">Forgot Your Password?</a>
                 </div>
                 <div class="register-link">
-                    <a href="{{ route('register') }}">Don't have an account? Register</a>
+                    <a href="{{ route('users.create') }}">Don't have an account? Register</a>
                 </div>
             </div>
 

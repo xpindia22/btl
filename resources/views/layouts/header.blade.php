@@ -116,8 +116,8 @@
                 <i class="bi bi-star-fill" style="color: red;"></i> Admin Zone
                 </a>
                     <div class="dropdown-content">
-                        <a href="{{ url('users/register') }}">Create User</a>
-                        <a href="{{ url('tournaments/manage') }}">Manage Tournaments & Add Moderator</a>
+                    <a href="{{ url('users/create') }}">Create User</a>
+                    <a href="{{ url('tournaments/manage') }}">Manage Tournaments & Add Moderator</a>
                         <a href="{{ route('admin.edit_players') }}">Edit Player</a>
                         <a href="{{ route('categories.create') }}">Insert Category</a>
                         <a href="{{ route('admin.add_moderator') }}">Add Moderator</a>
@@ -194,8 +194,7 @@
                             <a href="{{ route('matches.singles.index') }}">Singles Results</a>
                             <a href="{{ route('matches.singles.index') }}">Edit Singles Results</a>
                             ......................
-                            <a href="{{ route('register') }}">Create User / Manager.</a>
-                            <a href="{{ route('users.index') }}">Your Users.</a>
+                             <a href="{{ route('users.index') }}">Your Users.</a>
                             <a href="{{ route('users.edit', ['user' => auth()->id()]) }}">Edit Your Users</a>
                             <a href="{{ route('players.register') }}">Register Your Players</a>
                             <a href="{{ route('players.edit') }}">Edit Your Players</a>
