@@ -49,15 +49,27 @@
     {{-- Create Match Form --}}
     <form method="POST" action="{{ route('matches.singles.store') }}">
         @csrf
-        <input type="hidden" name="tournament_id" value="{{ $lockedTournament->id }}">
-
         <label for="category_id">Category:</label>
-        <select name="category_id" id="category_id" required>
-            <option value="">Select Category</option>
-            @foreach($categories as $cat)
-                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-            @endforeach
+<select name="category_id" id="category_id" required>
+    <option value="">Select Category</option>
+    @if(isset($lockedTournament) && isset($lockedTournament->categories) && count($lockedTournament->categories) > 0)
+        @foreach($lockedTournament->categories as $cat)
+            <option value="{{ $cat->id }}" data-price="{{ $cat->fee ?? 0 }}">{{ $cat->name }}</option>
+        @endforeach
+    @else
+        <option value="">No categories available</option>
+    @endif
+</select>
+
+
+        <label for="is_paid">Is Paid?</label>
+        <select name="is_paid" id="is_paid">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
         </select>
+
+        <label for="match_fee">Match Fee:</label>
+        <input type="number" id="match_fee" name="match_fee" value="0" min="0" required>
 
         <label for="player1_id">Player 1:</label>
         <select name="player1_id" id="player1_id" required>
@@ -78,87 +90,77 @@
         </select>
 
         <label for="match_date">Match Date:</label>
-<input type="date" name="match_date" id="match_date" required>
+        <input type="date" name="match_date" id="match_date" required>
 
-<label for="match_time">Match Time:</label>
-<input type="time" name="match_time" id="match_time" required>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const now = new Date();
-    document.getElementById('match_date').valueAsDate = now;
-    document.getElementById('match_time').value = now.toTimeString().slice(0, 5);
-});
-</script>
+        <label for="match_time">Match Time:</label>
+        <input type="time" name="match_time" id="match_time" required>
 
         {{-- Set Scores --}}
-        <label for="set1_player1_points">Set 1 Score (Player 1):</label>
-        <input type="number" name="set1_player1_points" min="0" value="0" required>
+        <div id="set_scores">
+            <label for="set1_player1_points">Set 1 Score (Player 1):</label>
+            <input type="number" name="set1_player1_points" min="0" value="0" required>
 
-        <label for="set1_player2_points">Set 1 Score (Player 2):</label>
-        <input type="number" name="set1_player2_points" min="0" value="0" required>
+            <label for="set1_player2_points">Set 1 Score (Player 2):</label>
+            <input type="number" name="set1_player2_points" min="0" value="0" required>
 
-        <label for="set2_player1_points">Set 2 Score (Player 1):</label>
-        <input type="number" name="set2_player1_points" min="0" value="0" required>
+            <label for="set2_player1_points">Set 2 Score (Player 1):</label>
+            <input type="number" name="set2_player1_points" min="0" value="0" required>
 
-        <label for="set2_player2_points">Set 2 Score (Player 2):</label>
-        <input type="number" name="set2_player2_points" min="0" value="0" required>
+            <label for="set2_player2_points">Set 2 Score (Player 2):</label>
+            <input type="number" name="set2_player2_points" min="0" value="0" required>
 
-        <label for="set3_player1_points">Set 3 Score (Player 1):</label>
-        <input type="number" name="set3_player1_points" min="0" value="0">
+            <label for="set3_player1_points">Set 3 Score (Player 1):</label>
+            <input type="number" name="set3_player1_points" min="0" value="0">
 
-        <label for="set3_player2_points">Set 3 Score (Player 2):</label>
-        <input type="number" name="set3_player2_points" min="0" value="0">
+            <label for="set3_player2_points">Set 3 Score (Player 2):</label>
+            <input type="number" name="set3_player2_points" min="0" value="0">
+        </div>
 
         <button type="submit" class="btn btn-success">Add Match</button>
     </form>
     @endif
 </div>
 
+<script>
+// Script for updating match fee
+const categoryDropdown = document.getElementById("category_id");
+const matchFeeInput = document.getElementById("match_fee");
+const isPaidDropdown = document.getElementById("is_paid");
+
+categoryDropdown.addEventListener("change", function () {
+    const selectedOption = this.options[this.selectedIndex];
+    const price = selectedOption.getAttribute("data-price") || 0;
+    matchFeeInput.value = price;
+});
+
+isPaidDropdown.addEventListener("change", function () {
+    matchFeeInput.disabled = (this.value == "0");
+    if (this.value == "0") {
+        matchFeeInput.value = 0;
+    }
+});
+</script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const categoryDropdown = document.getElementById("category_id");
-    const player1Dropdown = document.getElementById("player1_id");
-    const player2Dropdown = document.getElementById("player2_id");
+// Script for fetching players dynamically
+const player1Dropdown = document.getElementById("player1_id");
+const player2Dropdown = document.getElementById("player2_id");
 
-    categoryDropdown.addEventListener("change", function () {
-        const categoryId = this.value;
-        console.log("🔍 Selected Category ID:", categoryId);
+categoryDropdown.addEventListener("change", function () {
+    const categoryId = this.value;
+    if (!categoryId) return;
 
-        if (!categoryId) {
-            player1Dropdown.innerHTML = "<option value=''>-- Select Player 1 --</option>";
-            player2Dropdown.innerHTML = "<option value=''>-- Select Player 2 --</option>";
-            return;
-        }
-
-        fetch(`/btl/matches/singles/filtered-players?category_id=${categoryId}`)
-            .then(response => {
-                console.log("🔍 AJAX Response Status:", response.status);
-                return response.json();
-            })
-            .then(players => {
-                console.log("✅ Players Received:", players);
-
-                if (!players.length) {
-                    alert("⚠️ No players found for this category!");
-                }
-
-                let playerOptions = "<option value=''>-- Select Player --</option>";
-                players.forEach(player => {
-                    playerOptions += `<option value="${player.id}">${player.name} (Age: ${player.age}, Sex: ${player.sex})</option>`;
-                });
-
-                player1Dropdown.innerHTML = playerOptions;
-                player2Dropdown.innerHTML = playerOptions;
-
-                console.log("✅ Dropdown Updated!");
-            })
-            .catch(error => {
-                console.error("❌ Error fetching players:", error);
-                alert("⚠️ Error fetching players. Check console for details.");
+    fetch(`/btl/matches/singles/filtered-players?category_id=${categoryId}`)
+        .then(response => response.json())
+        .then(players => {
+            let playerOptions = "<option value=''>-- Select Player --</option>";
+            players.forEach(player => {
+                playerOptions += `<option value="${player.id}">${player.name} (Age: ${player.age}, Sex: ${player.sex})</option>`;
             });
-    });
+            player1Dropdown.innerHTML = playerOptions;
+            player2Dropdown.innerHTML = playerOptions;
+        })
+        .catch(error => console.error("❌ Error fetching players:", error));
 });
 </script>
 @endsection

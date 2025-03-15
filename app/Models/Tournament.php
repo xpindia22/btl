@@ -57,5 +57,9 @@ public function isFavoritedByUser($userId)
     return $this->favorites()->where('user_id', $userId)->exists();
 }
 
+public function categories()
+{
+    return $this->belongsToMany(Category::class, 'tournament_categories', 'tournament_id', 'category_id');
+}
 
 }
